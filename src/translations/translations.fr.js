@@ -41,7 +41,12 @@ const formatDatetime = prepareFormatDatetime(lang);
 const formatDateOnly = prepareFormatDateOnly(lang);
 const formatHours = prepareFormatHours(lang);
 
-const currencyFormatter = new Intl.NumberFormat(lang, { style: 'currency', currency: 'EUR' });
+const currencyFormatter = new Intl.NumberFormat(lang, { style: 'currency', currency: 'EUR', currencyDisplay: 'narrowSymbol' });
+
+function currencyFormatterCode (code) {
+  return new Intl.NumberFormat(lang, { style: 'currency', currency: code, currencyDisplay: 'narrowSymbol' });
+}
+
 const percentFormatter = new Intl.NumberFormat(lang, {
   style: 'percent',
   minimumFractionDigits: 1,
@@ -378,4 +383,47 @@ export const translations = {
   // cc-zone-input
   'cc-zone-input.error': `Une erreur est survenue pendant le chargement des zones.`,
   'cc-zone-input.private-map-warning': `Les zones privées n'apparaissent pas sur la carte.`,
+  // cc-pricing-table
+  'cc-pricing-table.price': ({ price, code }) => `${currencyFormatterCode(code).format(price)}`,
+  'cc-pricing-table.priceNameDaily': `Prix/Jour`,
+  'cc-pricing-table.priceNameMonthly': `Prix/Mois`,
+  'cc-pricing-table.addButton': 'Ajouter',
+  // -> Feature name translation
+  'cc-pricing-table.feature.backup': `Sauvegardes`,
+  'cc-pricing-table.feature.connection-limit': `Limite de connexions`,
+  'cc-pricing-table.feature.cpu': `CPU`,
+  'cc-pricing-table.feature.database': `Base de données`,
+  'cc-pricing-table.feature.disk-size': `Taille du disque`,
+  'cc-pricing-table.feature.encryption': `Encryption`,
+  'cc-pricing-table.feature.isolation': `Isolation`,
+  'cc-pricing-table.feature.logs': `Logs`,
+  'cc-pricing-table.feature.max-db-size': `Taille MAX BDD`,
+  'cc-pricing-table.feature.memory': `Mémoire`,
+  'cc-pricing-table.feature.metrics': `Métriques`,
+  'cc-pricing-table.feature.migration': `Migration`,
+  'cc-pricing-table.feature.mount': `Montage`,
+  'cc-pricing-table.feature.node': `Noeuds`,
+  'cc-pricing-table.feature.postgis': `PostGIS`,
+  'cc-pricing-table.feature.type-shared': `Type`,
+  'cc-pricing-table.feature.mongo-version': `Version de MongoDB`,
+  // -> Feature Type format
+  'cc-pricing-table.type.number': ({ number }) => `${numberFormatter.format(number)}`,
+  'cc-pricing-table.type.bytes': ({ bytes }) => formatBytes(bytes, 1),
+  'cc-pricing-table.type.boolean': ({ boolean }) => `${boolean ? 'Oui' : 'Non'}`,
+  'cc-pricing-table.type.boolean-shared': ({ booleanShared }) => `${booleanShared ? 'Partagé' : 'Dédié'}`,
+  'cc-pricing-table.type.mount': `ILLIMITE`,
+  'cc-pricing-table.type.mongo-version': `4.0.3`,
+  // cc-pricing-estimation
+  'cc-pricing-estimation.product': `Produit`,
+  'cc-pricing-estimation.size': `Taille`,
+  'cc-pricing-estimation.quantity': `Quantité`,
+  'cc-pricing-estimation.priceName': `Prix`,
+  'cc-pricing-estimation.price': ({ price, code }) => `${currencyFormatterCode(code).format(price)}`,
+  'cc-pricing-estimation.monthly-est': `Coût Mensuel Estimé`,
+  'cc-pricing-estimation.sales': `Nous contacter`,
+  'cc-pricing-estimation.sign-up': `S'inscrire`,
+  // cc-pricing-header
+  'cc-pricing-header.currency-text': 'Monnaie',
+  'cc-pricing-header.est-cost': 'Coût Estimé',
+  'cc-pricing-header.price': ({ price, code }) => `${currencyFormatterCode(code).format(price)}`,
 };
