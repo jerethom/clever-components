@@ -32,6 +32,7 @@ export class CcPricingPage extends LitElement {
     return {
       products: { type: Array },
       pricingLists: { type: Array },
+      currencies: { type: Array },
       _selectedProducts: { type: Object },
       _currency: { type: String },
       _zone: { type: String },
@@ -44,7 +45,7 @@ export class CcPricingPage extends LitElement {
   constructor () {
     super();
     this._selectedProducts = {};
-    this._currency = 'EUR';
+    this._currency = { code: 'EUR', changeRate: '1' };
     this._categories = ['runtime', 'addon'];
     this.pricingLists = [];
     // Use Paris as default (might need to change later on)
@@ -62,7 +63,13 @@ export class CcPricingPage extends LitElement {
       const items = p.items.map((item) => {
         const { price } = priceList.runtime.find((pl) => pl.slug_id === item.price_id) || {};
         console.log(item.name, price);
-        return { ...item, price: { daily: price * 24, monthly: price * 730.5 } };
+        return {
+          ...item,
+          price: {
+            daily: (price * 24) * this._currency.changeRate,
+            monthly: (price * 730.5) * this._currency.changeRate,
+          },
+        };
       });
       return { ...p, items };
     });
@@ -87,7 +94,7 @@ export class CcPricingPage extends LitElement {
               title=${p.title}
               icon=${p.icon}
               description=${p.description}
-              currency=${this._currency}
+              currency=${this._currency.code}
               .items=${p.items}
               .features=${p.features}
               .icons=${p.icons}
@@ -148,11 +155,12 @@ export class CcPricingPage extends LitElement {
   }
 
   _onCurencyChanged ({ detail: currency }) {
+      console.log(currency);
     this._currency = currency;
   }
 
-  _onZoneChanged ({detail: zoneName}) {
-      console.log('zone_name', zoneName);
+  _onZoneChanged ({ detail: zoneName }) {
+    console.log('zone_name', zoneName);
     this._zone = zoneName;
   }
 
@@ -162,7 +170,8 @@ export class CcPricingPage extends LitElement {
       <div class="header">
         <cc-pricing-header 
             .selectedProducts=${this._selectedProducts}
-            currency=${this._currency}
+            currency=${this._currency.code}
+            .currencies=${this.currencies}
             @cc-pricing-header:change-currency=${this._onCurencyChanged}
             @cc-pricing-header:change-zone=${this._onZoneChanged}
         >
@@ -183,7 +192,7 @@ export class CcPricingPage extends LitElement {
       <div class="estimation">
         <cc-pricing-estimation
             .selectedProducts=${this._selectedProducts}
-            currency=${this._currency}
+            currency=${this._currency.code}
             @cc-pricing-estimation:change-quantity=${this._onQuantityChanged}
         >
         </cc-pricing-estimation>

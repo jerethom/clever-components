@@ -38,7 +38,7 @@ export class CcPricingHeader extends LitElement {
 
   static get properties () {
     return {
-      _currencies: { type: Array },
+      currencies: { type: Array },
       pricingCurrency: { type: String },
       selectedProducts: { type: Object },
       currency: { type: String },
@@ -48,14 +48,6 @@ export class CcPricingHeader extends LitElement {
 
   constructor () {
     super();
-    /** We use an object with the codes that we choose to support as we use the ```Intl.Numberformat()``` function
-         * to format the prices which use the code so we don't need the symbol
-         */
-    this._currencies = [
-      { code: 'EUR', displayValue: '€ EUR' },
-      { code: 'GBP', displayValue: '£ GBP' },
-      { code: 'USD', displayValue: '$ USD' },
-    ];
     this.currency = 'EUR';
     this.selectedProducts = {};
     // TODO: Temp to change default array
@@ -99,7 +91,9 @@ export class CcPricingHeader extends LitElement {
   }
 
   _onCurrencyChange (e) {
-    dispatchCustomEvent(this, 'change-currency', e.target.value);
+    // e.target.value is the value of the option which is represented by the currency code
+    const currency = this.currencies.find((c) => c.code === e.target.value);
+    dispatchCustomEvent(this, 'change-currency', currency);
   }
 
   _onZoneInput ({ detail: zoneName }) {
@@ -113,7 +107,7 @@ export class CcPricingHeader extends LitElement {
                 <div class="select-currency">
                    ${i18n('cc-pricing-header.currency-text')}:
                     <select @change=${this._onCurrencyChange}>
-                        ${this._currencies.map((c) => html`
+                        ${this.currencies.map((c) => html`
                             <option value=${c.code}>${c.displayValue}</option>`)}
                     </select>
                 </div>

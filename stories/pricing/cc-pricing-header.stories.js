@@ -16,7 +16,13 @@ const conf = {
 
 export const defaultStory = makeStory(conf, {
   items: [
-    { },
+    {
+      currencies: [
+        { code: 'EUR', displayValue: '€ EUR', changeRate: 1 },
+        { code: 'GBP', displayValue: '£ GBP', changeRate: 0.88603 },
+        { code: 'USD', displayValue: '$ USD', changeRate: 1.2091 },
+      ],
+    },
   ],
 });
 
