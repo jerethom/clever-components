@@ -36,7 +36,7 @@ const hmrI18n = {
 
 export default {
   nodeResolve: true,
-  // watch: true,
+  watch: true,
   mimeTypes: {
     '**/*.md': 'js',
     '**/*.json': 'js',
