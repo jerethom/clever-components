@@ -65,15 +65,17 @@ export class CcPricingCellar extends LitElement {
     super();
     this._totalPrice = 0;
     // One possibility is to have an object like below to render and check our "quota" in a generic way
-    // min max are TiB
-    // price is the price per GiB per month
+    // min max are TB
+    // price is the price per GB per month
     this._cellarInfos = {
       storage: [
         {
           minRange: 0,
-          maxRange: 1048576,
+          // maxRange: 1048576,
+          maxRange: 1000000,
           minRangeDisplay: 0,
-          maxRangeDisplay: 1099511627776,
+          // maxRangeDisplay: 1099511627776,
+          maxRangeDisplay: 1000000000000,
           price: 0.02,
           highlighted: false,
           totalPrice: {
@@ -82,10 +84,14 @@ export class CcPricingCellar extends LitElement {
           },
         },
         {
-          minRange: 1048576,
-          maxRange: 26214400,
-          minRangeDisplay: 1099511627776,
-          maxRangeDisplay: 27487790694400,
+          // minRange: 1048576,
+          minRange: 1000000,
+          // maxRange: 26214400,
+          maxRange: 25000000,
+          // minRangeDisplay: 1099511627776,
+          minRangeDisplay: 1000000000000,
+          // maxRangeDisplay: 27487790694400,
+          maxRangeDisplay: 25000000000000,
           price: 0.015,
           highlighted: false,
           totalPrice: {
@@ -97,7 +103,8 @@ export class CcPricingCellar extends LitElement {
           minRange: 26214400,
           // -1 to represent infinity
           maxRange: -1,
-          minRangeDisplay: 27487790694400,
+          // minRangeDisplay: 27487790694400,
+          minRangeDisplay: 25000000000000,
           maxRangeDisplay: '∞',
           price: 0.01,
           highlighted: false,
@@ -110,9 +117,11 @@ export class CcPricingCellar extends LitElement {
       traffic: [
         {
           minRange: 0,
-          maxRange: 10485760,
+          // maxRange: 10485760,
+          maxRange: 10000000,
           minRangeDisplay: 0,
-          maxRangeDisplay: 10995116277760,
+          // maxRangeDisplay: 10995116277760,
+          maxRangeDisplay: 10000000000000,
           price: 0.09,
           highlighted: false,
           totalPrice: {
@@ -121,10 +130,12 @@ export class CcPricingCellar extends LitElement {
           },
         },
         {
-          minRange: 10485760,
+          // minRange: 10485760,
+          minRange: 10000000,
           // -1 to represent infinity
           maxRange: -1,
-          minRangeDisplay: 10995116277760,
+          // minRangeDisplay: 10995116277760,
+          minRangeDisplay: 10000000000000,
           maxRangeDisplay: '∞',
           price: 0.07,
           highlighted: false,
@@ -153,22 +164,23 @@ export class CcPricingCellar extends LitElement {
   _renderInfos (placeholder, infos) {
     return infos.map((info) => {
       return html`
-        <div class="${placeholder}-infos">
+        <div class="${placeholder}-infos infos">
           <div class="info">
-            <span class=${classMap({ highlighted: info.highlighted })}>
+            <span class="interval ${classMap({ highlighted: info.highlighted })}">
               ${(info.maxRange !== -1)
-                ? html`${i18n('cc-pricing-cellar.bytes', { bytes: info.minRangeDisplay })} <= ${placeholder} < ${i18n('cc-pricing-cellar.bytes', { bytes: info.maxRangeDisplay })}`
-                : html`${i18n('cc-pricing-cellar.bytes', { bytes: info.minRangeDisplay })}<= ${placeholder} < ${info.maxRangeDisplay}`
-                  }
+                  ? html`<span>${i18n('cc-pricing-cellar.bytes', { bytes: info.minRangeDisplay })}</span> <span><= ${placeholder} &lt; </span> <span>${i18n('cc-pricing-cellar.bytes', { bytes: info.maxRangeDisplay })}</span>`
+                  : html`<span>${i18n('cc-pricing-cellar.bytes', { bytes: info.minRangeDisplay })}</span> <span><= ${placeholder} &lt; </span> <span>${info.maxRangeDisplay}</span>`
+              }
                 </span>
-              </div>
-              <div class="price">
-                ${i18n('cc-pricing-cellar.format-price', { price: info.price })}/ GiB / ${i18n('cc-pricing-cellar.per-month-text')}
-              </div>
-          <div class=${classMap({ price_estimation: true, visible: info.totalPrice.visible })}>
-          Price
-            ${i18n('cc-pricing-cellar.format-price', { price: info.totalPrice.price.toFixed(2) })}
           </div>
+          <div class="price">
+            ${i18n('cc-pricing-cellar.format-price', { price: info.price })}/ GB / ${i18n('cc-pricing-cellar.per-month-text')}
+          </div>
+          <div class="priceee ${classMap({ price_estimation: true, visible: info.totalPrice.visible })}">
+            Price:
+            ${i18n('cc-pricing-cellar.format-price', { price: info.totalPrice.price })}
+          </div>
+        </div>
       `;
     });
   }
@@ -228,59 +240,107 @@ export class CcPricingCellar extends LitElement {
 
   render () {
     return html`
-            <div class="cellar-recap">
-                bla bla bla
-            </div>
+      <em class="cellar-recap">
+        bla bla bla to explain how the pricing works (storage + outboud traffic)
+      </em>
 
-            <div class="title">Estimate your cellar cost</div>
+      <div class="title">Estimate your cellar cost:</div>
 
-            <div class="title-storage">Storage</div>
+      <div class="title-storage">Storage</div>
 
-            <input type="number" @change=${this._onStorageChanged}> MiB
-            
-            ${this._renderInfos('storage', this._cellarInfos.storage)}
-            
-            <div class="title-traffic">Outbound Traffic</div>
+      <div class="input-wrapper"><input type="number" @input=${this._onStorageChanged}> MB</div>
 
-            <input type="number" @change=${this._onTrafficChanged}> MiB
-            
-            ${this._renderInfos('outbound traffic', this._cellarInfos.traffic)}
-            
-            <div class="total-recap">
-                Total
-            <div class="estimated-monthly">
-              ${i18n('cc-pricing-cellar.format-price', { price: this._totalPrice.toFixed(2) })}
-            </div>
-            </div>
-        `;
-  }
+      ${this._renderInfos('storage', this._cellarInfos.storage)}
 
-  connectedCallback () {
-    super.connectedCallback();
+      <em>bla bla about 100MB free storage</em>
+      
+      <div class="title-traffic">Outbound Traffic</div>
+
+      <div class="input-wrapper"><input type="number" @input=${this._onTrafficChanged}> MB</div>
+
+      ${this._renderInfos('outbound traffic', this._cellarInfos.traffic)}
+
+      <div class="total-recap">
+        <div></div><div></div>
+        <div>
+          Total:
+          <span class="estimated-monthly">
+            ${i18n('cc-pricing-cellar.format-price', { price: this._totalPrice })}
+          </span>
+        </div>
+      </div>
+    `;
   }
 
   static get styles () {
     return [
       // language=CSS
       css`
-                :host {
-                    /* You may use another display type but you need to define one. */
-                    display: block;
-                }
-                
-                .price_estimation {
-                    display: none;
-                }
-                
-                .visible {
-                  display: block;
-                }
-                
-                .highlighted {
-                  background-color:#FFFF00;
-                }
-                
-            `,
+        :host {
+          /* You may use another display type but you need to define one. */
+          display: grid;
+          gap: 0.5rem;
+        }
+
+        input {
+          padding: 0.25rem 0.5rem;
+          text-align: right;
+        }
+        
+        .input-wrapper {
+          margin-bottom: 1rem;
+        }
+
+        .title-storage,
+        .title-traffic {
+          margin: 1rem 0 0.5rem 0;
+          font-weight: bold;
+        }
+        
+        .infos {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+        }
+
+        .title {
+          font-weight: bold;
+        }
+
+        .price_estimation {
+          display: none;
+        }
+        
+        .interval {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 0.5rem;
+          white-space: nowrap;
+          margin-right: 2rem;
+        }
+
+        .interval span {
+          text-align: right;
+        }
+
+        .visible {
+          display: block;
+        }
+        
+        .priceee {
+          text-align: right;
+        }
+        
+        .total-recap {
+          text-align: right;
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+        }
+
+        .highlighted {
+          background-color: #FFFF00;
+        }
+
+      `,
     ];
   }
 }

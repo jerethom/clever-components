@@ -31,6 +31,7 @@ const formatHours = prepareFormatHours(lang);
 const currencyFormatter = new Intl.NumberFormat(lang, { style: 'currency', currency: 'EUR' });
 
 function currencyFormatterCode (code) {
+  // return new Intl.NumberFormat(lang, { style: 'currency', currency: code, currencyDisplay: 'narrowSymbol', minimumSignificantDigits: 3, maximumSignificantDigits: 3,minimumFractionDigits: 3, maximumFractionDigits: 3 });
   return new Intl.NumberFormat(lang, { style: 'currency', currency: code, currencyDisplay: 'narrowSymbol' });
 }
 

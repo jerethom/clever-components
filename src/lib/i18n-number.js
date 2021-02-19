@@ -58,7 +58,7 @@ export function prepareNumberBytesFormatter (lang, byteSymbol, separator) {
   return (rawValue, fractionDigits = 0) => {
 
     // Nothing fancy to do when rawValues is under 1 kibibyte
-    if (rawValue < 1024) {
+    if (rawValue < 1000) {
       return new Intl.NumberFormat(lang).format(rawValue) + separator + byteSymbol;
     }
 
@@ -70,11 +70,11 @@ export function prepareNumberBytesFormatter (lang, byteSymbol, separator) {
     // Figure out the "magnitude" of the rawValue: greater than 1024 => 1 / greater than 1024^2 => 2 / greater than 1024^3 => 3 ...
     const symbolIndex = IEC_SYMBOLS.findIndex((symbol, i) => {
       // Return last symbol of the array if we cannot find a symbol
-      return rawValue < 1024 ** (i + 1) || i === IEC_SYMBOLS.length - 1;
+      return rawValue < 1000 ** (i + 1) || i === IEC_SYMBOLS.length - 1;
     });
 
     // Use the symbolIndex to "rebase" the rawValue into the new base, 1250 => 1.22 / 1444000 => 1.377...
-    const rebasedValue = rawValue / 1024 ** symbolIndex;
+    const rebasedValue = rawValue / 1000 ** symbolIndex;
 
     // Truncate so the rounding applied by nf.format() does not mess with the symbol we selected
     // Ex: it prevents from returning 1,024.0 KiB if we're just under 1024^2 bytes and returns 1,023.9 KiB instead
