@@ -71,6 +71,7 @@ export class CcPricingEstimation extends withResizeObserver(LitElement) {
     return {
       selectedProducts: { type: Object },
       currency: { type: String },
+      _size: { type: String },
     };
   }
 
@@ -86,27 +87,94 @@ export class CcPricingEstimation extends withResizeObserver(LitElement) {
     this.currency = 'EUR';
   }
 
-  _renderSelProducts () {
-    return Object.values(this.selectedProducts).map((p) => {
-      return (p != null)
+  onResize ({ width }) {
+    this._size = width;
+    console.log(this._size);
+  }
+
+  _renderSmallSelProduct () {
+    return Object
+      .values(this.selectedProducts)
+      .map((product) => {
+        return (product !== null)
+          ? html`
+              <div class="plan">
+                 <div class="head-separator"></div> 
+                  <div class="qt-btn">
+                  <div class="add-item">
+                      <button class="change-qt-btn" @click=${() => this._onChangeQuantity(product, 'add')}>
+                          <img src=${new URL('../assets/circle.svg', import.meta.url).href} />
+                      </button>
+                  </div>
+                  <div class="remove-item">
+                      <button class="change-qt-btn" @click=${() => this._onChangeQuantity(product, 'remove')}>
+                          <img src=${new URL('../assets/minus.svg', import.meta.url).href} />
+                      </button>
+                  </div>
+                  </div>
+                  <div class="plan-name">${product.productName}</div>
+                  <div class="plan-infos">
+                  <div class="feature">
+                      <div class="name">${i18n('cc-pricing-estimation.size')}</div>
+                      <div>${product.item.name}</div>
+                  </div> 
+                  <div class="feature">
+                      <div class="name">${i18n('cc-pricing-estimation.quantity')}</div>
+                      <div class="number-align">${product.quantity}</div>
+                  </div>
+                  <div class="feature">
+                      <div class="name">${i18n('cc-pricing-estimation.price-name-daily')}</div>
+                      <div class="number-align">
+                          ${i18n('cc-pricing-table.price', {
+                              price: product.item.price.daily * product.quantity,
+                              code: this.currency,
+                          })}
+                      </div>
+                  </div>
+                  <div class="feature">
+                      <div class="name">${i18n('cc-pricing-estimation.price-name-monthly')}</div>
+                      <div class="number-align">
+                          ${i18n('cc-pricing-table.price', {
+                              price: product.item.price.monthly * product.quantity,
+                              code: this.currency,
+                          })}
+                  </div>
+                  </div>
+              </div> 
+               `
+          : '';
+      });
+  }
+
+  _renderBigSelProducts () {
+    return Object.values(this.selectedProducts).map((product) => {
+      return (product !== null)
         ? html`
-          <tr>
+        <tr>
             <td>
-              <button class="change-qt-btn"  @click=${() => this._onChangeQuantity(p, 'add')}>
-                <img src=${new URL('../assets/circle.svg', import.meta.url).href} />
-              </button>
-              <button class="change-qt-btn"  @click=${() => this._onChangeQuantity(p, 'remove')}>
-                <img src=${new URL('../assets/minus.svg', import.meta.url).href} />
-              </button>
+                <button class="change-qt-btn" @click=${() => this._onChangeQuantity(product, 'add')}>
+                    <img src=${new URL('../assets/circle.svg', import.meta.url).href} />
+                </button>
+                <button class="change-qt-btn" @click=${() => this._onChangeQuantity(product, 'remove')}>
+                    <img src=${new URL('../assets/minus.svg', import.meta.url).href} />
+                </button>
 
             </td>
-            <td>${p.productName}</td>
-            <td>${p.item.name}</td>
-            <td>${p.quantity}</td>
-            <td class="price-item">${i18n('cc-pricing-table.price', { price: p.item.price * p.quantity, code: this.currency })}</td>
-          </tr>`
+            <td>${product.productName}</td>
+            <td>${product.item.name}</td>
+            <td>${product.quantity}</td>
+            <td class="price-item">${i18n('cc-pricing-table.price', {
+                 price: product.item.price.daily * product.quantity,
+                 code: this.currency,
+             })}
+            </td>
+            <td class="price-item">${i18n('cc-pricing-table.price', {
+                 price: product.item.price.monthly * product.quantity,
+                 code: this.currency,
+             })}
+            </td>
+        </tr>`
         : '';
-
     });
   }
 
@@ -114,7 +182,7 @@ export class CcPricingEstimation extends withResizeObserver(LitElement) {
   _getTotalPrice () {
     let totalPrice = 0;
     for (const p of Object.values(this.selectedProducts)) {
-      if (p != null) totalPrice += p.item.price * p.quantity;
+      if (p != null) totalPrice += p.item.price.monthly * p.quantity;
     }
     return totalPrice;
   }
@@ -128,33 +196,52 @@ export class CcPricingEstimation extends withResizeObserver(LitElement) {
     }
   }
 
+  _renderSmallEstimation () {
+    return (Object.values(this.selectedProducts).length !== 0)
+      ? html`
+            <div class="container">
+                ${this._renderSmallSelProduct()}
+            </div>
+            `
+      : '';
+  }
+
+  _renderBigEstimation () {
+    return (Object.values(this.selectedProducts).length !== 0)
+      ? html`
+         <table>
+            <tr>
+                <th></th>
+                <th>${i18n('cc-pricing-estimation.product')}</th>
+                <th>${i18n('cc-pricing-estimation.size')}</th>
+                <th>${i18n('cc-pricing-estimation.quantity')}</th>
+                <th>${i18n('cc-pricing-estimation.price-name-daily')}</th>
+                <th>${i18n('cc-pricing-estimation.price-name-monthly')}</th>
+            </tr>
+                ${this._renderBigSelProducts()}
+         </table> 
+      `
+      : '';
+  }
+
   render () {
     return html`
+            ${(this._size > 600)
+                    ? this._renderBigEstimation()
+                    : this._renderSmallEstimation()
+            }
 
-      <table>
-        ${this._getTotalPrice() > 0
-            ? html`
-          <tr>
-            <th></th>
-            <th>${i18n('cc-pricing-estimation.product')}</th>
-            <th>${i18n('cc-pricing-estimation.size')}</th>
-            <th>${i18n('cc-pricing-estimation.quantity')}</th>
-            <th>${i18n('cc-pricing-estimation.priceName')}</th>
-          </tr>`
-            : ''
-        }
-        ${this._renderSelProducts()}
-      </table>
-
-      <div class="recap">
-        <div class="monthly-est">${i18n('cc-pricing-estimation.monthly-est')}:</div>
-        <div class="cost-price"> ${i18n('cc-pricing-estimation.price', { price: this._getTotalPrice(), code: this.currency })} </div>
-        <div class="recap-buttons">
-          <button class="contact-sales">${i18n('cc-pricing-estimation.sales')}</button>
-          <button class="sign-up">${i18n('cc-pricing-estimation.sign-up')}</button>
-        </div>
-      </div>
-    `;
+            <div class="recap">
+                <div class="monthly-est">${i18n('cc-pricing-estimation.monthly-est')}:</div>
+                <div class="cost-price">
+                    ${i18n('cc-pricing-estimation.price', { price: this._getTotalPrice(), code: this.currency })}
+                </div>
+                <div class="recap-buttons">
+                    <button class="contact-sales">${i18n('cc-pricing-estimation.sales')}</button>
+                    <button class="sign-up">${i18n('cc-pricing-estimation.sign-up')}</button>
+                </div>
+            </div>
+        `;
   }
 
   // DOCS: 11. LitElement's styles descriptor
@@ -163,138 +250,237 @@ export class CcPricingEstimation extends withResizeObserver(LitElement) {
     return [
       // language=CSS
       css`
-        :host {
-          display: block;
-        }
-        
-        table {
-          border-collapse: collapse;
-          border-spacing: 0;
-          font-family: arial, sans-serif;
-          width: 100%;
-        }
+                :host {
+                    display: block;
+                }
 
-        th {
-          background-color: #f6f6fb;
-          font-size: 1.25rem;
-          padding: 10px;
-          text-align: left;
-          text-shadow: 1px 1px 1px #fff;
-        }
+                /* Table properties for big screen size */
 
-        table  th:first-child {
-          border-radius: 10px 0 0 10px;
-        }
+                table {
+                    box-shadow: 0 0 0.5rem #aaa;
+                    border-collapse: collapse;
+                    border-spacing: 0;
+                    width: 100%;
+                }
 
-        table th:last-child {
-          border-radius: 0 10px 10px 0;
-        }
+                th {
+                    height: 4rem;
+                }
 
-        tr:nth-child(n+3) {
-          border-top: 0.10rem solid #e5e5e5;
-        }
+                th {
+                    background-color: #f6f6fb;
+                    text-shadow: 1px 1px 1px #fff;
+                }
 
-        td {
-          padding: 0.25rem;
-        }
+                tr:nth-child(n+3) {
+                    border-top: 0.1rem solid #e5e5e5;
+                }
 
-        .recap {
-          background-color: #3a3771;
-          border-radius: 0.2rem;
-          color: white;
-          display: grid;
-          gap: 1rem;
-          grid-template-areas: 
+                td {
+                    padding: 1rem;
+                }
+
+                /* Properties for small screen size */
+
+                .container {
+                    box-shadow: 0 0 0.5rem #aaa;
+                }
+                
+                .plan {
+                    display: grid;
+                    grid-gap: 0.25rem;
+                    grid-template-areas:
+                            "h-separator h-separator h-separator"
+                            "add-btn plan-name x"
+                             "txt txt txt";
+                    padding: 0.25rem;
+                }
+
+
+                .head-separator {
+                    grid-area: h-separator;
+                }
+                
+                .plan:not(:first-child) .head-separator {
+                    border-bottom: 0.10rem solid #e5e5e5;
+                }                
+                .qt-btn {
+                    align-self: start;
+                    grid-area: add-btn;
+                    justify-self: start;
+                    display:flex;
+                }
+
+                .remove-item {
+                    align-self: start;
+                    grid-area: remove-btn;
+                    justify-self: start; 
+                }
+               
+                .plan .plan-infos {
+                    display: flex;
+                    flex-wrap: wrap;
+                    grid-area: txt;
+                    padding: 0.5rem;
+                }
+
+                .plan-name {
+                    font-style: italic;
+                    font-weight: bold;
+                    grid-area: plan-name;
+                    align-self: center;
+                }
+
+                .plan .plan-name {
+                    justify-self: start;
+                }
+
+                .feature {
+                    display: flex;
+                    justify-content: space-between;
+                }
+
+                /*.feature:not(:first-child) {*/
+                /*    border-top: 1px solid #e5e5e5;*/
+                /*}*/
+
+                .plan .feature {
+                    border: none;
+                    display: contents;
+                }
+
+                .name {
+                    font-weight: bold;
+                }
+
+                .plan .name {
+                    flex-wrap: wrap;
+                    font-weight: normal;
+                }
+
+                .plan .name::after {
+                    content: ':';
+                    padding-right: 0.25rem;
+                }
+
+                .plan .feature:not(:last-child) .value::after {
+                    content: ',';
+                    padding-right: 0.5rem;
+                }
+
+                .plan-add {
+                    margin-bottom: 0.25rem;
+                    padding: 0.25rem;
+                }
+
+                /* Global properties */
+
+                .number-align {
+                    text-align: right;
+                }
+
+                .add-item-btn {
+                    background: transparent;
+                    border: none;
+                }
+
+
+                /* Recap */
+                
+                .recap {
+                    background-color: #3a3771;
+                    border-radius: 0.2rem;
+                    color: white;
+                    display: grid;
+                    gap: 1rem;
+                    grid-template-areas: 
                 "txt price"
                 "btn btn";
-          margin-top: 1rem;
-          padding: 1rem 0 1rem 1rem;
-        }
+                    margin-top: 1rem;
+                    padding: 1rem 0 1rem 1rem;
+                }
 
-        :host([w-gte-600]) .recap {
-          grid-template-areas: 
+                :host([w-gte-600]) .recap {
+                    grid-template-areas: 
                 "txt btn"
                 "price btn";
-        }
+                }
 
-        :host([w-gte-600]) .recap-buttons {
-          justify-self: right;
-        }
+                :host([w-gte-600]) .recap-buttons {
+                    justify-self: right;
+                }
 
-        .monthly-est {
-          align-self: center;
-          grid-area: txt;
-          justify-self: center;
+                .monthly-est {
+                    align-self: center;
+                    grid-area: txt;
+                    justify-self: center;
 
-        }
+                }
 
-        .cost-price {
-          align-self: center;
-          font-size: 2rem;
-          grid-area: price;
-          justify-self: center;
-        }
+                .cost-price {
+                    align-self: center;
+                    font-size: 2rem;
+                    grid-area: price;
+                    justify-self: center;
+                }
 
-        .recap-buttons {
-          align-self: center;
-          display: flex;
-          gap: 1.5rem;
-          grid-area: btn;
-          justify-self: center;
-          margin-right: 1.5rem; 
-        }
+                .recap-buttons {
+                    align-self: center;
+                    display: flex;
+                    gap: 1.5rem;
+                    grid-area: btn;
+                    justify-self: center;
+                    margin-right: 1.5rem;
+                }
 
-        .contact-sales {
-          border-color: transparent;
-          border-radius: 0.25rem;
-          color: #3a3871;
-          padding: 0.75rem 2.5rem 0.75rem 2.5rem; 
-        }
-        
-        .contact-sales:hover {
-          cursor: pointer;
-        }
-        
-        .sign-up {
-          background-color: transparent;
-          border-color: #cccccc;
-          border-radius: 0.25rem;
-          border-style: solid;
-          color: #ffffff;
-          padding: 0.75rem;
-        }
-        
-        .sign-up:hover {
-          background-color: rgba(255, 255, 255, 0.1);
-          cursor: pointer;
-        }
-        
-        .price-item {
-          text-align: right;
-        }
+                .contact-sales {
+                    border-color: transparent;
+                    border-radius: 0.25rem;
+                    color: #3a3871;
+                    padding: 0.75rem 2.5rem 0.75rem 2.5rem;
+                }
+
+                .contact-sales:hover {
+                    cursor: pointer;
+                    background-color: rgba(255, 255, 255, 0.8);
+                }
+
+                .sign-up {
+                    background-color: transparent;
+                    border-color: #cccccc;
+                    border-radius: 0.25rem;
+                    border-style: solid;
+                    color: #ffffff;
+                    padding: 0.75rem;
+                }
+
+                .sign-up:hover {
+                    background-color: rgba(255, 255, 255, 0.1);
+                    cursor: pointer;
+                }
+
+                .price-item {
+                    text-align: right;
+                }
 
 
-        .change-qt-btn {
-          background: transparent;
-          border: none;
-        }
+                .change-qt-btn {
+                    background: transparent;
+                    border: none;
+                }
 
-        .change-qt-btn img {
-          filter: brightness(100%);
-          height: 32px;
-          width: 32px;
-        }
+                .change-qt-btn img {
+                    filter: brightness(100%);
+                    height: 32px;
+                    width: 32px;
+                }
 
-        .change-qt-btn img:hover {
-          cursor: pointer;
-          filter: brightness(50%);
-          -moz-transition: all 0.75s ease;
-          -o-transition: all 0.75s ease;
-          -ms-transition: all 0.75s ease;
-          transition: all 0.75s ease;
-          transition: all 0.75s ease;
-        }
-      `,
+                .change-qt-btn img:hover {
+                    cursor: pointer;
+                    filter: brightness(50%);
+                    transition: all 0.75s ease;
+                }
+            `,
     ];
   }
 }

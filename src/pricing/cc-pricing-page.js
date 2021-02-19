@@ -62,7 +62,6 @@ export class CcPricingPage extends LitElement {
 
       const items = p.items.map((item) => {
         const { price } = priceList.runtime.find((pl) => pl.slug_id === item.price_id) || {};
-        console.log(item.name, price);
         return {
           ...item,
           price: {
@@ -155,7 +154,7 @@ export class CcPricingPage extends LitElement {
   }
 
   _onCurencyChanged ({ detail: currency }) {
-      console.log(currency);
+    console.log(currency);
     this._currency = currency;
   }
 

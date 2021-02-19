@@ -146,11 +146,11 @@ export class CcPricingTable extends withResizeObserver(LitElement) {
             <div class="plan-infos">
               ${this._renderSmallItemFeatures(item.features)}
               <div class="feature">
-                <div class="name">${i18n('cc-pricing-table.priceNameDaily')}</div>
+                <div class="name">${i18n('cc-pricing-table.price-name-daily')}</div>
                 <div class="number-align">${i18n('cc-pricing-table.price', { price: item.price.daily, code: this.currency })}</div>
               </div>
               <div class="feature">
-                <div class="name">${i18n('cc-pricing-table.priceNameMonthly')}</div>
+                <div class="name">${i18n('cc-pricing-table.price-name-monthly')}</div>
                 <div class="number-align">${i18n('cc-pricing-table.price', { price: item.price.monthly, code: this.currency })}</div>
               </div>
             </div>
@@ -186,8 +186,8 @@ export class CcPricingTable extends withResizeObserver(LitElement) {
           ${this.features.map((feature) => {
             return html`<th>${this._getFeatureName(feature.code)}</th>`;
     })}
-          <th>${i18n('cc-pricing-table.priceNameDaily')}</th>
-          <th>${i18n('cc-pricing-table.priceNameMonthly')}</th>
+          <th>${i18n('cc-pricing-table.price-name-daily')}</th>
+          <th>${i18n('cc-pricing-table.price-name-monthly')}</th>
         </tr>
         ${this._items.map((item) => html`
           <tr>

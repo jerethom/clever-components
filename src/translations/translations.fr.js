@@ -385,8 +385,8 @@ export const translations = {
   'cc-zone-input.private-map-warning': `Les zones privées n'apparaissent pas sur la carte.`,
   // cc-pricing-table
   'cc-pricing-table.price': ({ price, code }) => `${currencyFormatterCode(code).format(price)}`,
-  'cc-pricing-table.priceNameDaily': `Prix/Jour`,
-  'cc-pricing-table.priceNameMonthly': `Prix/Mois`,
+  'cc-pricing-table.price-name-daily': `Prix/Jour`,
+  'cc-pricing-table.price-name-monthly': `Prix/Mois`,
   'cc-pricing-table.addButton': 'Ajouter',
   // -> Feature name translation
   'cc-pricing-table.feature.backup': `Sauvegardes`,
@@ -417,7 +417,8 @@ export const translations = {
   'cc-pricing-estimation.product': `Produit`,
   'cc-pricing-estimation.size': `Taille`,
   'cc-pricing-estimation.quantity': `Quantité`,
-  'cc-pricing-estimation.priceName': `Prix`,
+  'cc-pricing-estimation.price-name-daily': `Prix/Jour`,
+  'cc-pricing-estimation.price-name-monthly': `Prix/Mois`,
   'cc-pricing-estimation.price': ({ price, code }) => `${currencyFormatterCode(code).format(price)}`,
   'cc-pricing-estimation.monthly-est': `Coût Mensuel Estimé`,
   'cc-pricing-estimation.sales': `Nous contacter`,
@@ -426,4 +427,8 @@ export const translations = {
   'cc-pricing-header.currency-text': 'Monnaie',
   'cc-pricing-header.est-cost': 'Coût Estimé',
   'cc-pricing-header.price': ({ price, code }) => `${currencyFormatterCode(code).format(price)}`,
+  // cc-pricing-cellar
+  'cc-pricing-cellar.bytes': ({ bytes }) => formatBytes(bytes),
+  'cc-pricing-cellar.per-month-text': `par Mois`,
+  'cc-pricing-cellar.format-price': ({ price }) => `${currencyFormatterCode('EUR').format(price)}`,
 };

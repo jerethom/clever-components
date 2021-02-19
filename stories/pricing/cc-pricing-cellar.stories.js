@@ -27,8 +27,7 @@ const conf = {
 // but no need to get exhaustive or too detailed ;-)
 export const defaultStory = makeStory(conf, {
   items: [
-    { one: 'Foo', two: true },
-    { one: 'Bar', two: false },
+    {  },
   ],
 });
 

@@ -17,7 +17,10 @@ const pgExample = {
   productName: 'Postgresql',
   item: {
     name: 'XS Small Space',
-    price: 17.5,
+    price: {
+      daily: 7.5,
+      monthly: 17.5,
+    },
     features: [{ name: 'Backups', value: 'Daily - 7 Retained' }, {
       name: 'Max DB size',
       value: '5 GB',
@@ -35,7 +38,10 @@ const mySQLExample = {
   productName: 'MySQL',
   item: {
     name: 'XXS Small Space',
-    price: 17.5,
+    price: {
+      daily: 7.5,
+      monthly: 17.5,
+    },
     features: [{ name: 'Backups', value: 'Daily - 7 Retained' }, {
       name: 'Max DB size',
       value: '5 GB',
