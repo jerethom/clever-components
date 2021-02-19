@@ -1,18 +1,6 @@
-// DOCS: Don't add a 'use strict', no need for them in modern JS modules.
-// DOCS: Put all imports here.
-// DOCS: Always keep the ".js" at the end when you reference a file directly [error in ESLint].
-// DOCS: We enforce import order [fixed by ESLint].
 import { css, html, LitElement } from 'lit-element';
-
-// DOCS: You may setup/init some stuffs here but this should be rare and most of the setup should happen in the component.
-const MY_AWESOME_CONST = 'foobar';
-
-// DOCS: You may setup/init constant data used when component is in skeleton state.
-const SKELETON_FOOBAR = [
-  { foo: '???????' },
-  { foo: '????' },
-  { foo: '???????' },
-];
+import { classMap } from 'lit-html/directives/class-map.js';
+import { i18n } from '../lib/i18n';
 
 /**
  * A component doing X and Y (one liner description of your component).
@@ -66,19 +54,8 @@ export class CcPricingCellar extends LitElement {
 
   static get properties () {
     return {
-      // Simple public properties/attributes
-      one: { type: String },
-      two: { type: Boolean },
-      three: { type: Array },
-      // If the property is multiple words and thus camelCase, you can force the default linked attribute to be kebab-case like this:
-      fooBarBaz: { type: String, attribute: 'foo-bar-baz' },
-      // Setting `reflect: true` will automatically update the attribute value when the property is changed.
-      // This way, if you use a CSS attribute selector like this `:host([enabled])`, you can have your styles react to property changes.
-      enabled: { type: Boolean, reflect: true },
-      // Private properties are prefixed with `_`
-      // If it's described here, a change will trigger render().
-      // Disable attribute for private properties.
-      _privateFoobar: { type: Boolean, attribute: false },
+      _cellarInfos: { type: Object },
+      _totalPrice: { type: Number },
     };
   }
 
@@ -86,114 +63,226 @@ export class CcPricingCellar extends LitElement {
 
   constructor () {
     super();
-    // Init default values for a clean component and for auto generated documentation.
-    this.one = '';
-    this.two = false;
-    // You don't need to init everything, there are lots of valid use of default nullish properties.
+    this._totalPrice = 0;
+    // One possibility is to have an object like below to render and check our "quota" in a generic way
+    // min max are TiB
+    // price is the price per GiB per month
+    this._cellarInfos = {
+      storage: [
+        {
+          minRange: 0,
+          maxRange: 1048576,
+          minRangeDisplay: 0,
+          maxRangeDisplay: 1099511627776,
+          price: 0.02,
+          highlighted: false,
+          totalPrice: {
+            price: 0,
+            visible: false,
+          },
+        },
+        {
+          minRange: 1048576,
+          maxRange: 26214400,
+          minRangeDisplay: 1099511627776,
+          maxRangeDisplay: 27487790694400,
+          price: 0.015,
+          highlighted: false,
+          totalPrice: {
+            price: 0,
+            visible: false,
+          },
+        },
+        {
+          minRange: 26214400,
+          // -1 to represent infinity
+          maxRange: -1,
+          minRangeDisplay: 27487790694400,
+          maxRangeDisplay: '∞',
+          price: 0.01,
+          highlighted: false,
+          totalPrice: {
+            price: 0,
+            hidden: false,
+          },
+        },
+      ],
+      traffic: [
+        {
+          minRange: 0,
+          maxRange: 10485760,
+          minRangeDisplay: 0,
+          maxRangeDisplay: 10995116277760,
+          price: 0.09,
+          highlighted: false,
+          totalPrice: {
+            price: 0,
+            visible: false,
+          },
+        },
+        {
+          minRange: 10485760,
+          // -1 to represent infinity
+          maxRange: -1,
+          minRangeDisplay: 10995116277760,
+          maxRangeDisplay: '∞',
+          price: 0.07,
+          highlighted: false,
+          totalPrice: {
+            price: 0,
+            visible: false,
+          },
+        },
+      ],
+    };
   }
 
   // DOCS: 3. Property getters
 
-  // Use the underscore prefix convention to store the value in the getter/setter.
-  // You probably don't need this if you didn't add a setter.
-  get one () {
-    return this._one;
-  }
-
-  // DOCS: 4. Property setters
-
-  // LitElement automatically creates getters/setters for your properties described in `static get properties ()`.
-  // If you need a setter to hook into a property,
-  // you will need to call LitElement's `this.requestUpdate('propName', oldVal)` to maintain the auto render mechanism.
-  // Use the underscore prefix convention to store the value in the getter/setter.
-  set one (newVal) {
-    const oldVal = this._one;
-    this._one = newVal;
-    this.requestUpdate('one', oldVal);
-    // Do something
-  }
-
   // DOCS: 5. Public methods
-
-  // It's rare, but your component may need to expose methods.
-  // Native DOM elements have methods to focus, submit form...
-  // Use JSDoc to document your method.
-  /**
-   * Documentation of this awesome method.
-   * @param {String} foo - Docs for foo.
-   * @param {Boolean} bar - Docs for bar.
-   */
-  publicMethod (foo, bar) {
-    // Do something
-  }
 
   // DOCS: 6. Private methods
 
-  // It's common to use private methods not to have too much code in `render()`.
-  // We often use this for i18n multiple cases.
-  _privateMethod () {
-    // Do something
+  // Might need to refactor later Can't we use reduce ???
+  _getTotal () {
+    const totalStorage = Object.values(this._cellarInfos.storage).find((elem) => elem.totalPrice.price !== 0);
+    const trafficStorage = Object.values(this._cellarInfos.traffic).find((elem) => elem.totalPrice.price !== 0);
+    return (totalStorage?.totalPrice.price ?? 0) + (trafficStorage?.totalPrice.price ?? 0);
+  }
+
+  _renderInfos (placeholder, infos) {
+    return infos.map((info) => {
+      return html`
+        <div class="${placeholder}-infos">
+          <div class="info">
+            <span class=${classMap({ highlighted: info.highlighted })}>
+              ${(info.maxRange !== -1)
+                ? html`${i18n('cc-pricing-cellar.bytes', { bytes: info.minRangeDisplay })} <= ${placeholder} < ${i18n('cc-pricing-cellar.bytes', { bytes: info.maxRangeDisplay })}`
+                : html`${i18n('cc-pricing-cellar.bytes', { bytes: info.minRangeDisplay })}<= ${placeholder} < ${info.maxRangeDisplay}`
+                  }
+                </span>
+              </div>
+              <div class="price">
+                ${i18n('cc-pricing-cellar.format-price', { price: info.price })}/ GiB / ${i18n('cc-pricing-cellar.per-month-text')}
+              </div>
+          <div class=${classMap({ price_estimation: true, visible: info.totalPrice.visible })}>
+          Price
+            ${i18n('cc-pricing-cellar.format-price', { price: info.totalPrice.price.toFixed(2) })}
+          </div>
+      `;
+    });
   }
 
   // DOCS: 7. Event handlers
 
-  // If you listen to an event in your `render()` function,
-  // use a private method to handle the event and prefix it with `_on`.
-  _onSomething () {
-    // Do something
+  // Shouldn't we use one function that the event handlers will use as they're doing basically the same ?
+
+  _onStorageChanged (e) {
+    const quantity = parseInt(e.target.value);
+    const newStorage = this._cellarInfos.storage.map((info) => {
+      if (info.maxRange !== -1) {
+        info.highlighted = quantity >= info.minRange && quantity < info.maxRange;
+        info.totalPrice.visible = info.highlighted;
+        info.totalPrice.price = (info.totalPrice.visible)
+          ? ((quantity / 1000) * info.price)
+          : 0;
+      }
+      else {
+        info.highlighted = quantity >= info.minRange;
+        info.totalPrice.visible = info.highlighted;
+        info.totalPrice.price = (info.totalPrice.visible)
+          ? ((quantity / 1000) * info.price)
+          : 0;
+      }
+      return info;
+    });
+    this._cellarInfos = { storage: newStorage, ...this._cellarInfos };
+    this._totalPrice = this._getTotal();
   }
 
-  // DOCS: 8. Custom element lifecycle callbacks
+  _onTrafficChanged (e) {
+    const storage = parseInt(e.target.value);
 
-  // It's rare, but you may need to directly into the custom element lifecycle callbacks.
-  // This is useful if you set intervals or listeners.
-  connectedCallback () {
-    super.connectedCallback();
-    // Do something
-  }
-
-  disconnectedCallback () {
-    super.disconnectedCallback();
-    // Do something
-  }
-
-  // DOCS: 9. LitElement lifecycle callbacks
-
-  // If you need to setup some code before the first render, use this.
-  // It's often needed if you component contains DOM managed by a 3rd party (chart, map...).
-  firstUpdated () {
-
+    const newTraffic = this._cellarInfos.traffic.map((info) => {
+      if (info.maxRange !== -1) {
+        info.highlighted = storage >= info.minRange && storage < info.maxRange;
+        info.totalPrice.visible = info.highlighted;
+        info.totalPrice.price = (info.totalPrice.visible)
+          ? ((storage / 1000) * info.price)
+          : 0;
+      }
+      else {
+        info.highlighted = storage >= info.minRange;
+        info.totalPrice.visible = info.highlighted;
+        info.totalPrice.price = (info.totalPrice.visible)
+          ? ((storage / 1000) * info.price)
+          : 0;
+      }
+      return info;
+    });
+    this._cellarInfos = { ...this._cellarInfos, traffic: newTraffic };
+    this._totalPrice = this._getTotal();
   }
 
   // DOCS: 10. LitElement's render method
 
-  // All UI components will need this function to describe the "HTML template".
   render () {
-
-    // Prepare booleans and format stuffs here
-
     return html`
-      <div>This is <code>cc-example-component</code></div>
-    `;
+            <div class="cellar-recap">
+                bla bla bla
+            </div>
+
+            <div class="title">Estimate your cellar cost</div>
+
+            <div class="title-storage">Storage</div>
+
+            <input type="number" @change=${this._onStorageChanged}> MiB
+            
+            ${this._renderInfos('storage', this._cellarInfos.storage)}
+            
+            <div class="title-traffic">Outbound Traffic</div>
+
+            <input type="number" @change=${this._onTrafficChanged}> MiB
+            
+            ${this._renderInfos('outbound traffic', this._cellarInfos.traffic)}
+            
+            <div class="total-recap">
+                Total
+            <div class="estimated-monthly">
+              ${i18n('cc-pricing-cellar.format-price', { price: this._totalPrice.toFixed(2) })}
+            </div>
+            </div>
+        `;
   }
 
-  // DOCS: 11. LitElement's styles descriptor
+  connectedCallback () {
+    super.connectedCallback();
+  }
 
   static get styles () {
-    // This array may contain style imports from shared files.
-    // Then you can defined your own component's styles.
     return [
       // language=CSS
       css`
-        :host {
-          /* You may use another display type but you need to define one. */
-          display: block;
-        }
-      `,
+                :host {
+                    /* You may use another display type but you need to define one. */
+                    display: block;
+                }
+                
+                .price_estimation {
+                    display: none;
+                }
+                
+                .visible {
+                  display: block;
+                }
+                
+                .highlighted {
+                  background-color:#FFFF00;
+                }
+                
+            `,
     ];
   }
 }
-
-// DOCS: 12. Define the custom element
 
 window.customElements.define('cc-pricing-cellar', CcPricingCellar);
