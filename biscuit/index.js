@@ -148,6 +148,10 @@ function update() {
       document
         .querySelector('cc-verifier-result')
          .content = result.verifier_result;
+
+      document
+        .querySelector('cc-verifier-content')
+         .content = result.verifier_world;
 }
 
 setup();

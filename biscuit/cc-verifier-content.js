@@ -7,18 +7,40 @@ export class CcVerifierContent extends LitElement {
 
   static get properties () {
     return {
-      content: { type: Object },
+      content: { type: Array },
     };
   }
 
   constructor () {
     super();
+    this.content = [];
   }
 
   render () {
-    const content = (this.content == null) ? 'no content yet' : this.content;
+    var facts_map = {};
+    for(let fact of this.content) {
+      if(facts_map[fact.name] == undefined) {
+        facts_map[fact.name] = [];
+      }
+      facts_map[fact.name].push(fact.terms);
+    }
+    console.log("will render facts");
+    console.log(facts_map);
+
     return html`
-      <div><pre>${content}</pre></div>
+      <div>${
+        Object.keys(facts_map).map(function(key, index) {
+
+          return html`<table><thead><tr><th>${key}</th></tr></thead><tbody>
+            ${facts_map[key].map((terms) => {
+
+              return html`<tr>
+                ${terms.map((term) => html`<td>${term}</td>`)}
+              </tr>`
+            })}
+          </tbody></table>`
+        })
+      }</div>
     `;
   }
 
@@ -29,6 +51,32 @@ export class CcVerifierContent extends LitElement {
         :host {
           display: block;
         }
+
+        table, td {
+    border: 1px solid #fff;
+    color: #000;
+    margin-bottom: 10px;
+}
+
+thead, tfoot {
+    background-color: #333;
+    color: #fff;
+}
+
+tbody tr:nth-child(odd){
+  background-color: #dfe4ed;
+}
+
+tbody tr:nth-child(even){
+  background-color: #fff;
+}
+
+td, th {
+  padding-left: 10px;
+  padding-right: 10px;
+  padding-top: 5px;
+  padding-bottom: 3px;
+}
       `,
     ];
   }
