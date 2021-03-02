@@ -10,9 +10,14 @@ ${biscuit}
   `;
 }
 
+// should generate blocks from an existing token
 export function getBlocks (biscuit) {
   return [
-    { code: 'foo' },
-    { code: 'bar' },
+    { code: 'foo($test) <- aa($test, "hello", 123);' },
+//    { code: 'bar' },
   ];
+}
+
+export function getVerifier (biscuit) {
+  return 'allow if true;';
 }
