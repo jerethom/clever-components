@@ -3,6 +3,9 @@ import { getDatalog, parse } from './wasm-biscuit.js';
 import { dispatchCustomEvent } from '../src/lib/events.js';
 import { codemirrorStyles } from './codemirror.css.js';
 import { codemirrorLinkStyles } from './lint.css.js';
+import 'codemirror/lib/codemirror.js';
+import 'codemirror/addon/mode/simple.js';
+import 'codemirror/addon/lint/lint.js';
 
 // déso
 const { CodeMirror } = globalThis;
@@ -81,19 +84,25 @@ export class CcDatalogEditor extends LitElement {
   static get properties () {
     return {
       datalog: { type: String },
+      parseErrors: { type: Array },
+      markers: { type: Array },
     };
   }
 
   constructor () {
     super();
+    this.parseErrors = [];
+    this.markers = [];
   }
 
   _onText (code) {
     const parsedResult = parse(code);
-    dispatchCustomEvent(this, 'update', parsedResult);
+    console.log("datalog-editor._onText: "+code);
+    dispatchCustomEvent(this, 'update', {code: code});
   }
 
   firstUpdated () {
+    console.log("setting up new CM");
     const textarea = this.shadowRoot.querySelector('textarea');
     this._cm = new CodeMirror.fromTextArea(textarea, {
       mode: 'biscuit',
@@ -101,18 +110,58 @@ export class CcDatalogEditor extends LitElement {
       lineNumbers: true,
       gutters: ['CodeMirror-lint-markers'],
       lintOnChange: false,
-      // lint: {
-      //   getAnnotations: get_editor_lints,
-      // },
+      lint: {
+         getAnnotations: () => {
+           this.parseErrors
+         },
+      },
     });
 
     this._cm.on('change', () => this._onText(this._cm.getValue()));
+
+    this._displayedMarks = [];
   }
 
   updated (changedProperties) {
+    console.log("datalog-editor update:");
+    console.log(changedProperties);
     super.updated(changedProperties);
     if (changedProperties.has('datalog')) {
-      this._cm.setValue(this.datalog);
+      if(this.datalog != this._cm.getValue()) {
+        this._cm.setValue(this.datalog);
+      }
+    }
+
+    if(changedProperties.has('parseErrors')) {
+      console.log("errors are now");
+      console.log(this.parseErrors);
+
+      var state = this._cm.state.lint;
+      if(state.hasGutter) this._cm.clearGutter("CodeMirror-lint-markers"); 
+      for (var i = 0; i < state.marked.length; ++i) {
+        state.marked[i].clear();
+      }
+      state.marked.length = 0;
+
+      this._cm.setOption("lint", false);
+      this._cm.setOption("lint", {
+         getAnnotations: () => {
+           return this.parseErrors;
+         },
+      });
+    }
+
+    if(changedProperties.has('markers')) {
+      for(let mark of this._displayedMarks) {
+        mark.clear();
+      }
+      this._displayedMarks = [];
+
+      for(let marker of this.markers) {
+        var mark = this._cm.markText(marker.from, marker.to, marker.options);
+        this._displayedMarks.push(mark);
+      }
+
     }
   }
 
