@@ -23,6 +23,10 @@ export class CcTokenEditor extends LitElement {
   constructor () {
     super();
     this._blocks = [];
+    for(const child of Array.from(this.children)) {
+      this._blocks.push({ code: child.innerText });
+    }
+
     this.parseErrors = [];
     this.markers = [];
   }
@@ -46,9 +50,9 @@ export class CcTokenEditor extends LitElement {
     console.log("cc-token-editor update");
     console.log(changedProperties);
     super.update(changedProperties);
-    if (changedProperties.has('biscuit')) {
+    /*if (changedProperties.has('biscuit')) {
       this._blocks = getBlocks(this.biscuit);
-    }
+    }*/
   }
 
   render () {

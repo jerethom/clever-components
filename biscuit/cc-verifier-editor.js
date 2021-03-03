@@ -21,7 +21,11 @@ export class CcVerifierEditor extends LitElement {
 
   constructor () {
     super();
-    this.code = getVerifier(null);
+    if(this.children[0] !=undefined) {
+      this.code = this.children[0].innerText;
+    } else {
+      this.code = "";
+    }
     this.parseErrors = [];
     this.markers = [];
   }

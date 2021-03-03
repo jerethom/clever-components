@@ -18,16 +18,32 @@
 <div class="token">
   <h2>token</h2>
   <cc-token-editor biscuit="mon-biscuit">
+    <code>
+user(#authority, 1234);
+    </code>
+    <code>
+check if resource(#ambient, "/files/test.txt");
+    </code>
   </cc-token-editor>
   <details>
     <summary>Token content</summary>
-    <cc-token-content></cc-token-content>
+    <cc-token-content>
+    </cc-token-content>
   </details>
 </div>
 
 <div class="verifier">
   <h2>verifier</h2>
-  <cc-verifier-editor></cc-verifier-editor>
+  <cc-verifier-editor>
+    <code>
+// verifier code
+resource(#ambient, "/files/test.txt");
+operation(#ambient, #read);
+test(123, #abc);
+test(456, #def);
+allow if true;
+    </code>
+  </cc-verifier-editor>
   <cc-verifier-result></cc-verifier-result>
   <details>
     <summary>Verifier content</summary>
