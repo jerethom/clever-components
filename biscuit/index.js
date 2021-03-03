@@ -43,6 +43,18 @@ async function setup() {
 
       update();
      });
+
+  for(const child of Array.from(document.querySelector('cc-token-editor').children)) {
+    state.token_blocks.push(child.innerText);
+  }
+
+  const child = document
+    .querySelector('cc-verifier-editor').children[0];
+  if(child != undefined) {
+    state.verifier_code = child.innerText;
+  }
+
+  update();
 }
 
 function update() {
