@@ -18,7 +18,6 @@ export class CcTokenContent extends LitElement {
   render () {
     const content = (this.content == null) ? 'no content yet' : this.content;
     return html`
-      <div><strong>The Content:</strong></div>
       <div><pre>${content}</pre></div>
     `;
   }
