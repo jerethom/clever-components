@@ -49,10 +49,15 @@ export class CcVerifierExample extends LitElement {
     var verifier_result = "";
     var verifier_world = [];
 
+    var code = this.code;
+    if(this.defaultAllow) {
+      code += "\n\nallow if true;";
+    }
+
     if(this.started) {
       var state = {
         token_blocks:[],
-        verifier_code: this.code,
+        verifier_code: code,
         query: "",
       };
       var result = execute(state);
