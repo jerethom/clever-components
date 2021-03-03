@@ -1,5 +1,4 @@
 import './cc-token-editor.js';
-import './cc-datalog-editor.js';
 import './cc-token-content.js';
 import './cc-verifier-editor.js';
 import './cc-verifier-result.js';

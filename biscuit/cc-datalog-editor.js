@@ -1,5 +1,4 @@
 import { css, html, LitElement } from 'lit-element';
-import { getDatalog, parse } from './wasm-biscuit.js';
 import { dispatchCustomEvent } from '../src/lib/events.js';
 import { codemirrorStyles } from './codemirror.css.js';
 import { codemirrorLinkStyles } from './lint.css.js';
@@ -96,7 +95,6 @@ export class CcDatalogEditor extends LitElement {
   }
 
   _onText (code) {
-    const parsedResult = parse(code);
     console.log("datalog-editor._onText: "+code);
     dispatchCustomEvent(this, 'update', {code: code});
   }

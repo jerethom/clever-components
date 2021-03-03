@@ -1,9 +1,5 @@
 import { css, html, LitElement } from 'lit-element';
-import 'codemirror/lib/codemirror.js';
-import 'codemirror/addon/mode/simple.js';
-import { codemirrorStyles } from './codemirror.css.js';
-import { codemirrorLinkStyles } from './lint.css.js';
-import { getVerifier } from './wasm-biscuit.js';
+import './cc-datalog-editor.js';
 import { dispatchCustomEvent } from '../src/lib/events.js';
 
 /**
@@ -57,8 +53,6 @@ export class CcVerifierEditor extends LitElement {
 
   static get styles () {
     return [
-      codemirrorStyles,
-      codemirrorLinkStyles,
       // language=CSS
       css`
         :host {
