@@ -26,9 +26,6 @@ async function setup() {
 
       state.token_blocks = token_blocks;
 
-      console.log("new state:");
-      console.log(state);
-
       update();
      });
 
@@ -36,9 +33,6 @@ async function setup() {
     .querySelector('cc-verifier-editor')
     .addEventListener('cc-verifier-editor:update', ({ detail: code }) => {
       state.verifier_code = code.code;
-
-      console.log("new state:");
-      console.log(state);
 
       update();
      });
@@ -58,8 +52,6 @@ async function setup() {
 
 function update() {
       var result = execute(state);
-      console.log("execution result:");
-      console.log(result);
 
       document
         .querySelector('cc-token-content')
@@ -122,8 +114,6 @@ function update() {
           });
         }
 
-        console.log("setting parseErrors to:");
-        console.log(parseErrors);
         document
           .querySelector('cc-verifier-editor')
           .parseErrors = parseErrors;
@@ -149,8 +139,6 @@ function update() {
             options: { css: css},
           });
         }
-        console.log("setting markers to:");
-        console.log(markers);
         document
           .querySelector('cc-verifier-editor')
           .markers = markers;

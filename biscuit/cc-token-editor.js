@@ -37,14 +37,10 @@ export class CcTokenEditor extends LitElement {
 
   _onUpdatedCode(block, code) {
     block.code = code;
-    console.log("updating blocks:");
-    console.log(this._blocks);
     dispatchCustomEvent(this, 'update', {blocks: this._blocks});
   }
 
   update (changedProperties) {
-    console.log("cc-token-editor update");
-    console.log(changedProperties);
     super.update(changedProperties);
   }
 

@@ -28,14 +28,9 @@ export class CcVerifierExample extends LitElement {
 
     this.defaultAllow = false;
     this.started = false;
-
-    console.log("VerifierExample constructor");
-    console.log(this.code);
   }
 
   _onUpdatedCode(code) {
-    console.log("VerifierExample._onUpdatedcode:");
-    console.log(code);
     this.code = code;
     dispatchCustomEvent(this, 'update', {code: code});
   }
@@ -55,15 +50,12 @@ export class CcVerifierExample extends LitElement {
     var verifier_world = [];
 
     if(this.started) {
-      console.log("render: started");
-
       var state = {
         token_blocks:[],
         verifier_code: this.code,
         query: "",
       };
       var result = execute(state);
-      console.log(result);
 
       verifier_result = result.verifier_result;
       verifier_world = result.verifier_world;
@@ -100,8 +92,6 @@ export class CcVerifierExample extends LitElement {
           });
         }
       }
-    } else {
-      console.log("render: not started");
     }
 
     return html`

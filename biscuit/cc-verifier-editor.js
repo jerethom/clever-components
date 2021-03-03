@@ -27,20 +27,15 @@ export class CcVerifierEditor extends LitElement {
   }
 
   _onUpdatedCode(code) {
-    console.log("cc-verifier-editor._onUpdatedCode: "+code);
     this.code = code;
     dispatchCustomEvent(this, 'update', {code: code});
   }
 
   update (changedProperties) {
-    console.log("cc-verifier-editor update");
-    console.log(changedProperties);
     super.update(changedProperties);
   }
 
   render () {
-    console.log("cc-verifier-editor.render");
-    console.log(this.parseErrors);
     return html`
       <cc-datalog-editor
         datalog=${this.code}

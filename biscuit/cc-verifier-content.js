@@ -24,8 +24,6 @@ export class CcVerifierContent extends LitElement {
       }
       facts_map[fact.name].push(fact.terms);
     }
-    console.log("will render facts");
-    console.log(facts_map);
 
     return html`
       <div>${

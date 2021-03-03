@@ -95,12 +95,10 @@ export class CcDatalogEditor extends LitElement {
   }
 
   _onText (code) {
-    console.log("datalog-editor._onText: "+code);
     dispatchCustomEvent(this, 'update', {code: code});
   }
 
   firstUpdated () {
-    console.log("setting up new CM");
     const textarea = this.shadowRoot.querySelector('textarea');
     this._cm = new CodeMirror.fromTextArea(textarea, {
       mode: 'biscuit',
@@ -121,8 +119,6 @@ export class CcDatalogEditor extends LitElement {
   }
 
   updated (changedProperties) {
-    console.log("datalog-editor update:");
-    console.log(changedProperties);
     super.updated(changedProperties);
     if (changedProperties.has('datalog')) {
       if(this.datalog != this._cm.getValue()) {
@@ -131,9 +127,6 @@ export class CcDatalogEditor extends LitElement {
     }
 
     if(changedProperties.has('parseErrors')) {
-      console.log("errors are now");
-      console.log(this.parseErrors);
-
       var state = this._cm.state.lint;
       if(state.hasGutter) this._cm.clearGutter("CodeMirror-lint-markers"); 
       for (var i = 0; i < state.marked.length; ++i) {

@@ -11,18 +11,12 @@
 <body>
 <h1>demo biscuit</h1>
 
-<div class="blabla">
-  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque feugiat dui at leo porta dignissim. Etiam ut purus ultrices, pulvinar tellus quis, cursus massa. Mauris dignissim accumsan ex, at vestibulum lectus fermentum id. Quisque nec magna arcu. Quisque in metus sed erat sodales euismod eget id purus. Sed sagittis rhoncus mauris. Ut sit amet urna ac nunc semper porta. Nam ut felis eu velit luctus rutrum.
-</div>
-
 <div class="token">
   <h2>token</h2>
   <cc-token-editor biscuit="mon-biscuit">
-    <code>
-user(#authority, 1234);
+    <code>user(#authority, 1234);
     </code>
-    <code>
-check if resource(#ambient, "/files/test.txt");
+    <code>check if resource(#ambient, "/files/test.txt");
     </code>
   </cc-token-editor>
   <details>
@@ -35,8 +29,7 @@ check if resource(#ambient, "/files/test.txt");
 <div class="verifier">
   <h2>verifier</h2>
   <cc-verifier-editor>
-    <code>
-// verifier code
+    <code>// verifier code
 resource(#ambient, "/files/test.txt");
 operation(#ambient, #read);
 test(123, #abc);
