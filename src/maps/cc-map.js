@@ -29,6 +29,7 @@ import { leafletStyles } from '../styles/leaflet.js';
  *
  * ```js
  * interface Point {
+ *   id?: string,              // Identifier
  *   lat: number,              // Latitude
  *   lon: number,              // Longitude
  *   marker: Marker,           // An object describing how to create a marker with a custom element.
@@ -211,7 +212,7 @@ export class CcMap extends withResizeObserver(LitElement) {
 
     // Create new markers or update them if there's already one with the same tag at the same coordinates
     for (const point of newPoints) {
-      const id = [point.lat, point.lon, point.marker.tag].join(',');
+      const id = [point.id, point.lat, point.lon, point.marker.tag].join(',');
       const old = this._pointsCache[id];
       if (old == null) {
         this._createMarker(id, point);

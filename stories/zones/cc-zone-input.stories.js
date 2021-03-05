@@ -65,6 +65,15 @@ const ZONES = [
     tags: ['region:eu', 'infra:ovh'],
   },
   {
+    name: 'rbx-hds',
+    country: 'France',
+    countryCode: 'FR',
+    city: 'Roubaix',
+    lat: 50.69,
+    lon: 3.17,
+    tags: ['region:eu', 'infra:ovh', 'cert:hds'],
+  },
+  {
     name: 'sgp',
     country: 'Singapore',
     countryCode: 'SG',
