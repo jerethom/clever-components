@@ -1,6 +1,6 @@
 import { css, html, LitElement } from 'lit-element';
 import { dispatchCustomEvent } from '../src/lib/events.js';
-import init, {execute} from "./wasm.js"
+import init, {execute} from "@clevercloud/biscuit-component-wasm"
 import './cc-verifier-editor.js';
 import './cc-verifier-result.js';
 import './cc-verifier-content.js';

@@ -40,6 +40,7 @@
   },
   "dependencies": {
     "@clevercloud/client": "^7.3.2",
+    "@clevercloud/biscuit-component-wasm": "^0.1.0",
     "chart.js": "^2.9.4",
     "chartjs-plugin-datalabels": "^0.7.0",
     "clipboard-copy": "^4.0.1",

@@ -62,6 +62,7 @@ export default {
         // used by chart.js
         'moment',
         'statuses',
+        'biscuit-component-wasm',
       ]),
     }),
   ],
