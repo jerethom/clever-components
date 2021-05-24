@@ -36,14 +36,14 @@ const hmrI18n = {
 
 export default {
   nodeResolve: true,
-  // watch: true,
+  watch: true,
   mimeTypes: {
     '**/*.md': 'js',
     '**/*.json': 'js',
     '.**/*.json': 'js',
   },
   plugins: [
-    storybookWdsPlugin(),
+    // storybookWdsPlugin(),
     hmrI18n,
     hmrPlugin({
       include: ['src/**/*'],
@@ -62,6 +62,9 @@ export default {
         // used by chart.js
         'moment',
         'statuses',
+        // used by clever-client
+        'oauth-1.0a',
+        'component-emitter',
       ]),
     }),
   ],

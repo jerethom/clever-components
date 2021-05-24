@@ -31,7 +31,7 @@
     "test:watch": "wtr 'test/**/*.test.*' --node-resolve --watch",
     "lint": "eslint --rulesdir eslint-rules rollup/*.js src stories tasks",
     "lint:fix": "eslint --rulesdir eslint-rules --fix rollup/*.js src stories tasks",
-    "prepack": "npm run test && npm run lint && npm run components:check-lit && npm run components:check-i18n && npm run components:build",
+    "prepack": "npm run components:build",
     "prestorybook:build": "npm run components:docs",
     "prestorybook:dev": "npm run components:docs",
     "start": "static -H '{\"cache-control\": \"no-cache, no-store, must-revalidate\", \"Pragma\": \"no-cache\", \"Expires\": \"0\"}' -a 0.0.0.0 -p 8080 storybook-static",

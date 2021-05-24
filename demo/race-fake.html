@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>race-fake</title>
+  <script type="module" src="./race-fake.js"></script>
+  <style>
+  body {
+    font-family: Arial, sans-serif;
+    margin: 1rem;
+  }
+
+  h1 {
+    text-align: center;
+    text-transform: uppercase;
+  }
+
+  button {
+    margin: 0.5rem 0.25rem;
+  }
+
+  .smart-component {
+    background-color: #eee;
+    padding: 1rem;
+    margin: 1rem 0;
+  }
+
+  .container:not(:empty) {
+    border: 1px dashed red;
+    padding: 0.5rem;
+    margin: 1rem 0;
+  }
+  </style>
+</head>
+<body>
+
+<h1>race-fake</h1>
+
+<div>
+  <button id="toggle">connect/disconnect</button>
+</div>
+
+<div class="buttons">
+  <button data-context='{ "delay": 150, "error": false }'>150ms success</button>
+  <button data-context='{ "delay": 2000, "error": false }'>2000ms success</button>
+  <button data-context='{ "delay": 4000, "error": false }'>4000ms success</button>
+  <button data-context='{ "delay": 150, "error": true }'>150ms failure</button>
+  <button data-context='{ "delay": 2000, "error": true }'>2000ms failure</button>
+  <button data-context='{ "delay": 4000, "error": true }'>4000ms failure</button>
+</div>
+
+<cc-smart-container>
+  <h2>With race conditions:</h2>
+  <div class="smart-component race">...</div>
+  <h2>Without race conditions:</h2>
+  <div class="smart-component norace">...</div>
+</cc-smart-container>
+
+<div class="container"></div>
+
+</body>
+</html>

@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>the demo</title>
+  <script type="module" src="./zones.js"></script>
+  <style>
+  body {
+    font-family: Arial, sans-serif;
+    margin: 1rem;
+  }
+
+  h1 {
+    text-align: center;
+    text-transform: uppercase;
+  }
+
+  .current-zone {
+    display: flex;
+    margin: 1rem auto;
+    max-width: 80rem;
+    width: 100%;
+  }
+
+  .current-zone span {
+    margin-right: 1rem;
+  }
+
+  cc-zone-input {
+    margin: 1rem auto;
+    height: 25rem;
+    max-width: 80rem;
+    width: 100%;
+  }
+
+  cc-zone-input:not(:defined) {
+    background-color: #fff;
+    border: 1px solid #bcc2d1;
+    border-radius: 0.25rem;
+    box-sizing: border-box;
+    display: grid;
+    grid-gap: 1rem;
+    grid-template-rows: auto 1fr;
+    overflow: hidden;
+    padding: 1rem;
+  }
+  </style>
+</head>
+<body>
+
+<h1>Zones demo</h1>
+
+<cc-smart-container>
+  <cc-zone-input></cc-zone-input>
+</cc-smart-container>
+
+<div class="current-zone">
+  <span>Current zone:</span>
+  <cc-zone mode="small"></cc-zone>
+</div>
+
+</body>
+</html>

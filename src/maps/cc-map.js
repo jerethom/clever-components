@@ -178,6 +178,8 @@ export class CcMap extends withResizeObserver(LitElement) {
   _updateHeatmap (newPoints) {
 
     if (!Array.isArray(newPoints)) {
+      this._heatLayer
+        .clearLayers();
       return;
     }
 

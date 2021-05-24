@@ -80,36 +80,6 @@ export class CcEnvVarForm extends LitElement {
     this._description = '';
   }
 
-  set context (context) {
-    if (context === 'env-var') {
-      this.heading = i18n('cc-env-var-form.heading.env-var');
-      this._description = i18n('cc-env-var-form.description.env-var', { appName: this.appName });
-      this.requestUpdate();
-    }
-    if (context === 'env-var-simple') {
-      this.heading = i18n('cc-env-var-form.heading.env-var');
-      this.requestUpdate();
-    }
-    if (context === 'exposed-config') {
-      this.heading = i18n('cc-env-var-form.heading.exposed-config');
-      this._description = i18n('cc-env-var-form.description.exposed-config', { appName: this.appName });
-      this.requestUpdate();
-    }
-  }
-
-  set variables (variables) {
-    this._initVariables = variables;
-    this._isPristine = true;
-    if (variables == null) {
-      this._currentVariables = null;
-      this._expertVariables = null;
-    }
-    else {
-      this._currentVariables = variables.sort((a, b) => a.name.localeCompare(b.name));
-      this._expertVariables = variables.sort((a, b) => a.name.localeCompare(b.name));
-    }
-  }
-
   _getModes () {
     return [
       { label: i18n('cc-env-var-form.mode.simple'), value: 'SIMPLE' },
@@ -186,6 +156,35 @@ export class CcEnvVarForm extends LitElement {
     if (!isFormDisabled) {
       this._onUpdateForm();
     }
+  }
+
+  update (changedProperties) {
+    if (changedProperties.has('context') || changedProperties.has('appName')) {
+      if (this.context === 'env-var') {
+        this.heading = i18n('cc-env-var-form.heading.env-var');
+        this._description = i18n('cc-env-var-form.description.env-var', { appName: this.appName });
+      }
+      if (this.context === 'env-var-simple') {
+        this.heading = i18n('cc-env-var-form.heading.env-var');
+      }
+      if (this.context === 'exposed-config') {
+        this.heading = i18n('cc-env-var-form.heading.exposed-config');
+        this._description = i18n('cc-env-var-form.description.exposed-config', { appName: this.appName });
+      }
+    }
+    if (changedProperties.has('variables')) {
+      this._initVariables = this.variables;
+      this._isPristine = true;
+      if (this.variables == null) {
+        this._currentVariables = null;
+        this._expertVariables = null;
+      }
+      else {
+        this._currentVariables = this.variables.sort((a, b) => a.name.localeCompare(b.name));
+        this._expertVariables = this.variables.sort((a, b) => a.name.localeCompare(b.name));
+      }
+    }
+    super.update(changedProperties);
   }
 
   render () {
@@ -310,7 +309,7 @@ export class CcEnvVarForm extends LitElement {
         .overlay-container {
           position: relative;
         }
-        
+
         cc-expand {
           /* We need to spread so the focus rings can be visible even with cc-expand default overflow:hidden */
           margin: -0.25rem;

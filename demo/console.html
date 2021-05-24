@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>console</title>
+  <script type="module" src="./console.js"></script>
+  <!--  <script type="module" src="../dist-cdn/console.js"></script>-->
+  <style>
+  body {
+    font-family: Arial, sans-serif;
+    margin: 1rem;
+  }
+
+  h1 {
+    text-align: center;
+    text-transform: uppercase;
+  }
+
+  .root {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: 13rem 13rem 1fr;
+    align-items: start;
+  }
+
+  cc-menu {
+    display: contents;
+  }
+
+  .list {
+    border: 1px solid rgb(188, 194, 209);
+    border-radius: 0.25rem;
+    margin: 0;
+    height: 100%;
+    box-sizing: border-box;
+  }
+
+  ul {
+    list-style: none;
+    margin: 0;
+    padding: 1rem;
+  }
+
+  li {
+    margin: 0;
+  }
+
+  li:not(:last-child) {
+    margin-bottom: 1rem;
+  }
+
+  button {
+    box-sizing: border-box;
+    font-size: 1rem;
+    padding: 0.25rem 0.5rem;
+    text-align: left;
+    width: 100%;
+  }
+
+  .main {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .tile {
+    border: 1px solid rgb(188, 194, 209);
+    border-radius: 0.25rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  </style>
+</head>
+<body>
+
+<h1>console</h1>
+
+<cc-smart-container class="root">
+  <cc-menu>
+    <div class="list"></div>
+    <div class="list"></div>
+  </cc-menu>
+  <cc-overview class="main" mode="app">
+    <cc-header-app class="head"></cc-header-app>
+    <cc-tile-instances></cc-tile-instances>
+    <cc-tile-scalability></cc-tile-scalability>
+    <cc-tile-deployments></cc-tile-deployments>
+    <cc-tile-consumption></cc-tile-consumption>
+    <cc-tile-status-codes></cc-tile-status-codes>
+    <cc-tile-requests></cc-tile-requests>
+    <cc-logsmap class="main"></cc-logsmap>
+  </cc-overview>
+</cc-smart-container>
+
+</body>
+</html>

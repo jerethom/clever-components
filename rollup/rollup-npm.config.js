@@ -22,8 +22,9 @@ export default {
     sourcemap: true,
     // We don't need the hash in this situation
     assetFileNames: 'assets/[name].[ext]',
+    preserveModules: true,
+    preserveModulesRoot: 'src',
   },
-  preserveModules: true,
   plugins: [
     clearPlugin({ outputDir }),
     json(),
