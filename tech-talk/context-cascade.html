@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>context-cascade</title>
+  <script type="module" src="./context.js"></script>
+  <style>
+  body {
+    font-family: Arial, sans-serif;
+    margin: 1rem;
+  }
+
+  h1 {
+    text-align: center;
+    text-transform: uppercase;
+  }
+
+  cc-smart-container {
+    display: contents;
+  }
+
+  .main {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(4, 1fr);
+    margin: 1rem auto;
+    width: 100%;
+  }
+
+  cc-tile-scalability:not(:defined),
+  cc-tile-deployments:not(:defined) {
+    background-color: #fff;
+    border: 1px solid #bcc2d1;
+    border-radius: 0.25rem;
+    box-sizing: border-box;
+    display: grid;
+    grid-gap: 1rem;
+    grid-template-rows: auto 1fr;
+    min-height: 9rem;
+    overflow: hidden;
+    padding: 1rem;
+  }
+  </style>
+</head>
+<body>
+
+<h1>context-cascade</h1>
+
+<cc-smart-container
+  context='{
+    "apiConfig": {
+      "API_HOST": "https://api.clever-cloud.com",
+      "API_OAUTH_TOKEN": "ba73c9b94e374be1a5a0e1a4bc63ea4f", "API_OAUTH_TOKEN_SECRET": "3b6c804c5ff94b989b808271fe3a44ff",
+      "OAUTH_CONSUMER_KEY": "T5nFjKeHH4AIlEveuGhB5S3xg8T19e", "OAUTH_CONSUMER_SECRET": "MgVMqTr6fWlf2M0tkC2MXOnhfqBWDT"
+    },
+    "ownerId": "user_56073b24-df12-4365-8894-746c5df815c3"
+  }'>
+
+  <h2>hsablonniere.com</h2>
+  <cc-smart-container class="main" context='{ "appId": "app_8502f178-0583-48e8-a600-8312bf43bd79" }'>
+    <cc-tile-scalability></cc-tile-scalability>
+    <cc-tile-deployments></cc-tile-deployments>
+  </cc-smart-container>
+
+  <h2>small-awesome</h2>
+  <cc-smart-container class="main" context='{ "appId": "app_0ab4a630-0ede-4564-baa1-d38012f44cea" }'>
+    <cc-tile-scalability></cc-tile-scalability>
+    <cc-tile-deployments></cc-tile-deployments>
+  </cc-smart-container>
+</cc-smart-container>
+
+</body>
+</html>

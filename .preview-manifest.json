@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "previews": [
+    {
+      "branch": "smart-docs",
+      "url": "https://clever-components-preview.cellar-c2.services.clever-cloud.com/smart-docs/index.html",
+      "updatedAt": "2021-05-17T12:29:14.204Z",
+      "commitId": "b05ec5bf9ef3cfc8212377187878491dd67d4551",
+      "author": "Hubert SABLONNIÈRE"
+    }
+  ]
+}

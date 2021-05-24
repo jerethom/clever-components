@@ -32,6 +32,7 @@ title: Changelog
 * Update @clevercloud/client
 * Pin Node.js and npm versions with volta and update lock to v2
 * Add smart definition for `<cc-env-var-form>` (exposed config)
+* Add smart definition for `<cc-env-var-form>` (env-var)
 
 ## 5.5.0 (2021-01-27)
 

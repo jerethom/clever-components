@@ -36,20 +36,20 @@ const hmrI18n = {
 
 export default {
   nodeResolve: true,
-  // watch: true,
+  watch: true,
   mimeTypes: {
     '**/*.md': 'js',
     '**/*.json': 'js',
     '.**/*.json': 'js',
   },
   plugins: [
-    storybookWdsPlugin(),
-    hmrI18n,
-    hmrPlugin({
-      include: ['src/**/*'],
-      presets: [presets.litElement],
-      // TODO maybe hook the translation system with HMR
-    }),
+    // storybookWdsPlugin(),
+    // hmrI18n,
+    // hmrPlugin({
+    //   include: ['src/**/*'],
+    //   presets: [presets.litElement],
+    //   // TODO maybe hook the translation system with HMR
+    // }),
     rollupAdapter(json()),
     commonjs({
       // the commonjs plugin is slow, list the required packages explicitly:
@@ -62,6 +62,9 @@ export default {
         // used by chart.js
         'moment',
         'statuses',
+        // used by clever-client
+        'oauth-1.0a',
+        'component-emitter',
       ]),
     }),
   ],

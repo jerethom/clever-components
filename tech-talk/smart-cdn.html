@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Smart CDN</title>
+  <script type="module" src="https://components.clever-cloud.com/load.js?lang=fr&version=6&components=cc-env-var-form"></script>
+</head>
+<body>
+<h1>Smart CDN</h1>
+
+<cc-env-var-form
+  app-name="Foobar backend python"
+  context="exposed-config"
+  variables='[
+    {"name":"EMPTY","value":""},
+    {"name":"ONE","value":"value ONE"},
+    {"name":"MULTI","value":"line one\nline two\nline three"},{"name":"TWO","value":"value TWO"}
+  ]'
+></cc-env-var-form>
+
+</body>
+</html>

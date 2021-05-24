@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>race-real</title>
+  <script type="module" src="./race-real.js"></script>
+  <style>
+  body {
+    font-family: Arial, sans-serif;
+    margin: 1rem;
+  }
+
+  h1 {
+    text-align: center;
+    text-transform: uppercase;
+  }
+
+  button {
+    margin: 0.5rem 0.25rem;
+  }
+
+  .smart-component {
+    background-color: #eee;
+    padding: 1rem;
+    margin: 1rem 0;
+  }
+
+  .container:not(:empty) {
+    border: 1px dashed red;
+    padding: 0.5rem;
+    margin: 1rem 0;
+  }
+  </style>
+</head>
+<body>
+
+<h1>race-real</h1>
+
+<div>
+  <button id="toggle">connect/disconnect</button>
+</div>
+
+<div class="buttons">
+  <button data-context='{ "size": 1, "error": false }'>[1] success</button>
+  <button data-context='{ "size": 300, "error": false }'>[300] success</button>
+  <button data-context='{ "size": 1000, "error": false }'>[1000] success</button>
+  <button data-context='{ "size": 1, "error": true }'>[1] failure</button>
+  <button data-context='{ "size": 300, "error": true }'>[300] failure</button>
+  <button data-context='{ "size": 1000, "error": true }'>[1000] failure</button>
+</div>
+
+<cc-smart-container>
+  <h2>With race conditions:</h2>
+  <div class="smart-component race">...</div>
+  <h2>Without race conditions:</h2>
+  <div class="smart-component norace">...</div>
+</cc-smart-container>
+
+<div class="container"></div>
+
+</body>
+</html>

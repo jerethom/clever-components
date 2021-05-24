@@ -119,6 +119,9 @@ export class CcZoneInput extends withResizeObserver(LitElement) {
   // 2. Private zones "scope:private"
   // 3. Alphanum sort on city
   _sortZones (zones) {
+    if (zones == null) {
+      return;
+    }
     return [...zones].sort((a, b) => {
       if (a == null || b == null) {
         return 0;
@@ -242,13 +245,14 @@ export class CcZoneInput extends withResizeObserver(LitElement) {
 
     const skeleton = (this.zones == null);
     const zones = skeleton ? SKELETON_ZONES : this.zones;
+    const points = skeleton ? [] : this._points;
 
     // Try to zoom out and center the map
     return html`
       <cc-map
         view-zoom="1"
         center-lat="35"
-        .points=${this._points}
+        .points=${points}
         ?loading=${skeleton && !this.error}
         @cc-map:marker-click=${(e) => this._onSelect(e.detail.name)}
         @cc-map:marker-enter=${(e) => this._onMarkerHover(e.detail.name)}

@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>multiple</title>
+  <script type="module" src="./multiple.js"></script>
+  <style>
+  body {
+    font-family: Arial, sans-serif;
+    margin: 1rem;
+  }
+
+  h1 {
+    text-align: center;
+    text-transform: uppercase;
+  }
+
+  .the-grid {
+    display: grid;
+    gap: 1rem;
+    grid-template-rows: repeat(4, max-content);
+    grid-auto-columns: 1fr;
+    grid-auto-flow: column;
+  }
+
+  .app-title {
+    font-weight: bold;
+    text-align: center;
+    font-size: 1.5rem;
+
+    background-size: contain;
+    background-repeat: no-repeat;
+  }
+
+  cc-smart-container {
+    /*display: grid;*/
+    /*gap: 1rem;*/
+    /*grid-template-columns: repeat(2, 1fr);*/
+  }
+
+  cc-tile-scalability:not(:defined),
+  cc-tile-deployments:not(:defined),
+  cc-tile-consumption:not(:defined),
+  cc-tile-requests:not(:defined),
+  cc-env-var-form:not(:defined) {
+    background-color: #fff;
+    border: 1px solid #bcc2d1;
+    border-radius: 0.25rem;
+    box-sizing: border-box;
+    display: grid;
+    grid-gap: 1rem;
+    grid-template-rows: auto 1fr;
+    min-height: 9rem;
+    overflow: hidden;
+    padding: 1rem;
+  }
+  </style>
+</head>
+<body>
+
+<h1>multiple</h1>
+
+<cc-smart-container class="the-grid">
+  <cc-smart-container context='{ "ownerId": "user_56073b24-df12-4365-8894-746c5df815c3" }'>
+    <cc-smart-container context='{ "appId": "app_0ab4a630-0ede-4564-baa1-d38012f44cea" }'>
+      <div class="app-title">????</div>
+      <cc-tile-scalability></cc-tile-scalability>
+      <cc-tile-deployments></cc-tile-deployments>
+      <!--      <cc-tile-requests></cc-tile-requests>-->
+      <cc-env-var-form context="env-var"></cc-env-var-form>
+    </cc-smart-container>
+    <cc-smart-container context='{ "appId": "app_8502f178-0583-48e8-a600-8312bf43bd79" }'>
+      <div class="app-title">????</div>
+      <cc-tile-scalability></cc-tile-scalability>
+      <cc-tile-deployments></cc-tile-deployments>
+      <!--      <cc-tile-requests></cc-tile-requests>-->
+      <cc-env-var-form context="env-var"></cc-env-var-form>
+    </cc-smart-container>
+  </cc-smart-container>
+  <cc-smart-container data-owner="cc" context='{ "ownerId": "orga_2eb942c9-ae24-40fe-9e4c-53c9982a02b1" }'>
+    <cc-smart-container context='{ "appId": "app_774bced6-5769-4fc7-ae3b-d7fa3f73edfc" }'>
+      <div class="app-title">????</div>
+      <cc-tile-scalability></cc-tile-scalability>
+      <cc-tile-deployments></cc-tile-deployments>
+      <!--      <cc-tile-requests></cc-tile-requests>-->
+      <cc-env-var-form context="env-var"></cc-env-var-form>
+    </cc-smart-container>
+    <cc-smart-container context='{ "appId": "app_870a5b7e-a9b6-49bf-9b2c-201b881d0eb9" }'>
+      <div class="app-title">????</div>
+      <cc-tile-scalability></cc-tile-scalability>
+      <cc-tile-deployments></cc-tile-deployments>
+      <!--      <cc-tile-requests></cc-tile-requests>-->
+      <cc-env-var-form context="env-var"></cc-env-var-form>
+    </cc-smart-container>
+  </cc-smart-container>
+</cc-smart-container>
+
+</body>
+</html>

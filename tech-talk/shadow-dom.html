@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>shadow-dom</title>
+  <script>
+
+  class HelloWorld extends HTMLElement {
+
+    constructor () {
+      super();
+      console.log('constructor');
+      this.attachShadow({ mode: 'open' });
+    }
+
+    connectedCallback () {
+      console.log('connectedCallback', this);
+      this.shadowRoot.innerHTML = `Hello <strong>World</strong>! <style>h1 { font-family: monospace; }</style>`;
+    }
+
+    disconnectedCallback () {
+      console.log('disconnectedCallback', this);
+    }
+  }
+
+  window.customElements.define('hello-world', HelloWorld);
+
+  </script>
+  <style>
+  strong {
+    color: tomato;
+  }
+  </style>
+</head>
+<body>
+
+<h1>shadow-dom</h1>
+
+<div>
+  <audio src="https://assets.clever-cloud.com/podcast/fr/Message_a_caractere_informatique_35.mp3" controls></audio>
+</div>
+
+<br>
+
+<hello-world></hello-world>
+
+</body>
+</html>

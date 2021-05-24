@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>custom-element</title>
+  <script>
+
+  class HelloWorld extends HTMLElement {
+
+    constructor () {
+      super();
+      console.log('constructor');
+    }
+
+    connectedCallback () {
+      console.log('connectedCallback', this);
+      this.innerHTML = `Hello <strong>World</strong> <style>h1 { font-family: monospace; }</style>!`;
+    }
+
+    disconnectedCallback () {
+      console.log('disconnectedCallback', this);
+    }
+  }
+
+  window.customElements.define('hello-world', HelloWorld);
+
+  </script>
+  <style>
+  strong {
+    color: red;
+  }
+  </style>
+</head>
+<body>
+
+<h1>custom-element</h1>
+
+<hello-world></hello-world>
+
+</body>
+</html>

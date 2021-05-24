@@ -88,6 +88,7 @@ export class CcLogsMap extends LitElement {
     this.viewZoom = 2;
     this._points = [];
     this._pointsByCoords = {};
+    this._timeoutIds = [];
   }
 
   /**
@@ -104,8 +105,18 @@ export class CcLogsMap extends LitElement {
       : 0;
 
     points.forEach((p, i) => {
-      setTimeout(() => this._addPoint(p), timeStep * i);
+      this._timeoutIds.push(setTimeout(() => this._addPoint(p), timeStep * i));
     });
+  }
+
+  clearPoints () {
+    console.log('clearPoints', this._timeoutIds);
+    for (const id of this._timeoutIds) {
+      clearTimeout(id);
+    }
+    this._timeoutIds = [];
+    this._pointsByCoords = {};
+    this._updatePoints();
   }
 
   _addPoint ({ lat, lon, count = 1, delay = 1000, tooltip }) {
@@ -122,13 +133,13 @@ export class CcLogsMap extends LitElement {
     this._updatePoints();
 
     // Schedule delete point
-    setTimeout(() => {
+    this._timeoutIds.push(setTimeout(() => {
       this._pointsByCoords[coords] = this._pointsByCoords[coords].filter((p) => p !== newPoint);
       if (this._pointsByCoords[coords].length === 0) {
         delete this._pointsByCoords[coords];
       }
       this._updatePoints();
-    }, delay);
+    }, delay));
   }
 
   _updatePoints () {
@@ -187,20 +198,21 @@ export class CcLogsMap extends LitElement {
   render () {
     return html`
       <cc-toggle
-        .choices=${this._getModes()}
-        value=${this.mode}
-        @cc-toggle:input=${this._onModeChange}
+          .choices=${this._getModes()}
+          value=${this.mode}
+          @cc-toggle:input=${this._onModeChange}
       ></cc-toggle>
       <cc-map
-        center-lat=${this.centerLat}
-        center-lon=${this.centerLon}
-        view-zoom=${this.viewZoom}
-        mode=${this.mode}
-        ?loading=${this.loading}
-        ?error=${this.error}
-        .heatmapPoints=${this.heatmapPoints}
-        .points=${this._points}
-      >${this._getLegend()}</cc-map>
+          center-lat=${this.centerLat}
+          center-lon=${this.centerLon}
+          view-zoom=${this.viewZoom}
+          mode=${this.mode}
+          ?loading=${this.loading}
+          ?error=${this.error}
+          .heatmapPoints=${this.heatmapPoints}
+          .points=${this._points}
+      >${this._getLegend()}
+      </cc-map>
     `;
   }
 
