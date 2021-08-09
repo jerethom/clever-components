@@ -568,6 +568,12 @@ export const translations = {
   'cc-tile-instances.status.running': `En ligne`,
   'cc-tile-instances.title': `Instances`,
   //#endregion
+  //#region cc-tile-metrics
+  'cc-tile-metrics.docs.msg': `pas de docs`,
+  'cc-tile-metrics.empty': `Pas de métriques. L'application est arrêtée.`,
+  'cc-tile-metrics.error': `Une erreur est survenue pendant le chargement des métriques.`,
+  'cc-tile-metrics.title': `Métriques`,
+  //#endregion
   //#region cc-tile-requests
   'cc-tile-requests.about-btn': `À propos de ce graphe...`,
   'cc-tile-requests.close-btn': `Afficher le graphe`,

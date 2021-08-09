@@ -555,6 +555,12 @@ export const translations = {
   'cc-tile-instances.status.running': `Running`,
   'cc-tile-instances.title': `Instances`,
   //#endregion
+  //#region cc-tile-metrics
+  'cc-tile-metrics.docs.msg': `no docs`,
+  'cc-tile-metrics.empty': `No metrics. Your app is stopped.`,
+  'cc-tile-metrics.error': `Something went wrong while loading metrics.`,
+  'cc-tile-metrics.title': `Metrics`,
+  //#endregion
   //#region cc-tile-requests
   'cc-tile-requests.about-btn': `About this chart...`,
   'cc-tile-requests.close-btn': `Display chart`,
