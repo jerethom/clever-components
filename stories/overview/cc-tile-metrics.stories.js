@@ -11,13 +11,16 @@ const conf = {
   component: 'cc-tile-metrics',
   // language=CSS
   css: `cc-tile-metrics {
-    margin-bottom: 1rem;
+      margin-bottom: 1rem;
   }`,
 };
 
 export const defaultStory = makeStory(conf, {
   items: [
-    { style: 'width: 275px', data: {} },
+    {
+      style: 'width: 275px',
+      cpuData: [['1628516642000000', 67.809205], ['1628516582000000', 52.734481], ['1628516522000000', 60.746737], ['1628516462000000', 55.748121], ['1628516402000000', 67.783902], ['1628516342000000', 67.794774], ['1628516282000000', 58.821264]],
+    },
   ],
 });
 

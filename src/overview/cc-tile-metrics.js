@@ -1,15 +1,13 @@
-import { Chart } from 'chart.js';
+import { Chart, TimeSeriesScale } from 'chart.js';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
 import { css, html, LitElement } from 'lit-element';
 import { classMap } from 'lit-html/directives/class-map.js';
 import { i18n } from '../lib/i18n.js';
 import { tileStyles } from '../styles/info-tiles.js';
-import { cache } from 'lit-html/directives/cache.js';
 import { skeletonStyles } from '../styles/skeleton.js';
 
 const closeSvg = new URL('../assets/close.svg', import.meta.url).href;
 const infoSvg = new URL('../assets/info.svg', import.meta.url).href;
-
 
 /**
  * A component doing X and Y (one liner description of your component).
@@ -54,19 +52,20 @@ export class CcTileMetrics extends LitElement {
 
   static get properties () {
     return {
-      data: { type: Object },
+      cpuData: { type: Array },
       error: { type: Boolean, reflect: true },
+      ramData: { type: Object },
       _skeleton: { type: Boolean, attribute: false },
       _empty: { type: Boolean, attribute: false },
       _docs: { type: Boolean, attribute: false },
     };
   }
 
-
   // DOCS: 2. Constructor
 
   constructor () {
     super();
+    this.cpuData = [];
     // Triggers setter (init _backgroundColor, _chartLabels, _data, _empty, _labels and _skeleton)
     this.error = null;
     this.statusCodes = null;
@@ -78,81 +77,37 @@ export class CcTileMetrics extends LitElement {
   }
 
   firstUpdated () {
-    this._ctx = this.renderRoot.getElementById('chart');
+    Chart.register(TimeSeriesScale);
+    this._ctx = this.renderRoot.getElementById('cpu_chart');
     this._chart = new Chart(this._ctx, {
       plugins: [ChartDataLabels],
       type: 'line',
       options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          title: {
-            display: true,
-            position: 'bottom',
-            padding: 0,
-            font: {
-              style: 'italic',
-              weight: 'normal',
-            },
-          },
-          legend: {
-            display: false,
-          },
-          tooltip: {
-            backgroundColor: '#000',
-            displayColors: false,
-            callbacks: {
-              title: ([context]) => {
-                const [from, to] = this._groupedData[context.dataIndex];
-                return i18n('cc-tile-requests.date-tooltip', { from, to });
-              },
-              label: (context) => {
-                const windowHours = (24 / this._barCount);
-                return i18n('cc-tile-requests.requests-nb', {
-                  value: this._groupedValues[context.dataIndex],
-                  windowHours,
-                });
-              },
-            },
-          },
-          datalabels: {
-            anchor: 'end',
-            offset: 0,
-            align: 'end',
-            formatter: (value, context) => {
-              return this._skeleton
-                ? '?'
-                : i18n('cc-tile-requests.requests-count', { requestCount: value });
-            },
-          },
-        },
         scales: {
           x: {
-            grid: {
-              drawOnChartArea: false,
-              drawTicks: false,
-            },
-            ticks: {
-              padding: 10,
-              font: { size: 12 },
-            },
+            display: false,
+            type: 'timeseries',
           },
           y: {
             display: false,
             beginAtZero: true,
           },
         },
-        animation: {
-          duration: 0,
+        plugins: {
+          legend: {
+            display: false,
+          },
         },
       },
     });
   }
 
-  // updated and not udpate because we need this._chart before
+  // updated and not update because we need this._chart before
   updated (changedProperties) {
-    if (changedProperties.has('data')) {
-      this._refreshChart();
+    if (changedProperties.has('cpuData')) {
+
+      this._chart.data = { datasets: [{ label: 'cpu', data: this.cpuData }] };
+
     }
     super.updated(changedProperties);
   }
@@ -171,13 +126,26 @@ export class CcTileMetrics extends LitElement {
           image=${displayDocs ? closeSvg : infoSvg}
           hide-text
           @cc-button:click=${this._onToggleDocs}
-        >${this._docs ? i18n('cc-tile-requests.close-btn') : i18n('cc-tile-requests.about-btn')}</cc-button>
+        >${this._docs ? i18n('cc-tile-requests.close-btn') : i18n('cc-tile-requests.about-btn')}
+        </cc-button>
       </div>
 
       <div class="tile_body ${classMap({ 'tile--hidden': !displayChart })}">
-        <div class="chart-container ${classMap({ skeleton: this._skeleton })}">
-          <canvas id="chart"></canvas>
+        <div class="category">
+          <div class="category-title">${i18n('cc-tile-metrics.cpu')}</div>
+          <div class="chart-container ${classMap({ skeleton: this._skeleton })}">
+            <canvas id="cpu_chart"></canvas>
+          </div>
+          <div class="current-percentage">90%</div>
         </div>
+        <div class="category">
+          <div class="category-title">${i18n('cc-tile-metrics.ram')}</div>
+          <div class="chart-container ${classMap({ skeleton: this._skeleton })}">
+            <canvas id="ram_chart"></canvas>
+          </div>
+          <div class="current-percentage">90%</div>
+        </div>
+
       </div>
 
       <div class="tile_message ${classMap({ 'tile--hidden': !displayEmpty })}">${i18n('cc-tile-metrics.empty')}</div>
@@ -196,56 +164,68 @@ export class CcTileMetrics extends LitElement {
       skeletonStyles,
       // language=CSS
       css`
-        .tile_title {
-          align-items: center;
-          display: flex;
-          justify-content: space-between;
-        }
 
-        .docs-toggle {
-          font-size: 1rem;
-          margin: 0 0 0 1rem;
-        }
+          .category {
+              display: flex;
+              justify-content: space-between;
+              color: #2d4287;
+              padding: 0.5em;
+          }
 
-        .chart-container {
-          /* We need this because: https://github.com/chartjs/Chart.js/issues/4156 */
-          height: 100%;
-          min-width: 0;
-          position: absolute;
-          width: 100%;
-        }
+          .category-title {
+              font-weight: bold;
+          }
 
-        /*
-          body, message and docs are placed in the same area (on top of each other)
-          this way, we can just hide the docs
-          and let the tile take at least the height of the docs text content
-         */
-        .tile_body,
-        .tile_message,
-        .tile_docs {
-          grid-area: 2 / 1 / 2 / 1;
-        }
+          .tile_title {
+              align-items: center;
+              display: flex;
+              justify-content: space-between;
+          }
 
-        /* See above why we hide instead of display:none */
-        .tile--hidden {
-          visibility: hidden;
-        }
+          .docs-toggle {
+              font-size: 1rem;
+              margin: 0 0 0 1rem;
+          }
 
-        .tile_body {
-          min-height: 140px;
-          position: relative;
-        }
+          .chart-container {
+              /* We need this because: https://github.com/chartjs/Chart.js/issues/4156 */
+              height: 100%;
+              min-width: 0;
+              position: absolute;
+              width: 100%;
+          }
 
-        .tile_docs {
-          align-self: center;
-          font-size: 0.9rem;
-          font-style: italic;
-        }
+          /*
+            body, message and docs are placed in the same area (on top of each other)
+            this way, we can just hide the docs
+            and let the tile take at least the height of the docs text content
+           */
+          .tile_body,
+          .tile_message,
+          .tile_docs {
+              grid-area: 2 / 1 / 2 / 1;
+          }
 
-        .tile_docs_link {
-          color: #2b96fd;
-          text-decoration: underline;
-        }
+          /* See above why we hide instead of display:none */
+          .tile--hidden {
+              visibility: hidden;
+          }
+
+          .tile_body {
+              min-height: 140px;
+              position: relative;
+          }
+
+          .tile_docs {
+              align-self: center;
+              font-size: 0.9rem;
+              font-style: italic;
+          }
+
+          .tile_docs_link {
+              color: #2b96fd;
+              text-decoration: underline;
+          }
       `,
     ];
   }
