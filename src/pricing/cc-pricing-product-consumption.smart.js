@@ -69,7 +69,7 @@ defineComponent({
 
 async function fetchProduct ({ signal, productId, zoneId = 'PAR', currencyCode = 'EUR' }) {
   const [priceSystem, currency] = await Promise.all([
-    fetchPriceSystem({ signal, zoneId }),
+    fetchPriceSystem({ signal, zoneId, liveAt: ((productId === 'pulsar') ? '2021-09-01T00:00:00.000Z' : null)}),
     fetchCurrency({ signal, currencyCode }),
   ]);
   if (productId === 'cellar') {

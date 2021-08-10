@@ -76,14 +76,14 @@ export function getPriceSystem (params) {
     method: 'get',
     url: `/v4/billing/price-system`,
     headers: { Accept: 'application/json' },
-    queryParams: pickNonNull(params, ['zone_id']),
+    queryParams: pickNonNull(params, ['zone_id', 'live_at']),
     // no body
   });
 }
 
-export function fetchPriceSystem ({ signal, zoneId }) {
+export function fetchPriceSystem ({ signal, zoneId, liveAt }) {
   // eslint-disable-next-line camelcase
-  return getPriceSystem({ zone_id: zoneId })
+  return getPriceSystem({ zone_id: zoneId, live_at: liveAt })
     .then(sendToApi({ signal, cacheDelay: ONE_DAY }));
 }
 
