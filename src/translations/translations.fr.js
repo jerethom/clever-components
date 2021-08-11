@@ -571,7 +571,7 @@ export const translations = {
   //#region cc-tile-metrics
   'cc-tile-metrics.cpu': `CPU`,
   'cc-tile-metrics.ram': `RAM`,
-  'cc-tile-metrics.docs.msg': `pas de docs`,
+  'cc-tile-metrics.docs.msg': `Template de doc blablabla`,
   'cc-tile-metrics.empty': `Pas de métriques. L'application est arrêtée.`,
   'cc-tile-metrics.error': `Une erreur est survenue pendant le chargement des métriques.`,
   'cc-tile-metrics.title': `Métriques`,

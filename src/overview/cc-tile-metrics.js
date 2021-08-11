@@ -83,13 +83,18 @@ export class CcTileMetrics extends LitElement {
       plugins: [ChartDataLabels],
       type: 'line',
       options: {
+        responsive: true,
+        maintainAspectRatio: true,
         scales: {
           x: {
-            display: false,
-            type: 'timeseries',
+            display: true,
+            type: 'time',
+            time: {
+              unit: 'hour',
+            },
           },
           y: {
-            display: false,
+            display: true,
             beginAtZero: true,
           },
         },
@@ -106,7 +111,16 @@ export class CcTileMetrics extends LitElement {
   updated (changedProperties) {
     if (changedProperties.has('cpuData')) {
 
-      this._chart.data = { datasets: [{ label: 'cpu', data: this.cpuData }] };
+      this._chart.data = {
+        labels: [1628516642000000,
+          1628516582000000,
+          1628516522000000,
+          1628516462000000,
+          1628516402000000,
+          1628516342000000,
+          1628516282000000],
+        datasets: [{ label: 'cpu', data: this.cpuData }],
+      };
 
     }
     super.updated(changedProperties);
@@ -187,13 +201,13 @@ export class CcTileMetrics extends LitElement {
               margin: 0 0 0 1rem;
           }
 
-          .chart-container {
+          /*.chart-container {*/
               /* We need this because: https://github.com/chartjs/Chart.js/issues/4156 */
-              height: 100%;
-              min-width: 0;
-              position: absolute;
-              width: 100%;
-          }
+              /*height: 100%;*/
+              /*min-width: 0;*/
+              /*position: absolute;*/
+              /*width: 100%;*/
+          /*}*/
 
           /*
             body, message and docs are placed in the same area (on top of each other)
