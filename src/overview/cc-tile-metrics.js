@@ -1,5 +1,4 @@
-import { Chart, TimeSeriesScale } from 'chart.js';
-import ChartDataLabels from 'chartjs-plugin-datalabels';
+import { Chart, registerables } from 'chart.js';
 import { css, html, LitElement } from 'lit-element';
 import { classMap } from 'lit-html/directives/class-map.js';
 import { i18n } from '../lib/i18n.js';
@@ -48,13 +47,11 @@ const infoSvg = new URL('../assets/info.svg', import.meta.url).href;
  */
 export class CcTileMetrics extends LitElement {
 
-  // DOCS: 1. LitElement's properties descriptor
-
   static get properties () {
     return {
       cpuData: { type: Array },
       error: { type: Boolean, reflect: true },
-      ramData: { type: Object },
+      ramData: { type: Array },
       _skeleton: { type: Boolean, attribute: false },
       _empty: { type: Boolean, attribute: false },
       _docs: { type: Boolean, attribute: false },
@@ -65,9 +62,10 @@ export class CcTileMetrics extends LitElement {
 
   constructor () {
     super();
-    this.cpuData = [];
+    // this.cpuData = [];
     // Triggers setter (init _backgroundColor, _chartLabels, _data, _empty, _labels and _skeleton)
     this.error = null;
+    // this.ramData = [];
     this.statusCodes = null;
     this._docs = false;
   }
@@ -77,24 +75,20 @@ export class CcTileMetrics extends LitElement {
   }
 
   firstUpdated () {
-    Chart.register(TimeSeriesScale);
-    this._ctx = this.renderRoot.getElementById('cpu_chart');
-    this._chart = new Chart(this._ctx, {
-      plugins: [ChartDataLabels],
+    Chart.register(...registerables);
+
+    this._cpuCtx = this.renderRoot.getElementById('cpu_chart');
+    this._ramCtx = this.renderRoot.getElementById('ram_chart');
+
+    this._cpuChart = new Chart(this._cpuCtx, {
       type: 'line',
       options: {
-        responsive: true,
-        maintainAspectRatio: true,
         scales: {
           x: {
-            display: true,
-            type: 'time',
-            time: {
-              unit: 'hour',
-            },
+            display: false,
           },
           y: {
-            display: true,
+            display: false,
             beginAtZero: true,
           },
         },
@@ -105,24 +99,69 @@ export class CcTileMetrics extends LitElement {
         },
       },
     });
+
+    this._ramChart = new Chart(this._ramCtx, {
+      type: 'line',
+      options: {
+        scales: {
+          x: {
+            display: false,
+          },
+          y: {
+            display: false,
+            beginAtZero: true,
+          },
+        },
+        plugins: {
+          legend: {
+            display: false,
+          },
+        },
+      },
+    });
+
   }
 
   // updated and not update because we need this._chart before
   updated (changedProperties) {
+
+    this._skeleton = (this.cpuData == null || this.ramData == null);
+
     if (changedProperties.has('cpuData')) {
 
-      this._chart.data = {
-        labels: [1628516642000000,
-          1628516582000000,
-          1628516522000000,
-          1628516462000000,
-          1628516402000000,
-          1628516342000000,
-          1628516282000000],
-        datasets: [{ label: 'cpu', data: this.cpuData }],
+      const labels = this.cpuData.map((item) => item.label);
+      const values = this.cpuData.map((item) => item.value);
+
+      this._cpuChart.data = {
+        labels,
+        datasets: [{
+          data: values,
+          backgroundColor: 'rgb(45, 66, 135)',
+          borderColor: 'rgb(45, 66, 135)',
+        }],
       };
 
+      this._cpuChart.update();
+      this._cpuChart.resize();
     }
+    if (changedProperties.has('ramData')) {
+
+      const labels = this.ramData.map((item) => item.label);
+      const values = this.ramData.map((item) => item.value);
+
+      this._ramChart.data = {
+        labels,
+        datasets: [{
+          data: values,
+          backgroundColor: 'rgb(45, 66, 135)',
+          borderColor: 'rgb(45, 66, 135)',
+        }],
+      };
+
+      this._ramChart.update();
+      this._ramChart.resize();
+    }
+
     super.updated(changedProperties);
   }
 
@@ -146,18 +185,22 @@ export class CcTileMetrics extends LitElement {
 
       <div class="tile_body ${classMap({ 'tile--hidden': !displayChart })}">
         <div class="category">
-          <div class="category-title">${i18n('cc-tile-metrics.cpu')}</div>
+          <div class="category-title ${classMap({ skeleton: this._skeleton })}">${i18n('cc-tile-metrics.cpu')}</div>
           <div class="chart-container ${classMap({ skeleton: this._skeleton })}">
             <canvas id="cpu_chart"></canvas>
           </div>
-          <div class="current-percentage">90%</div>
+          ${this.cpuData != null ? html`
+            <div class="current-percentage">${i18n('cc-tile-metrics.percent', { percent: this.cpuData[this.cpuData.length - 1].value / 100 })}</div>
+          ` : ''}
         </div>
         <div class="category">
-          <div class="category-title">${i18n('cc-tile-metrics.ram')}</div>
+          <div class="category-title ${classMap({ skeleton: this._skeleton })}">${i18n('cc-tile-metrics.ram')}</div>
           <div class="chart-container ${classMap({ skeleton: this._skeleton })}">
             <canvas id="ram_chart"></canvas>
           </div>
-          <div class="current-percentage">90%</div>
+          ${this.ramData != null ? html`
+            <div class="current-percentage">${i18n('cc-tile-metrics.percent', { percent: this.ramData[this.ramData.length - 1].value / 100 })}</div>
+          ` : ''}
         </div>
 
       </div>
@@ -181,13 +224,18 @@ export class CcTileMetrics extends LitElement {
 
           .category {
               display: flex;
-              justify-content: space-between;
               color: #2d4287;
-              padding: 0.5em;
+              justify-content: space-between;
+              flex-wrap: wrap;
           }
 
           .category-title {
               font-weight: bold;
+          }
+
+          .current-percentage {
+              font-weight: bold;
+              font-size: 1.25em;
           }
 
           .tile_title {
@@ -201,13 +249,13 @@ export class CcTileMetrics extends LitElement {
               margin: 0 0 0 1rem;
           }
 
-          /*.chart-container {*/
-              /* We need this because: https://github.com/chartjs/Chart.js/issues/4156 */
-              /*height: 100%;*/
-              /*min-width: 0;*/
-              /*position: absolute;*/
-              /*width: 100%;*/
-          /*}*/
+          .chart-container {
+              /*We need this because: https://github.com/chartjs/Chart.js/issues/4156 */
+              height: 100%;
+              min-width: 0;
+              position: absolute;
+              width: 100%;
+          }
 
           /*
             body, message and docs are placed in the same area (on top of each other)

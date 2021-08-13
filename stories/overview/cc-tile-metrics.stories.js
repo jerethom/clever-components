@@ -15,20 +15,35 @@ const conf = {
   }`,
 };
 
+const baseItems = [
+  { style: 'width: 275px' },
+  { style: 'width: 380px' },
+  { style: 'width: 540px' },
+];
+
 export const defaultStory = makeStory(conf, {
-  items: [
-    {
+  items:
+    baseItems.map((item) => ({
+      ...item,
       cpuData: [
-        67.809205,
-        52.734481,
-        60.746737,
-        55.748121,
-        67.783902,
-        67.794774,
-        58.821264,
+        { label: 1628516642000000, value: 67.809205 },
+        { label: 1628516582000000, value: 52.734481 },
+        { label: 1628516522000000, value: 60.746737 },
+        { label: 1628516462000000, value: 55.748121 },
+        { label: 1628516402000000, value: 67.783902 },
+        { label: 1628516342000000, value: 67.794774 },
+        { label: 1628516282000000, value: 58.821264 },
       ],
-    },
-  ],
+      ramData: [
+        { label: 1628516642000000, value: 67.809205 },
+        { label: 1628516582000000, value: 52.734481 },
+        { label: 1628516522000000, value: 60.746737 },
+        { label: 1628516462000000, value: 55.748121 },
+        { label: 1628516402000000, value: 67.783902 },
+        { label: 1628516342000000, value: 67.794774 },
+        { label: 1628516282000000, value: 58.821264 },
+      ],
+    })),
 });
 
 // If your component contains remote data,

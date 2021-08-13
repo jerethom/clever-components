@@ -500,6 +500,7 @@ export const translations = {
   'cc-tile-metrics.docs.msg': `Template de doc blablabla`,
   'cc-tile-metrics.empty': `Pas de métriques. L'application est arrêtée.`,
   'cc-tile-metrics.error': `Une erreur est survenue pendant le chargement des métriques.`,
+  'cc-tile-metrics.percent': ({ percent }) => formatPercent(lang, percent),
   'cc-tile-metrics.title': `Métriques`,
   //#endregion
   //#region cc-tile-requests
