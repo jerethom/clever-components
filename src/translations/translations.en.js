@@ -561,6 +561,7 @@ export const translations = {
   'cc-tile-metrics.docs.msg': `Placeholder doc`,
   'cc-tile-metrics.empty': `No metrics. Your app is stopped.`,
   'cc-tile-metrics.error': `Something went wrong while loading metrics.`,
+  'cc-tile-metrics.percent': ({ percent }) => formatPercent(lang, percent),
   'cc-tile-metrics.title': `Metrics`,
   //#endregion
   //#region cc-tile-requests
