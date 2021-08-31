@@ -83,6 +83,9 @@ export class CcTileMetrics extends LitElement {
     this._cpuChart = new Chart(this._cpuCtx, {
       type: 'line',
       options: {
+        // We don't need the responsive mode because we already observe resize to compute bar count
+        responsive: false,
+        maintainAspectRatio: false,
         scales: {
           x: {
             display: false,
@@ -103,6 +106,13 @@ export class CcTileMetrics extends LitElement {
     this._ramChart = new Chart(this._ramCtx, {
       type: 'line',
       options: {
+        // We don't need the responsive mode because we already observe resize to compute bar count
+        responsive: false,
+        maintainAspectRatio: false,
+        radius: 0,
+        interaction: {
+          intersect: false,
+        },
         scales: {
           x: {
             display: false,
@@ -186,17 +196,21 @@ export class CcTileMetrics extends LitElement {
       <div class="tile_body ${classMap({ 'tile--hidden': !displayChart })}">
         <div class="category">
           <div class="category-title ${classMap({ skeleton: this._skeleton })}">${i18n('cc-tile-metrics.cpu')}</div>
-          <div class="chart-container ${classMap({ skeleton: this._skeleton })}">
-            <canvas id="cpu_chart"></canvas>
-          </div>
+         <div class="foobar-wrapper">
+           <div class="chart-container ${classMap({ skeleton: this._skeleton })}">
+             <canvas id="cpu_chart"></canvas>
+           </div>
+         </div>
           ${this.cpuData != null ? html`
             <div class="current-percentage">${i18n('cc-tile-metrics.percent', { percent: this.cpuData[this.cpuData.length - 1].value / 100 })}</div>
           ` : ''}
         </div>
         <div class="category">
           <div class="category-title ${classMap({ skeleton: this._skeleton })}">${i18n('cc-tile-metrics.ram')}</div>
-          <div class="chart-container ${classMap({ skeleton: this._skeleton })}">
-            <canvas id="ram_chart"></canvas>
+          <div class="foobar-wrapper">
+            <div class="chart-container ${classMap({ skeleton: this._skeleton })}">
+              <canvas id="ram_chart"></canvas>
+            </div>
           </div>
           ${this.ramData != null ? html`
             <div class="current-percentage">${i18n('cc-tile-metrics.percent', { percent: this.ramData[this.ramData.length - 1].value / 100 })}</div>
@@ -223,10 +237,8 @@ export class CcTileMetrics extends LitElement {
       css`
 
           .category {
-              display: flex;
+              display: contents;
               color: #2d4287;
-              justify-content: space-between;
-              flex-wrap: wrap;
           }
 
           .category-title {
@@ -247,6 +259,11 @@ export class CcTileMetrics extends LitElement {
           .docs-toggle {
               font-size: 1rem;
               margin: 0 0 0 1rem;
+          }
+          
+          .foobar-wrapper {
+              position: relative;
+              height: 2em;
           }
 
           .chart-container {
@@ -274,8 +291,9 @@ export class CcTileMetrics extends LitElement {
           }
 
           .tile_body {
-              min-height: 140px;
-              position: relative;
+              grid-template-columns: min-content 1fr min-content;
+              gap: 1em;
+              align-items: center;
           }
 
           .tile_docs {
