@@ -1,5 +1,9 @@
 .components-docs
 dist
 dist-cdn
+dist-cdn-all/custom-config-*
 node_modules
 storybook-static
+.clever-components-previews.s3cfg
+.preview-index.html
+.preview-manifest.json
