@@ -11,6 +11,7 @@ export function applyTemplate (context) {
 
 function renderContent (context) {
 
+  // language=HTML
   return `
 
 <!doctype html>
@@ -57,6 +58,11 @@ function renderContent (context) {
     <td class="group" colspan="5">Episode 104: load data quickly</td>
   </tr>
   ${renderLine('Enable HTTP/2', '/@ce=br/custom-config-all-bundle-treeshake-english-shim-min-js-html-css-svg')}
+
+  <tr>
+    <td class="category" colspan="5">Specials: The dedicated bundle</td>
+  </tr>
+  ${renderLine('Dedicated all in one bundle (all minified, treeshaken, english)', '/custom-config-dedicated-bundle-treeshake-english-min-js-html-css-svg')}
 
   <tr>
     <td class="category" colspan="5">Season 2: Components à la carte with ES modules</td>

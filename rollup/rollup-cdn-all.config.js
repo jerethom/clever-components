@@ -96,7 +96,6 @@ export function config (outputDir, input, options = []) {
 
 export default [
 
-  // Season 1: The mega fat bundle
   // Episode 101: small code to parse
   config('dist-cdn-all/custom-config-all-bundle-raw', { 'all-bundle': 'src/all.js' }, []),
   config('dist-cdn-all/custom-config-all-bundle-min-js', { 'all-bundle': 'src/all.js' }, [MIN_JS]),
@@ -110,6 +109,12 @@ export default [
   // => gzip and brotli are done via server config
   // Episode 104: load data quickly
   // => HTTP/2 is done via server config
+
+  // Specials: The dedicated bundle
+  config('dist-cdn-all/custom-config-dedicated-bundle-treeshake-english-min-js-html-css-svg', { 'simple-bundle': 'src/simple-en.js' }, [MIN_JS, MIN_HTML_CSS, MIN_SVG, TREESHAKE]),
+  config('dist-cdn-all/custom-config-dedicated-bundle-treeshake-english-min-js-html-css-svg', { 'multiple-one-bundle': 'src/multiple-one-en.js' }, [MIN_JS, MIN_HTML_CSS, MIN_SVG, TREESHAKE]),
+  config('dist-cdn-all/custom-config-dedicated-bundle-treeshake-english-min-js-html-css-svg', { 'multiple-two-bundle': 'src/multiple-two-en.js' }, [MIN_JS, MIN_HTML_CSS, MIN_SVG, TREESHAKE]),
+  config('dist-cdn-all/custom-config-dedicated-bundle-treeshake-english-min-js-html-css-svg', { 'multiple-three-bundle': 'src/multiple-three-en.js' }, [MIN_JS, MIN_HTML_CSS, MIN_SVG, TREESHAKE]),
 
   // Season 2: Components à la carte with ES modules
   config('dist-cdn-all/custom-config-split-raw', splitInputs, [PRESERVE_MODULES]),
