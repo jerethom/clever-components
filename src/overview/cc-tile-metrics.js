@@ -145,6 +145,7 @@ export class CcTileMetrics extends LitElement {
       this._cpuChart.data = {
         labels,
         datasets: [{
+          fill: 'origin',
           data: values,
           backgroundColor: 'rgb(45, 66, 135)',
           borderColor: 'rgb(45, 66, 135)',
@@ -162,6 +163,7 @@ export class CcTileMetrics extends LitElement {
       this._ramChart.data = {
         labels,
         datasets: [{
+          fill: 'origin',
           data: values,
           backgroundColor: 'rgb(45, 66, 135)',
           borderColor: 'rgb(45, 66, 135)',

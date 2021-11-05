@@ -31,8 +31,8 @@ export const defaultStory = makeStory(conf, {
         { label: 1628516522000000, value: 60.746737 },
         { label: 1628516462000000, value: 55.748121 },
         { label: 1628516402000000, value: 67.783902 },
-        { label: 1628516342000000, value: 67.794774 },
         { label: 1628516282000000, value: 58.821264 },
+        { label: 1628516342000000, value: 67.794774 },
       ],
       ramData: [
         { label: 1628516642000000, value: 67.809205 },
