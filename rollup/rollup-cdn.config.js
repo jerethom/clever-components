@@ -27,7 +27,7 @@ export default {
   }),
   output: {
     dir: outputDir,
-    sourcemap: true,
+    // sourcemap: true,
     entryFileNames: '[name]-[hash].js',
     manualChunks: manualChunkOptions,
     hoistTransitiveImports: false,

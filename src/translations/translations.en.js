@@ -386,6 +386,11 @@ export const translations = {
   'cc-jenkins-info.update.title': `Updates`,
   'cc-jenkins-info.update.up-to-date': `Your Jenkins version is up-to-date.`,
   //#endregion
+
+  'cc-test.foo': `FOO`,
+  'cc-test.bar': (txt) => `Hello ${txt}`,
+  'cc-test.baz': (amount) => formatCurrency(lang, amount),
+
   //#region cc-logsmap
   'cc-logsmap.legend.heatmap': ({ orgaName }) => sanitize`Heatmap of HTTP requests received by all apps from <strong>${orgaName}</strong> during the last 24 hours.`,
   'cc-logsmap.legend.heatmap.app': ({ appName }) => sanitize`Heatmap of HTTP requests received by <strong>${appName}</strong> during the last 24 hours.`,
@@ -471,7 +476,7 @@ export const translations = {
     minimumFractionDigits: digits,
     maximumFractionDigits: digits,
   }),
-  'cc-pricing-table.price-name.1000-minutes': `Price (${formatNumber(lang, 1000)} minutes)`,
+  'cc-pricing-table.price-name.1000-minutes': () => `Price (${formatNumber(lang, 1000)} minutes)`,
   'cc-pricing-table.price-name.30-days': () => sanitize`Price (30&nbsp;days)`,
   'cc-pricing-table.price-name.day': `Price (day)`,
   'cc-pricing-table.price-name.hour': `Price (hour)`,

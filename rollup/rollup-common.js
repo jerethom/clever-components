@@ -69,12 +69,16 @@ export function multiGlob (patterns, opts) {
 export function inputs (sourceDir, entryMapper) {
 
   const filesToExposeGlobs = [
-    `${sourceDir}/index.js`,
+    // `${sourceDir}/atoms/cc-beta.js`,
+    // `${sourceDir}/atoms/cc-button.js`,
+    // `${sourceDir}/atoms/cc-toggle.js`,
+
+    // `${sourceDir}/index.js`,
     `${sourceDir}/addon/*.js`,
     `${sourceDir}/atoms/*.js`,
     `${sourceDir}/env-var/*.js`,
     `${sourceDir}/invoices/*.js`,
-    `${sourceDir}/lib/i18n.js`,
+    // `${sourceDir}/lib/i18n.js`,
     `${sourceDir}/lib/smart-manager.js`,
     `${sourceDir}/maps/*.js`,
     `${sourceDir}/molecules/*.js`,
@@ -82,8 +86,9 @@ export function inputs (sourceDir, entryMapper) {
     `${sourceDir}/pricing/*.js`,
     `${sourceDir}/saas/*.js`,
     `${sourceDir}/smart/*.js`,
+    `${sourceDir}/test/*.js`,
     `${sourceDir}/tcp-redirections/*.js`,
-    `${sourceDir}/translations/*.js`,
+    // `${sourceDir}/translations/*.js`,
     `${sourceDir}/zones/*.js`,
   ];
 
@@ -104,7 +109,7 @@ export function importMetaUrlAssetsPlugin () {
   return importMetaAssets({
     // Let's assume we don't have import.meta.url assets in our deps to speed up things
     exclude: 'node_modules/**',
-    transform: (svgBuffer, id) => {
+    async: (svgBuffer, id) => {
       return svgo
         .optimize(svgBuffer.toString())
         .then(({ data }) => data);
@@ -183,6 +188,9 @@ export const manualChunkOptions = (id) => {
     || id.endsWith('lit-html/directives/class-map.js');
   if (isSmall) {
     return 'vendor';
+  }
+  if (id.includes('i18n')) {
+    return 'i18n';
   }
 };
 
