@@ -86,6 +86,10 @@ export class CcTileMetrics extends LitElement {
         // We don't need the responsive mode because we already observe resize to compute bar count
         responsive: false,
         maintainAspectRatio: false,
+        radius: 0,
+        interaction: {
+          intersect: false,
+        },
         scales: {
           x: {
             display: false,
