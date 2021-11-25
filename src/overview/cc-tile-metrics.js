@@ -47,6 +47,18 @@ const infoSvg = new URL('../assets/info.svg', import.meta.url).href;
  */
 export class CcTileMetrics extends LitElement {
 
+  constructor () {
+    super();
+    // this.cpuData = [];
+    // Triggers setter (init _backgroundColor, _chartLabels, _data, _empty, _labels and _skeleton)
+    this.error = null;
+    // this.ramData = [];
+    this.statusCodes = null;
+    this._docs = false;
+  }
+
+  // DOCS: 2. Constructor
+
   static get properties () {
     return {
       cpuData: { type: Array },
@@ -58,16 +70,85 @@ export class CcTileMetrics extends LitElement {
     };
   }
 
-  // DOCS: 2. Constructor
+  static get styles () {
+    return [
+      tileStyles,
+      skeletonStyles,
+      // language=CSS
+      css`
 
-  constructor () {
-    super();
-    // this.cpuData = [];
-    // Triggers setter (init _backgroundColor, _chartLabels, _data, _empty, _labels and _skeleton)
-    this.error = null;
-    // this.ramData = [];
-    this.statusCodes = null;
-    this._docs = false;
+          .category {
+              display: contents;
+              color: #2d4287;
+          }
+
+          .category-title {
+              font-weight: bold;
+          }
+
+          .current-percentage {
+              font-weight: bold;
+              font-size: 1.25em;
+          }
+
+          .tile_title {
+              align-items: center;
+              display: flex;
+              justify-content: space-between;
+          }
+
+          .docs-toggle {
+              font-size: 1rem;
+              margin: 0 0 0 1rem;
+          }
+
+          .foobar-wrapper {
+              position: relative;
+              height: 2em;
+          }
+
+          .chart-container {
+              /*We need this because: https://github.com/chartjs/Chart.js/issues/4156 */
+              height: 100%;
+              min-width: 0;
+              position: absolute;
+              width: 100%;
+          }
+
+          /*
+            body, message and docs are placed in the same area (on top of each other)
+            this way, we can just hide the docs
+            and let the tile take at least the height of the docs text content
+           */
+          .tile_body,
+          .tile_message,
+          .tile_docs {
+              grid-area: 2 / 1 / 2 / 1;
+          }
+
+          /* See above why we hide instead of display:none */
+          .tile--hidden {
+              visibility: hidden;
+          }
+
+          .tile_body {
+              grid-template-columns: min-content 1fr min-content;
+              gap: 1em;
+              align-items: center;
+          }
+
+          .tile_docs {
+              align-self: center;
+              font-size: 0.9rem;
+              font-style: italic;
+          }
+
+          .tile_docs_link {
+              color: #2b96fd;
+              text-decoration: underline;
+          }
+      `,
+    ];
   }
 
   _onToggleDocs () {
@@ -76,6 +157,14 @@ export class CcTileMetrics extends LitElement {
 
   firstUpdated () {
     Chart.register(...registerables);
+    const tooltipPlugin = Chart.registry.getPlugin('tooltip');
+    tooltipPlugin.positioners.custom = function (elements, eventPosition) {
+
+      return {
+        x: 0,
+        y: 0,
+      };
+    };
 
     this._cpuCtx = this.renderRoot.getElementById('cpu_chart');
     this._ramCtx = this.renderRoot.getElementById('ram_chart');
@@ -107,6 +196,115 @@ export class CcTileMetrics extends LitElement {
       },
     });
 
+    const getOrCreateTooltip = (chart) => {
+      let tooltipEl = chart.canvas.parentNode.querySelector('div');
+
+      if (!tooltipEl) {
+        // Tooltip box style
+        tooltipEl = document.createElement('div');
+        tooltipEl.style.background = 'rgba(0, 0, 0, 0.7)';
+        tooltipEl.style.borderRadius = '3px';
+        tooltipEl.style.color = 'white';
+        tooltipEl.style.opacity = 1;
+        tooltipEl.style.pointerEvents = 'none';
+        tooltipEl.style.position = 'absolute';
+        tooltipEl.style.transform = 'translate(0, -50%)';
+        tooltipEl.style.transition = 'all .1s ease';
+        // tooltipEl.style.width = '100px';
+        // tooltipEl.style.height = '100px';
+
+
+        const table = document.createElement('table');
+        table.style.margin = '0px';
+
+        tooltipEl.appendChild(table);
+        chart.canvas.parentNode.appendChild(tooltipEl);
+      }
+
+      return tooltipEl;
+    };
+
+    const externalTooltipHandler = (context) => {
+      // Tooltip Element
+      const { chart, tooltip } = context;
+      const tooltipEl = getOrCreateTooltip(chart);
+
+      // Hide if no tooltip
+      if (tooltip.opacity === 0) {
+        tooltipEl.style.opacity = 0;
+        return;
+      }
+
+      // Set Text
+      if (tooltip.body) {
+        const titleLines = tooltip.title || [];
+        const bodyLines = tooltip.body.map(b => b.lines);
+
+        const tableHead = document.createElement('thead');
+
+        titleLines.forEach(title => {
+          const tr = document.createElement('tr');
+          tr.style.borderWidth = 0;
+
+          const th = document.createElement('th');
+          th.style.borderWidth = 0;
+          const text = document.createTextNode(title);
+
+          th.appendChild(text);
+          tr.appendChild(th);
+          tableHead.appendChild(tr);
+        });
+
+        const tableBody = document.createElement('tbody');
+        bodyLines.forEach((body, i) => {
+          const colors = tooltip.labelColors[i];
+
+          const span = document.createElement('span');
+          span.style.background = colors.backgroundColor;
+          span.style.borderColor = colors.borderColor;
+          span.style.borderWidth = '2px';
+          span.style.marginRight = '10px';
+          span.style.height = '10px';
+          span.style.width = '10px';
+          span.style.display = 'inline-block';
+
+          const tr = document.createElement('tr');
+          tr.style.backgroundColor = 'inherit';
+          tr.style.borderWidth = 0;
+
+          const td = document.createElement('td');
+          td.style.borderWidth = 0;
+
+          const text = document.createTextNode(body);
+
+          td.appendChild(span);
+          td.appendChild(text);
+          tr.appendChild(td);
+          tableBody.appendChild(tr);
+        });
+
+        const tableRoot = tooltipEl.querySelector('table');
+
+        // Remove old children
+        while (tableRoot.firstChild) {
+          tableRoot.firstChild.remove();
+        }
+
+        // Add new children
+        tableRoot.appendChild(tableHead);
+        tableRoot.appendChild(tableBody);
+      }
+
+      const {offsetLeft: positionX, offsetTop: positionY} = chart.canvas;
+
+      // Display, position, and set styles for font
+      tooltipEl.style.opacity = 1;
+      tooltipEl.style.left = positionX + tooltip.caretX + 'px';
+      tooltipEl.style.top = positionY - 25 + tooltip.caretY + 'px';
+      tooltipEl.style.font = tooltip.options.bodyFont.string;
+      tooltipEl.style.padding = tooltip.options.padding + 'px ' + tooltip.options.padding + 'px';
+    };
+
     this._ramChart = new Chart(this._ramCtx, {
       type: 'line',
       options: {
@@ -129,6 +327,11 @@ export class CcTileMetrics extends LitElement {
         plugins: {
           legend: {
             display: false,
+          },
+          tooltip: {
+            enabled: false,
+            position: 'nearest',
+            external: externalTooltipHandler,
           },
         },
       },
@@ -202,11 +405,11 @@ export class CcTileMetrics extends LitElement {
       <div class="tile_body ${classMap({ 'tile--hidden': !displayChart })}">
         <div class="category">
           <div class="category-title ${classMap({ skeleton: this._skeleton })}">${i18n('cc-tile-metrics.cpu')}</div>
-         <div class="foobar-wrapper">
-           <div class="chart-container ${classMap({ skeleton: this._skeleton })}">
-             <canvas id="cpu_chart"></canvas>
-           </div>
-         </div>
+          <div class="foobar-wrapper">
+            <div class="chart-container ${classMap({ skeleton: this._skeleton })}">
+              <canvas id="cpu_chart"></canvas>
+            </div>
+          </div>
           ${this.cpuData != null ? html`
             <div class="current-percentage">${i18n('cc-tile-metrics.percent', { percent: this.cpuData[this.cpuData.length - 1].value / 100 })}</div>
           ` : ''}
@@ -233,87 +436,6 @@ export class CcTileMetrics extends LitElement {
         <p>${i18n('cc-tile-metrics.docs.msg')}</p>
       </div>
     `;
-  }
-
-  static get styles () {
-    return [
-      tileStyles,
-      skeletonStyles,
-      // language=CSS
-      css`
-
-          .category {
-              display: contents;
-              color: #2d4287;
-          }
-
-          .category-title {
-              font-weight: bold;
-          }
-
-          .current-percentage {
-              font-weight: bold;
-              font-size: 1.25em;
-          }
-
-          .tile_title {
-              align-items: center;
-              display: flex;
-              justify-content: space-between;
-          }
-
-          .docs-toggle {
-              font-size: 1rem;
-              margin: 0 0 0 1rem;
-          }
-          
-          .foobar-wrapper {
-              position: relative;
-              height: 2em;
-          }
-
-          .chart-container {
-              /*We need this because: https://github.com/chartjs/Chart.js/issues/4156 */
-              height: 100%;
-              min-width: 0;
-              position: absolute;
-              width: 100%;
-          }
-
-          /*
-            body, message and docs are placed in the same area (on top of each other)
-            this way, we can just hide the docs
-            and let the tile take at least the height of the docs text content
-           */
-          .tile_body,
-          .tile_message,
-          .tile_docs {
-              grid-area: 2 / 1 / 2 / 1;
-          }
-
-          /* See above why we hide instead of display:none */
-          .tile--hidden {
-              visibility: hidden;
-          }
-
-          .tile_body {
-              grid-template-columns: min-content 1fr min-content;
-              gap: 1em;
-              align-items: center;
-          }
-
-          .tile_docs {
-              align-self: center;
-              font-size: 0.9rem;
-              font-style: italic;
-          }
-
-          .tile_docs_link {
-              color: #2b96fd;
-              text-decoration: underline;
-          }
-      `,
-    ];
   }
 }
 
