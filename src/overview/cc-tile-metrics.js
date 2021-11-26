@@ -169,50 +169,20 @@ export class CcTileMetrics extends LitElement {
     this._cpuCtx = this.renderRoot.getElementById('cpu_chart');
     this._ramCtx = this.renderRoot.getElementById('ram_chart');
 
-    this._cpuChart = new Chart(this._cpuCtx, {
-      type: 'line',
-      options: {
-        // We don't need the responsive mode because we already observe resize to compute bar count
-        responsive: false,
-        maintainAspectRatio: false,
-        radius: 0,
-        interaction: {
-          intersect: false,
-        },
-        scales: {
-          x: {
-            display: false,
-          },
-          y: {
-            display: false,
-            beginAtZero: true,
-          },
-        },
-        plugins: {
-          legend: {
-            display: false,
-          },
-        },
-      },
-    });
-
     const getOrCreateTooltip = (chart) => {
       let tooltipEl = chart.canvas.parentNode.querySelector('div');
 
       if (!tooltipEl) {
         // Tooltip box style
         tooltipEl = document.createElement('div');
-        tooltipEl.style.background = 'rgba(0, 0, 0, 0.7)';
+        tooltipEl.style.background = 'rgba(0, 0, 0, 1)';
         tooltipEl.style.borderRadius = '3px';
         tooltipEl.style.color = 'white';
-        tooltipEl.style.opacity = 1;
+        tooltipEl.style.opacity = 0;
         tooltipEl.style.pointerEvents = 'none';
         tooltipEl.style.position = 'absolute';
-        tooltipEl.style.transform = 'translate(0, -50%)';
+        tooltipEl.style.transform = 'translate(5%, -50%)';
         tooltipEl.style.transition = 'all .1s ease';
-        // tooltipEl.style.width = '100px';
-        // tooltipEl.style.height = '100px';
-
 
         const table = document.createElement('table');
         table.style.margin = '0px';
@@ -238,17 +208,17 @@ export class CcTileMetrics extends LitElement {
       // Set Text
       if (tooltip.body) {
         const titleLines = tooltip.title || [];
-        const bodyLines = tooltip.body.map(b => b.lines);
+        const bodyLines = tooltip.body.map((b) => b.lines);
 
         const tableHead = document.createElement('thead');
 
-        titleLines.forEach(title => {
+        titleLines.forEach((title) => {
           const tr = document.createElement('tr');
           tr.style.borderWidth = 0;
 
           const th = document.createElement('th');
           th.style.borderWidth = 0;
-          const text = document.createTextNode(title);
+          const text = document.createTextNode(i18n('cc-tile-metrics.tooltip.datetime', { timestamp: parseInt(+title) / 1000 }));
 
           th.appendChild(text);
           tr.appendChild(th);
@@ -275,7 +245,7 @@ export class CcTileMetrics extends LitElement {
           const td = document.createElement('td');
           td.style.borderWidth = 0;
 
-          const text = document.createTextNode(body);
+          const text = document.createTextNode(i18n('cc-tile-metrics.percent', { percent: parseInt(body[0]) / 100 }));
 
           td.appendChild(span);
           td.appendChild(text);
@@ -295,7 +265,7 @@ export class CcTileMetrics extends LitElement {
         tableRoot.appendChild(tableBody);
       }
 
-      const {offsetLeft: positionX, offsetTop: positionY} = chart.canvas;
+      const { offsetLeft: positionX, offsetTop: positionY } = chart.canvas;
 
       // Display, position, and set styles for font
       tooltipEl.style.opacity = 1;
@@ -304,6 +274,37 @@ export class CcTileMetrics extends LitElement {
       tooltipEl.style.font = tooltip.options.bodyFont.string;
       tooltipEl.style.padding = tooltip.options.padding + 'px ' + tooltip.options.padding + 'px';
     };
+
+    this._cpuChart = new Chart(this._cpuCtx, {
+      type: 'line',
+      options: {
+        // We don't need the responsive mode because we already observe resize to compute bar count
+        responsive: false,
+        maintainAspectRatio: false,
+        radius: 0,
+        interaction: {
+          intersect: false,
+        },
+        scales: {
+          x: {
+            display: false,
+          },
+          y: {
+            display: false,
+            beginAtZero: true,
+          },
+        },
+        plugins: {
+          legend: {
+            display: false,
+          },
+          tooltip: {
+            enabled: false,
+            external: externalTooltipHandler,
+          },
+        },
+      },
+    });
 
     this._ramChart = new Chart(this._ramCtx, {
       type: 'line',
@@ -330,7 +331,6 @@ export class CcTileMetrics extends LitElement {
           },
           tooltip: {
             enabled: false,
-            position: 'nearest',
             external: externalTooltipHandler,
           },
         },
@@ -354,7 +354,7 @@ export class CcTileMetrics extends LitElement {
         datasets: [{
           fill: 'origin',
           data: values,
-          backgroundColor: 'rgb(45, 66, 135)',
+          backgroundColor: 'rgb(71, 99, 188)',
           borderColor: 'rgb(45, 66, 135)',
         }],
       };
@@ -372,7 +372,7 @@ export class CcTileMetrics extends LitElement {
         datasets: [{
           fill: 'origin',
           data: values,
-          backgroundColor: 'rgb(45, 66, 135)',
+          backgroundColor: 'rgb(71, 99, 188)',
           borderColor: 'rgb(45, 66, 135)',
         }],
       };

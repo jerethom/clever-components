@@ -576,6 +576,7 @@ export const translations = {
   'cc-tile-metrics.error': `Une erreur est survenue pendant le chargement des métriques.`,
   'cc-tile-metrics.percent': ({ percent }) => formatPercent(lang, percent),
   'cc-tile-metrics.title': `Métriques`,
+  'cc-tile-metrics.tooltip.datetime': ({ timestamp }) => formatDatetime(lang, timestamp),
   //#endregion
   //#region cc-tile-requests
   'cc-tile-requests.about-btn': `À propos de ce graphe...`,
