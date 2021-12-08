@@ -70,104 +70,40 @@ export class CcTileMetrics extends LitElement {
     };
   }
 
-  static get styles () {
-    return [
-      tileStyles,
-      skeletonStyles,
-      // language=CSS
-      css`
-
-          .category {
-              display: contents;
-              color: #2d4287;
-          }
-
-          .category-title {
-              font-weight: bold;
-          }
-
-          .current-percentage {
-              font-weight: bold;
-              font-size: 1.25em;
-          }
-
-          .tile_title {
-              align-items: center;
-              display: flex;
-              justify-content: space-between;
-          }
-
-          .docs-toggle {
-              font-size: 1rem;
-              margin: 0 0 0 1rem;
-          }
-
-          .foobar-wrapper {
-              position: relative;
-              height: 2em;
-          }
-
-          .chart-container {
-              /*We need this because: https://github.com/chartjs/Chart.js/issues/4156 */
-              height: 100%;
-              min-width: 0;
-              position: absolute;
-              width: 100%;
-          }
-
-          /*
-            body, message and docs are placed in the same area (on top of each other)
-            this way, we can just hide the docs
-            and let the tile take at least the height of the docs text content
-           */
-          .tile_body,
-          .tile_message,
-          .tile_docs {
-              grid-area: 2 / 1 / 2 / 1;
-          }
-
-          /* See above why we hide instead of display:none */
-          .tile--hidden {
-              visibility: hidden;
-          }
-
-          .tile_body {
-              grid-template-columns: min-content 1fr min-content;
-              gap: 1em;
-              align-items: center;
-          }
-
-          .tile_docs {
-              align-self: center;
-              font-size: 0.9rem;
-              font-style: italic;
-          }
-
-          .tile_docs_link {
-              color: #2b96fd;
-              text-decoration: underline;
-          }
-      `,
-    ];
+  _createChart (chartElement) {
+    return new Chart(chartElement, {
+      type: 'line',
+      options: {
+        // We don't need the responsive mode because we already observe resize to compute bar count
+        responsive: false,
+        maintainAspectRatio: false,
+        radius: 0,
+        interaction: {
+          intersect: false,
+        },
+        scales: {
+          x: {
+            display: false,
+          },
+          y: {
+            display: false,
+            beginAtZero: true,
+          },
+        },
+        plugins: {
+          legend: {
+            display: false,
+          },
+          tooltip: {
+            enabled: false,
+            external: this._externalTooltipHandler,
+          },
+        },
+      },
+    });
   }
 
-  _onToggleDocs () {
-    this._docs = !this._docs;
-  }
-
-  firstUpdated () {
-    Chart.register(...registerables);
-    const tooltipPlugin = Chart.registry.getPlugin('tooltip');
-    tooltipPlugin.positioners.custom = function (elements, eventPosition) {
-
-      return {
-        x: 0,
-        y: 0,
-      };
-    };
-
-    this._cpuCtx = this.renderRoot.getElementById('cpu_chart');
-    this._ramCtx = this.renderRoot.getElementById('ram_chart');
+  _externalTooltipHandler (context) {
 
     const getOrCreateTooltip = (chart) => {
       let tooltipEl = chart.canvas.parentNode.querySelector('div');
@@ -193,149 +129,98 @@ export class CcTileMetrics extends LitElement {
 
       return tooltipEl;
     };
+    // Tooltip Element
+    const { chart, tooltip } = context;
+    const tooltipEl = getOrCreateTooltip(chart);
 
-    const externalTooltipHandler = (context) => {
-      // Tooltip Element
-      const { chart, tooltip } = context;
-      const tooltipEl = getOrCreateTooltip(chart);
+    // Hide if no tooltip
+    if (tooltip.opacity === 0) {
+      tooltipEl.style.opacity = 0;
+      return;
+    }
 
-      // Hide if no tooltip
-      if (tooltip.opacity === 0) {
-        tooltipEl.style.opacity = 0;
-        return;
+    // Set Text
+    if (tooltip.body) {
+      const titleLines = tooltip.title || [];
+      const bodyLines = tooltip.body.map((b) => b.lines);
+
+      const tableHead = document.createElement('thead');
+
+      titleLines.forEach((title) => {
+        const tr = document.createElement('tr');
+        tr.style.borderWidth = 0;
+
+        const th = document.createElement('th');
+        th.style.borderWidth = 0;
+        const text = document.createTextNode(i18n('cc-tile-metrics.tooltip.datetime', { timestamp: parseInt(+title) / 1000 }));
+
+        th.appendChild(text);
+        tr.appendChild(th);
+        tableHead.appendChild(tr);
+      });
+
+      const tableBody = document.createElement('tbody');
+      bodyLines.forEach((body, i) => {
+        const colors = tooltip.labelColors[i];
+
+        const span = document.createElement('span');
+        span.style.background = colors.backgroundColor;
+        span.style.borderColor = colors.borderColor;
+        span.style.borderWidth = '2px';
+        span.style.marginRight = '10px';
+        span.style.height = '10px';
+        span.style.width = '10px';
+        span.style.display = 'inline-block';
+
+        const tr = document.createElement('tr');
+        tr.style.backgroundColor = 'inherit';
+        tr.style.borderWidth = 0;
+
+        const td = document.createElement('td');
+        td.style.borderWidth = 0;
+
+        const text = document.createTextNode(i18n('cc-tile-metrics.percent', { percent: parseInt(body[0]) / 100 }));
+
+        td.appendChild(span);
+        td.appendChild(text);
+        tr.appendChild(td);
+        tableBody.appendChild(tr);
+      });
+
+      const tableRoot = tooltipEl.querySelector('table');
+
+      // Remove old children
+      while (tableRoot.firstChild) {
+        tableRoot.firstChild.remove();
       }
 
-      // Set Text
-      if (tooltip.body) {
-        const titleLines = tooltip.title || [];
-        const bodyLines = tooltip.body.map((b) => b.lines);
+      // Add new children
+      tableRoot.appendChild(tableHead);
+      tableRoot.appendChild(tableBody);
+    }
 
-        const tableHead = document.createElement('thead');
+    const { offsetLeft: positionX, offsetTop: positionY } = chart.canvas;
 
-        titleLines.forEach((title) => {
-          const tr = document.createElement('tr');
-          tr.style.borderWidth = 0;
+    // Display, position, and set styles for font
+    tooltipEl.style.opacity = 1;
+    tooltipEl.style.left = positionX + tooltip.caretX + 'px';
+    tooltipEl.style.top = positionY - 25 + tooltip.caretY + 'px';
+    tooltipEl.style.font = tooltip.options.bodyFont.string;
+    tooltipEl.style.padding = tooltip.options.padding + 'px ' + tooltip.options.padding + 'px';
+  }
 
-          const th = document.createElement('th');
-          th.style.borderWidth = 0;
-          const text = document.createTextNode(i18n('cc-tile-metrics.tooltip.datetime', { timestamp: parseInt(+title) / 1000 }));
+  _onToggleDocs () {
+    this._docs = !this._docs;
+  }
 
-          th.appendChild(text);
-          tr.appendChild(th);
-          tableHead.appendChild(tr);
-        });
+  firstUpdated () {
+    Chart.register(...registerables);
 
-        const tableBody = document.createElement('tbody');
-        bodyLines.forEach((body, i) => {
-          const colors = tooltip.labelColors[i];
+    this._cpuCtx = this.renderRoot.getElementById('cpu_chart');
+    this._ramCtx = this.renderRoot.getElementById('ram_chart');
 
-          const span = document.createElement('span');
-          span.style.background = colors.backgroundColor;
-          span.style.borderColor = colors.borderColor;
-          span.style.borderWidth = '2px';
-          span.style.marginRight = '10px';
-          span.style.height = '10px';
-          span.style.width = '10px';
-          span.style.display = 'inline-block';
-
-          const tr = document.createElement('tr');
-          tr.style.backgroundColor = 'inherit';
-          tr.style.borderWidth = 0;
-
-          const td = document.createElement('td');
-          td.style.borderWidth = 0;
-
-          const text = document.createTextNode(i18n('cc-tile-metrics.percent', { percent: parseInt(body[0]) / 100 }));
-
-          td.appendChild(span);
-          td.appendChild(text);
-          tr.appendChild(td);
-          tableBody.appendChild(tr);
-        });
-
-        const tableRoot = tooltipEl.querySelector('table');
-
-        // Remove old children
-        while (tableRoot.firstChild) {
-          tableRoot.firstChild.remove();
-        }
-
-        // Add new children
-        tableRoot.appendChild(tableHead);
-        tableRoot.appendChild(tableBody);
-      }
-
-      const { offsetLeft: positionX, offsetTop: positionY } = chart.canvas;
-
-      // Display, position, and set styles for font
-      tooltipEl.style.opacity = 1;
-      tooltipEl.style.left = positionX + tooltip.caretX + 'px';
-      tooltipEl.style.top = positionY - 25 + tooltip.caretY + 'px';
-      tooltipEl.style.font = tooltip.options.bodyFont.string;
-      tooltipEl.style.padding = tooltip.options.padding + 'px ' + tooltip.options.padding + 'px';
-    };
-
-    this._cpuChart = new Chart(this._cpuCtx, {
-      type: 'line',
-      options: {
-        // We don't need the responsive mode because we already observe resize to compute bar count
-        responsive: false,
-        maintainAspectRatio: false,
-        radius: 0,
-        interaction: {
-          intersect: false,
-        },
-        scales: {
-          x: {
-            display: false,
-          },
-          y: {
-            display: false,
-            beginAtZero: true,
-          },
-        },
-        plugins: {
-          legend: {
-            display: false,
-          },
-          tooltip: {
-            enabled: false,
-            external: externalTooltipHandler,
-          },
-        },
-      },
-    });
-
-    this._ramChart = new Chart(this._ramCtx, {
-      type: 'line',
-      options: {
-        // We don't need the responsive mode because we already observe resize to compute bar count
-        responsive: false,
-        maintainAspectRatio: false,
-        radius: 0,
-        interaction: {
-          intersect: false,
-        },
-        scales: {
-          x: {
-            display: false,
-          },
-          y: {
-            display: false,
-            beginAtZero: true,
-          },
-        },
-        plugins: {
-          legend: {
-            display: false,
-          },
-          tooltip: {
-            enabled: false,
-            external: externalTooltipHandler,
-          },
-        },
-      },
-    });
+    this._cpuChart = this._createChart(this._cpuCtx);
+    this._ramChart = this._createChart(this._ramCtx);
 
   }
 
@@ -437,6 +322,88 @@ export class CcTileMetrics extends LitElement {
       </div>
     `;
   }
+
+  static get styles () {
+    return [
+      tileStyles,
+      skeletonStyles,
+      // language=CSS
+      css`
+
+          .category {
+              color: #2d4287;
+              display: contents;
+          }
+
+          .category-title {
+              font-weight: bold;
+          }
+
+          .current-percentage {
+              font-size: 1.25em;
+              font-weight: bold;
+          }
+
+          .tile_title {
+              align-items: center;
+              display: flex;
+              justify-content: space-between;
+          }
+
+          .docs-toggle {
+              font-size: 1rem;
+              margin: 0 0 0 1rem;
+          }
+
+          .foobar-wrapper {
+              height: 2em;
+              position: relative;
+          }
+
+          .chart-container {
+              /*We need this because: https://github.com/chartjs/Chart.js/issues/4156 */
+              height: 100%;
+              min-width: 0;
+              position: absolute;
+              width: 100%;
+          }
+
+          /*
+            body, message and docs are placed in the same area (on top of each other)
+            this way, we can just hide the docs
+            and let the tile take at least the height of the docs text content
+           */
+          .tile_body,
+          .tile_message,
+          .tile_docs {
+              grid-area: 2 / 1 / 2 / 1;
+          }
+
+          /* See above why we hide instead of display:none */
+          .tile--hidden {
+              visibility: hidden;
+          }
+
+          .tile_body {
+              align-items: center;
+              gap: 1em;
+              grid-template-columns: min-content 1fr min-content;
+          }
+
+          .tile_docs {
+              align-self: center;
+              font-size: 0.9rem;
+              font-style: italic;
+          }
+
+          .tile_docs_link {
+              color: #2b96fd;
+              text-decoration: underline;
+          }
+      `,
+    ];
+  }
+
 }
 
 window.customElements.define('cc-tile-metrics', CcTileMetrics);
