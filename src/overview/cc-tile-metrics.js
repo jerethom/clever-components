@@ -121,7 +121,6 @@ export class CcTileMetrics extends LitElement {
         tooltipEl.style.transition = 'all .1s ease';
 
         const table = document.createElement('table');
-        table.style.margin = '0px';
 
         tooltipEl.appendChild(table);
         chart.canvas.parentNode.appendChild(tooltipEl);
@@ -168,6 +167,7 @@ export class CcTileMetrics extends LitElement {
         span.style.borderColor = colors.borderColor;
         span.style.borderWidth = '2px';
         span.style.marginRight = '10px';
+        // Percent cube color
         span.style.height = '10px';
         span.style.width = '10px';
         span.style.display = 'inline-block';
@@ -201,7 +201,7 @@ export class CcTileMetrics extends LitElement {
 
     const { offsetLeft: positionX, offsetTop: positionY } = chart.canvas;
 
-    // Display, position, and set styles for font
+    // Display, position, and set styles for font for the box
     tooltipEl.style.opacity = 1;
     tooltipEl.style.left = positionX + tooltip.caretX + 'px';
     tooltipEl.style.top = positionY - 25 + tooltip.caretY + 'px';
