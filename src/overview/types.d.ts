@@ -30,6 +30,21 @@ export interface InstancesState {
 
 export type ModeType = "app" | "orga";
 
+export interface RamMetric {
+  // Timestamp are ms
+  timestamp: number,
+  usedPercent: number,
+  // Bytes
+  totalValue: number,
+}
+export interface CpuMetric {
+  // Timestamp are ms
+  timestamp: number,
+  usedPercent: number,
+  // CPU core numbers
+  totalValue: number,
+}
+
 export type RequestsData = [
   number, // Start timestamp in milliseconds. Expected to be rounded to the hour of its respective TZ.
   number, // End timestamp in milliseconds. Expected to be rounded to the hour of its respective TZ.

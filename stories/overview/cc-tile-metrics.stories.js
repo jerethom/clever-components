@@ -21,78 +21,40 @@ const baseItems = [
   { style: 'width: 540px' },
 ];
 
+const ONE_HOUR = 60 * 60 * 1000;
+function fakeMetricData (numberOfPoints, totalValue, usedPercent, linearIncrease = false) {
+  return Array
+    .from({ length: numberOfPoints })
+    .map((_, index) => {
+      const randomFactor = Math.random() / 5 + 1;
+      const increase = (linearIncrease) ? (index + 2) / 100 : 0;
+      return {
+        usedPercent: usedPercent * randomFactor + increase,
+        totalValue,
+      };
+    });
+}
+
+function now () {
+  return new Date().getTime();
+}
+
+function addTimestamp (array) {
+  const startTs = now();
+  return array.map((item, index) => {
+    return {
+      ...item,
+      timestamp: startTs + index * ONE_HOUR,
+    };
+  });
+}
+
 export const defaultStory = makeStory(conf, {
   items:
     baseItems.map((item) => ({
       ...item,
-      cpuData: [
-        { label: 1628516642000000, value: 67.809205 },
-        { label: 1628516582000000, value: 52.734481 },
-        { label: 1628516522000000, value: 60.746737 },
-        { label: 1628516462000000, value: 55.748121 },
-        { label: 1628516402000000, value: 67.783902 },
-        { label: 1628516282000000, value: 58.821264 },
-        { label: 1628516342000000, value: 67.794774 },
-      ],
-      ramData: [
-        { label: 1628516642000000, value: 67.809205 },
-        { label: 1628516582000000, value: 52.734481 },
-        { label: 1628516522000000, value: 60.746737 },
-        { label: 1628516462000000, value: 55.748121 },
-        { label: 1628516402000000, value: 67.783902 },
-        { label: 1628516342000000, value: 67.794774 },
-        { label: 1628516282000000, value: 58.821264 },
-      ],
-    })),
-});
-
-export const flatLines = makeStory(conf, {
-  items:
-    baseItems.map((item) => ({
-      ...item,
-      cpuData: [
-        { label: 1628516642000000, value: 55.748121 },
-        { label: 1628516582000000, value: 55.748121 },
-        { label: 1628516522000000, value: 55.748121 },
-        { label: 1628516462000000, value: 55.748121 },
-        { label: 1628516402000000, value: 55.748121 },
-        { label: 1628516282000000, value: 55.748121 },
-        { label: 1628516342000000, value: 55.748121 },
-      ],
-      ramData: [
-        { label: 1628516642000000, value: 55.748121 },
-        { label: 1628516582000000, value: 55.748121 },
-        { label: 1628516522000000, value: 55.748121 },
-        { label: 1628516462000000, value: 55.748121 },
-        { label: 1628516402000000, value: 55.748121 },
-        { label: 1628516342000000, value: 55.748121 },
-        { label: 1628516282000000, value: 55.748121 },
-      ],
-    })),
-});
-
-export const linearIncrease = makeStory(conf, {
-  items:
-    baseItems.map((item) => ({
-      ...item,
-      cpuData: [
-        { label: 1628516642000000, value: 0 },
-        { label: 1628516582000000, value: 10 },
-        { label: 1628516522000000, value: 20 },
-        { label: 1628516462000000, value: 30 },
-        { label: 1628516402000000, value: 40 },
-        { label: 1628516282000000, value: 50 },
-        { label: 1628516342000000, value: 60 },
-      ],
-      ramData: [
-        { label: 1628516582000000, value: 10 },
-        { label: 1628516522000000, value: 20 },
-        { label: 1628516462000000, value: 30 },
-        { label: 1628516402000000, value: 40 },
-        { label: 1628516282000000, value: 50 },
-        { label: 1628516342000000, value: 60 },
-        { label: 1628516342000000, value: 70 },
-      ],
+      cpuData: addTimestamp(fakeMetricData(24, 1, 0.25)),
+      ramData: addTimestamp(fakeMetricData(24, 8227708928, 0.161)),
     })),
 });
 
@@ -100,69 +62,113 @@ export const pics = makeStory(conf, {
   items:
     baseItems.map((item) => ({
       ...item,
-      cpuData: [
-        { label: 1628516642000000, value: 67.809205 },
-        { label: 1628516582000000, value: 20.734481 },
-        { label: 1628516522000000, value: 50.746737 },
-        { label: 1628516462000000, value: 10.748121 },
-        { label: 1628516402000000, value: 90.783902 },
-        { label: 1628516282000000, value: 30.821264 },
-        { label: 1628516342000000, value: 76.794774 },
-      ],
-      ramData: [
-        { label: 1628516642000000, value: 67.809205 },
-        { label: 1628516582000000, value: 20.734481 },
-        { label: 1628516522000000, value: 50.746737 },
-        { label: 1628516462000000, value: 10.748121 },
-        { label: 1628516402000000, value: 90.783902 },
-        { label: 1628516282000000, value: 30.821264 },
-        { label: 1628516342000000, value: 76.794774 },
-      ],
+      cpuData: addTimestamp(fakeMetricData(24, 1, 0.25)),
+      ramData: addTimestamp([
+        ...fakeMetricData(10, 2 * 1024 ** 3, 0.25),
+        ...fakeMetricData(1, 8 * 1024 ** 3, 0.25 / 4),
+        ...fakeMetricData(2, 8 * 1024 ** 3, 0.80),
+        ...fakeMetricData(1, 8 * 1024 ** 3, 0.25 / 4),
+        ...fakeMetricData(10, 2 * 1024 ** 3, 0.25),
+      ]),
     })),
 });
 
-// If your component contains remote data,
-// you'll need a "skeleton screen" while the user's waiting for the data.
+export const linearIncrease = makeStory(conf, {
+  items:
+    baseItems.map((item) => ({
+      ...item,
+      cpuData: addTimestamp(fakeMetricData(24, 1, 0.25, true)),
+      ramData: addTimestamp([
+        ...fakeMetricData(24, 2 * 1024 ** 3, 0.25, true),
+      ]),
+    })),
+});
+
+export const scaleUp = makeStory(conf, {
+  items:
+    baseItems.map((item) => ({
+      ...item,
+      cpuData: addTimestamp(fakeMetricData(24, 1, 0.4)),
+      ramData: addTimestamp([
+        ...fakeMetricData(12, 2 * 1024 ** 3, 0.5),
+        ...fakeMetricData(12, 8 * 1024 ** 3, 0.5 / 4),
+      ]),
+    })),
+});
+
+export const scaleDown = makeStory(conf, {
+  items:
+    baseItems.map((item) => ({
+      ...item,
+      cpuData: addTimestamp(fakeMetricData(24, 1, 0.3)),
+      ramData: addTimestamp([
+        ...fakeMetricData(12, 8227708928, 0.161),
+        ...fakeMetricData(12, 8227708928 / 2, 0.161 * 2),
+      ]),
+    })),
+});
+
+export const multipleScaleUp = makeStory(conf, {
+  items:
+    baseItems.map((item) => ({
+      ...item,
+      cpuData: addTimestamp(fakeMetricData(24, 1, 0.6)),
+      ramData: addTimestamp([
+        ...fakeMetricData(8, 2 * 1024 ** 3, 0.8),
+        ...fakeMetricData(8, 4 * 1024 ** 3, 0.8 / 2),
+        ...fakeMetricData(8, 8 * 1024 ** 3, 0.8 / 4),
+      ]),
+    })),
+});
+
+export const multipleScaleDown = makeStory(conf, {
+  items:
+    baseItems.map((item) => ({
+      ...item,
+      cpuData: addTimestamp(fakeMetricData(24, 1, 0.37)),
+      ramData: addTimestamp([
+        ...fakeMetricData(8, 8 * 1024 ** 3, 0.8 / 4),
+        ...fakeMetricData(8, 4 * 1024 ** 3, 0.8 / 2),
+        ...fakeMetricData(8, 2 * 1024 ** 3, 0.8),
+      ]),
+    })),
+});
+
+export const bigScaleUp = makeStory(conf, {
+  items:
+    baseItems.map((item) => ({
+      ...item,
+      cpuData: addTimestamp(fakeMetricData(24, 1, 0.25)),
+      ramData: addTimestamp([
+        ...fakeMetricData(12, 2 * 1024 ** 3, 0.8),
+        ...fakeMetricData(12, 16 * 1024 ** 3, 0.8 / 8),
+      ]),
+    })),
+});
+
+export const bigScaleDown = makeStory(conf, {
+  items:
+    baseItems.map((item) => ({
+      ...item,
+      cpuData: addTimestamp(fakeMetricData(24, 1, 0.223)),
+      ramData: addTimestamp([
+        ...fakeMetricData(12, 16 * 1024 ** 3, 0.10),
+        ...fakeMetricData(12, 2 * 1024 ** 3, 0.10 * 8),
+      ]),
+    })),
+});
 export const skeleton = makeStory(conf, {
   items: [{}],
 });
 
-// If your component contains remote data,
-// don't forget the case where there is no data (ex: empty lists...).
 export const empty = makeStory(conf, {
   items: [{ three: [] }],
 });
 
-// If your component contains remote data,
-// don't forget the case where you have loading errors.
-// If you have other kind of errors (ex: saving errors...).
-// You need to name your stories with the `errorWith` prefix.
 export const error = makeStory(conf, {
   items: [{ error: true }],
 });
 
-// If your component contains remote data,
-// try to present all the possible data combination.
-// You need to name your stories with the `dataLoadedWith` prefix.
-// Don't forget edge cases (ex: small/huge strings, small/huge lists...).
-export const dataLoadedWithFoo = makeStory(conf, {
-  items: [
-    { one: 'Foo', three: [{ foo: 42 }] },
-  ],
-});
-
-// If your component can trigger updates/deletes remote data,
-// don't forget the case where the user's waiting for an operation to complete.
-export const waiting = makeStory(conf, {
-  items: [
-    { one: 'Foo', three: [{ foo: 42 }], waiting: true },
-  ],
-});
-
-// If your component contains remote data,
-// it will have several state transitions (ex: loading => error, loading => loaded, loaded => saving...).
-// When transitioning from one state to another, we try to prevent the display from "jumping" or "blinking" too much.
-// Using "simulations", you can simulate several steps in time to present how your component behaves when it goes through different states.
 export const simulations = makeStory(conf, {
   items: [{}, {}],
   simulations: [
@@ -178,12 +184,9 @@ export const simulations = makeStory(conf, {
 
 enhanceStoriesNames({
   defaultStory,
-  flatLines,
   linearIncrease,
   skeleton,
   empty,
   error,
-  dataLoadedWithFoo,
-  waiting,
   simulations,
 });

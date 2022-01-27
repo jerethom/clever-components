@@ -47,6 +47,18 @@ const infoSvg = new URL('../assets/info.svg', import.meta.url).href;
  */
 export class CcTileMetrics extends LitElement {
 
+  constructor () {
+    super();
+    // this.cpuData = [];
+    // Triggers setter (init _backgroundColor, _chartLabels, _data, _empty, _labels and _skeleton)
+    this.error = null;
+    // this.ramData = [];
+    this.statusCodes = null;
+    this._docs = false;
+  }
+
+  // DOCS: 2. Constructor
+
   static get properties () {
     return {
       cpuData: { type: Array },
@@ -58,22 +70,12 @@ export class CcTileMetrics extends LitElement {
     };
   }
 
-  constructor () {
-    super();
-    this.cpuData = [];
-    // Triggers setter (init _backgroundColor, _chartLabels, _data, _empty, _labels and _skeleton)
-    this.error = null;
-    this.ramData = [];
-    this.statusCodes = null;
-    this._docs = false;
-  }
-
-  // DOCS: 2. Constructor
-
   _createChart (chartElement) {
     return new Chart(chartElement, {
       type: 'line',
       options: {
+        // We don't need the responsive mode because we already observe resize to compute bar count
+        responsive: false,
         maintainAspectRatio: false,
         radius: 0,
         interaction: {
@@ -94,12 +96,7 @@ export class CcTileMetrics extends LitElement {
           },
           tooltip: {
             enabled: false,
-            // external: this._externalTooltipHandler,
-            // callbacks: {
-            //   label: function (tooltipItem, data) {
-            //     return tooltipItem.raw;
-            //   },
-            // },
+            external: this._externalTooltipHandler,
           },
         },
       },
@@ -143,7 +140,6 @@ export class CcTileMetrics extends LitElement {
 
     // Set Text
     if (tooltip.body) {
-      console.log('tooltip', tooltip);
       const titleLines = tooltip.title || [];
       const bodyLines = tooltip.body.map((b) => b.lines);
 
@@ -155,7 +151,7 @@ export class CcTileMetrics extends LitElement {
 
         const th = document.createElement('th');
         th.style.borderWidth = 0;
-        const text = document.createTextNode(i18n('cc-tile-metrics.tooltip.datetime', { timestamp: parseInt(title) }));
+        const text = document.createTextNode(i18n('cc-tile-metrics.tooltip.datetime', { timestamp: parseInt(+title) / 1000 }));
 
         th.appendChild(text);
         tr.appendChild(th);
@@ -179,13 +175,11 @@ export class CcTileMetrics extends LitElement {
         const tr = document.createElement('tr');
         tr.style.backgroundColor = 'inherit';
         tr.style.borderWidth = 0;
-        const parsed = parseFloat(body[0]);
+
         const td = document.createElement('td');
         td.style.borderWidth = 0;
-        console.log(body[0]);
-        const text = (parsed < 1)
-          ? document.createTextNode(i18n('cc-tile-metrics.percent', { percent: parsed }))
-          : document.createTextNode(Math.floor(parsed / 10000).toString());
+
+        const text = document.createTextNode(i18n('cc-tile-metrics.percent', { percent: parseInt(body[0]) / 100 }));
 
         td.appendChild(span);
         td.appendChild(text);
@@ -233,57 +227,39 @@ export class CcTileMetrics extends LitElement {
   // updated and not update because we need this._chart before
   updated (changedProperties) {
 
-    // this._skeleton = (this.cpuUsed == null || this.ramUsed == null);
+    this._skeleton = (this.cpuData == null || this.ramData == null);
 
     if (changedProperties.has('cpuData')) {
 
-      const labels = this.cpuData.map((item) => item.timestamp);
-      const values = this.cpuData.map((item) => item.usedPercent);
-      const totalValues = this.cpuData.map((item) => item.totalValue);
-      console.log('tv', totalValues);
+      const labels = this.cpuData.map((item) => item.label);
+      const values = this.cpuData.map((item) => item.value);
 
       this._cpuChart.data = {
         labels,
-        datasets: [
-          {
-            fill: 'origin',
-            data: values,
-            backgroundColor: 'rgb(71, 99, 188)',
-            borderColor: 'rgb(45, 66, 135)',
-          },
-          {
-            fill: 'origin',
-            data: totalValues,
-          },
-        ],
+        datasets: [{
+          fill: 'origin',
+          data: values,
+          backgroundColor: 'rgb(71, 99, 188)',
+          borderColor: 'rgb(45, 66, 135)',
+        }],
       };
 
       this._cpuChart.update();
       this._cpuChart.resize();
     }
-
     if (changedProperties.has('ramData')) {
 
-      console.log(this.ramData);
-      const labels = this.ramData.map((item) => item.timestamp);
-      const values = this.ramData.map((item) => item.usedPercent * item.totalValue);
-      const totalValues = this.ramData.map((item) => item.totalValue);
+      const labels = this.ramData.map((item) => item.label);
+      const values = this.ramData.map((item) => item.value);
 
-      // console.log(labels, values, totalValues);
       this._ramChart.data = {
         labels,
-        datasets: [
-          {
-            fill: 'origin',
-            data: values,
-            backgroundColor: 'rgb(71, 99, 188)',
-            borderColor: 'rgb(45, 66, 135)',
-          },
-          {
-            fill: 'origin',
-            data: totalValues,
-          },
-        ],
+        datasets: [{
+          fill: 'origin',
+          data: values,
+          backgroundColor: 'rgb(71, 99, 188)',
+          borderColor: 'rgb(45, 66, 135)',
+        }],
       };
 
       this._ramChart.update();
@@ -312,7 +288,6 @@ export class CcTileMetrics extends LitElement {
       </div>
 
       <div class="tile_body ${classMap({ 'tile--hidden': !displayChart })}">
-
         <div class="category">
           <div class="category-title ${classMap({ skeleton: this._skeleton })}">${i18n('cc-tile-metrics.cpu')}</div>
           <div class="foobar-wrapper">
@@ -321,10 +296,9 @@ export class CcTileMetrics extends LitElement {
             </div>
           </div>
           ${this.cpuData != null ? html`
-            <div class="current-percentage">${i18n('cc-tile-metrics.percent', { percent: this.cpuData[this.cpuData.length - 1].usedPercent })}</div>
+            <div class="current-percentage">${i18n('cc-tile-metrics.percent', { percent: this.cpuData[this.cpuData.length - 1].value / 100 })}</div>
           ` : ''}
         </div>
-        
         <div class="category">
           <div class="category-title ${classMap({ skeleton: this._skeleton })}">${i18n('cc-tile-metrics.ram')}</div>
           <div class="foobar-wrapper">
@@ -333,7 +307,7 @@ export class CcTileMetrics extends LitElement {
             </div>
           </div>
           ${this.ramData != null ? html`
-            <div class="current-percentage">${i18n('cc-tile-metrics.percent', { percent: this.ramData[this.ramData.length - 1].usedPercent })}</div>
+            <div class="current-percentage">${i18n('cc-tile-metrics.percent', { percent: this.ramData[this.ramData.length - 1].value / 100 })}</div>
           ` : ''}
         </div>
 
@@ -347,7 +321,6 @@ export class CcTileMetrics extends LitElement {
         <p>${i18n('cc-tile-metrics.docs.msg')}</p>
       </div>
     `;
-
   }
 
   static get styles () {
@@ -383,8 +356,7 @@ export class CcTileMetrics extends LitElement {
           }
 
           .foobar-wrapper {
-              /* Change chart height size */
-              height: 4em;
+              height: 2em;
               position: relative;
           }
 
