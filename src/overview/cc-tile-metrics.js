@@ -72,7 +72,7 @@ export class CcTileMetrics extends LitElement {
 
   _createChart (chartElement) {
     return new Chart(chartElement, {
-      type: 'line',
+      type: 'bar',
       options: {
         maintainAspectRatio: false,
         radius: 0,
@@ -82,6 +82,7 @@ export class CcTileMetrics extends LitElement {
         scales: {
           x: {
             display: false,
+            stacked: true,
           },
           y: {
             display: false,
@@ -99,7 +100,6 @@ export class CcTileMetrics extends LitElement {
             //   label: function (tooltipItem, data) {
             //     return tooltipItem.raw;
             //   },
-            // },
           },
         },
       },
@@ -143,7 +143,6 @@ export class CcTileMetrics extends LitElement {
 
     // Set Text
     if (tooltip.body) {
-      console.log('tooltip', tooltip);
       const titleLines = tooltip.title || [];
       const bodyLines = tooltip.body.map((b) => b.lines);
 
@@ -182,7 +181,6 @@ export class CcTileMetrics extends LitElement {
         const parsed = parseFloat(body[0]);
         const td = document.createElement('td');
         td.style.borderWidth = 0;
-        console.log(body[0]);
         const text = (parsed < 1)
           ? document.createTextNode(i18n('cc-tile-metrics.percent', { percent: parsed }))
           : document.createTextNode(Math.floor(parsed / 10000).toString());
@@ -237,10 +235,18 @@ export class CcTileMetrics extends LitElement {
 
     if (changedProperties.has('cpuData')) {
 
+      const colors = [];
       const labels = this.cpuData.map((item) => item.timestamp);
-      const values = this.cpuData.map((item) => item.usedPercent);
+      const values = this.cpuData.map((item) => {
+        if (item.usedPercent > 0.8) {
+          colors.push('rgb(204, 36, 61)');
+        }
+        else {
+          colors.push('rgb(71, 99, 188)');
+        }
+        return item.usedPercent;
+      });
       const totalValues = this.cpuData.map((item) => item.totalValue);
-      console.log('tv', totalValues);
 
       this._cpuChart.data = {
         labels,
@@ -248,7 +254,7 @@ export class CcTileMetrics extends LitElement {
           {
             fill: 'origin',
             data: values,
-            backgroundColor: 'rgb(71, 99, 188)',
+            backgroundColor: colors,
             borderColor: 'rgb(45, 66, 135)',
           },
           {
@@ -264,9 +270,17 @@ export class CcTileMetrics extends LitElement {
 
     if (changedProperties.has('ramData')) {
 
-      console.log(this.ramData);
+      const colors = [];
       const labels = this.ramData.map((item) => item.timestamp);
-      const values = this.ramData.map((item) => item.usedPercent * item.totalValue);
+      const values = this.ramData.map((item) => {
+        if (item.usedPercent > 0.8) {
+          colors.push('rgb(204, 36, 61)');
+        }
+        else {
+          colors.push('rgb(71, 99, 188)');
+        }
+        return item.usedPercent;
+      });
       const totalValues = this.ramData.map((item) => item.totalValue);
 
       // console.log(labels, values, totalValues);
@@ -276,7 +290,7 @@ export class CcTileMetrics extends LitElement {
           {
             fill: 'origin',
             data: values,
-            backgroundColor: 'rgb(71, 99, 188)',
+            backgroundColor: colors,
             borderColor: 'rgb(45, 66, 135)',
           },
           {
@@ -362,9 +376,9 @@ export class CcTileMetrics extends LitElement {
               display: contents;
           }
 
-          .category-title {
-              font-weight: bold;
-          }
+          /*.category-title {*/
+          /*    font-weight: bold;*/
+          /*}*/
 
           .current-percentage {
               font-size: 1.25em;
@@ -384,7 +398,7 @@ export class CcTileMetrics extends LitElement {
 
           .foobar-wrapper {
               /* Change chart height size */
-              height: 4em;
+              height: 2em;
               position: relative;
           }
 

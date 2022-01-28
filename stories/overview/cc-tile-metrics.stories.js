@@ -22,7 +22,7 @@ const baseItems = [
 ];
 
 const ONE_HOUR = 60 * 60 * 1000;
-function fakeMetricData (numberOfPoints, totalValue, usedPercent, linearIncrease = false) {
+function fakeMetricData (numberOfPoints, usedPercent, linearIncrease = false) {
   return Array
     .from({ length: numberOfPoints })
     .map((_, index) => {
@@ -30,7 +30,7 @@ function fakeMetricData (numberOfPoints, totalValue, usedPercent, linearIncrease
       const increase = (linearIncrease) ? (index + 2) / 100 : 0;
       return {
         usedPercent: usedPercent * randomFactor + increase,
-        totalValue,
+        totalValue: 1,
       };
     });
 }
@@ -53,8 +53,23 @@ export const defaultStory = makeStory(conf, {
   items:
     baseItems.map((item) => ({
       ...item,
-      cpuData: addTimestamp(fakeMetricData(24, 1, 0.25)),
-      ramData: addTimestamp(fakeMetricData(24, 8227708928, 0.161)),
+      cpuData: addTimestamp(fakeMetricData(24, 0.25)),
+      ramData: addTimestamp(fakeMetricData(24, 0.161)),
+    })),
+});
+
+export const highValues = makeStory(conf, {
+  items:
+    baseItems.map((item) => ({
+      ...item,
+      cpuData: addTimestamp([
+        ...fakeMetricData(12, 0.6),
+        ...fakeMetricData(12, 0.8),
+      ]),
+      ramData: addTimestamp([
+        ...fakeMetricData(12, 0.5),
+        ...fakeMetricData(12, 0.820),
+      ]),
     })),
 });
 
@@ -62,13 +77,13 @@ export const pics = makeStory(conf, {
   items:
     baseItems.map((item) => ({
       ...item,
-      cpuData: addTimestamp(fakeMetricData(24, 1, 0.25)),
+      cpuData: addTimestamp(fakeMetricData(24, 0.25)),
       ramData: addTimestamp([
-        ...fakeMetricData(10, 2 * 1024 ** 3, 0.25),
-        ...fakeMetricData(1, 8 * 1024 ** 3, 0.25 / 4),
-        ...fakeMetricData(2, 8 * 1024 ** 3, 0.80),
-        ...fakeMetricData(1, 8 * 1024 ** 3, 0.25 / 4),
-        ...fakeMetricData(10, 2 * 1024 ** 3, 0.25),
+        ...fakeMetricData(10, 0.25),
+        ...fakeMetricData(1, 0.25 / 4),
+        ...fakeMetricData(2, 0.80),
+        ...fakeMetricData(1, 0.25 / 4),
+        ...fakeMetricData(10, 0.25),
       ]),
     })),
 });
@@ -77,9 +92,9 @@ export const linearIncrease = makeStory(conf, {
   items:
     baseItems.map((item) => ({
       ...item,
-      cpuData: addTimestamp(fakeMetricData(24, 1, 0.25, true)),
+      cpuData: addTimestamp(fakeMetricData(24, 0.25, true)),
       ramData: addTimestamp([
-        ...fakeMetricData(24, 2 * 1024 ** 3, 0.25, true),
+        ...fakeMetricData(24, 0.25, true),
       ]),
     })),
 });
@@ -88,10 +103,10 @@ export const scaleUp = makeStory(conf, {
   items:
     baseItems.map((item) => ({
       ...item,
-      cpuData: addTimestamp(fakeMetricData(24, 1, 0.4)),
+      cpuData: addTimestamp(fakeMetricData(24, 0.4)),
       ramData: addTimestamp([
-        ...fakeMetricData(12, 2 * 1024 ** 3, 0.5),
-        ...fakeMetricData(12, 8 * 1024 ** 3, 0.5 / 4),
+        ...fakeMetricData(12, 0.5),
+        ...fakeMetricData(12, 0.5 / 4),
       ]),
     })),
 });
@@ -100,10 +115,10 @@ export const scaleDown = makeStory(conf, {
   items:
     baseItems.map((item) => ({
       ...item,
-      cpuData: addTimestamp(fakeMetricData(24, 1, 0.3)),
+      cpuData: addTimestamp(fakeMetricData(24, 0.3)),
       ramData: addTimestamp([
-        ...fakeMetricData(12, 8227708928, 0.161),
-        ...fakeMetricData(12, 8227708928 / 2, 0.161 * 2),
+        ...fakeMetricData(12, 0.161),
+        ...fakeMetricData(12, 0.161 * 2),
       ]),
     })),
 });
@@ -112,11 +127,11 @@ export const multipleScaleUp = makeStory(conf, {
   items:
     baseItems.map((item) => ({
       ...item,
-      cpuData: addTimestamp(fakeMetricData(24, 1, 0.6)),
+      cpuData: addTimestamp(fakeMetricData(24, 0.6)),
       ramData: addTimestamp([
-        ...fakeMetricData(8, 2 * 1024 ** 3, 0.8),
-        ...fakeMetricData(8, 4 * 1024 ** 3, 0.8 / 2),
-        ...fakeMetricData(8, 8 * 1024 ** 3, 0.8 / 4),
+        ...fakeMetricData(8, 0.8),
+        ...fakeMetricData(8, 0.8 / 2),
+        ...fakeMetricData(8, 0.8 / 4),
       ]),
     })),
 });
@@ -125,11 +140,11 @@ export const multipleScaleDown = makeStory(conf, {
   items:
     baseItems.map((item) => ({
       ...item,
-      cpuData: addTimestamp(fakeMetricData(24, 1, 0.37)),
+      cpuData: addTimestamp(fakeMetricData(24, 0.378)),
       ramData: addTimestamp([
-        ...fakeMetricData(8, 8 * 1024 ** 3, 0.8 / 4),
-        ...fakeMetricData(8, 4 * 1024 ** 3, 0.8 / 2),
-        ...fakeMetricData(8, 2 * 1024 ** 3, 0.8),
+        ...fakeMetricData(8, 0.8 / 4),
+        ...fakeMetricData(8, 0.8 / 2),
+        ...fakeMetricData(8, 0.8),
       ]),
     })),
 });
@@ -138,10 +153,10 @@ export const bigScaleUp = makeStory(conf, {
   items:
     baseItems.map((item) => ({
       ...item,
-      cpuData: addTimestamp(fakeMetricData(24, 1, 0.25)),
+      cpuData: addTimestamp(fakeMetricData(24, 0.25)),
       ramData: addTimestamp([
-        ...fakeMetricData(12, 2 * 1024 ** 3, 0.8),
-        ...fakeMetricData(12, 16 * 1024 ** 3, 0.8 / 8),
+        ...fakeMetricData(12, 0.8),
+        ...fakeMetricData(12, 0.8 / 8),
       ]),
     })),
 });
@@ -150,10 +165,10 @@ export const bigScaleDown = makeStory(conf, {
   items:
     baseItems.map((item) => ({
       ...item,
-      cpuData: addTimestamp(fakeMetricData(24, 1, 0.223)),
+      cpuData: addTimestamp(fakeMetricData(24, 0.223)),
       ramData: addTimestamp([
-        ...fakeMetricData(12, 16 * 1024 ** 3, 0.10),
-        ...fakeMetricData(12, 2 * 1024 ** 3, 0.10 * 8),
+        ...fakeMetricData(12, 0.10),
+        ...fakeMetricData(12, 0.10 * 8),
       ]),
     })),
 });
