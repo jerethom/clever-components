@@ -569,8 +569,10 @@ export const translations = {
   'cc-tile-instances.title': `Instances`,
   //#endregion
   //#region cc-tile-metrics
+  'cc-tile-requests.about-btn': `À propos de ce graphe...`,
+  'cc-tile-requests.close-btn': `Afficher le graphe`,
   'cc-tile-metrics.cpu': `CPU`,
-  'cc-tile-metrics.docs.msg': `Template de doc blablabla`,
+  'cc-tile-metrics.docs.msg': ({grafanaLink, metricsLink}) => sanitize`Métriques reçues durant les dernières 24 heures. Chaque barre représente une fenêtre de temps de  <strong>1 heure</strong>. Grafana: ${grafanaLink}, Metrics: ${metricsLink}`,
   'cc-tile-metrics.empty': `Pas de métriques. L'application est arrêtée.`,
   'cc-tile-metrics.error': `Une erreur est survenue pendant le chargement des métriques.`,
   'cc-tile-metrics.link-to-grafana': `Ouvrir grafana`,

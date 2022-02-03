@@ -556,8 +556,10 @@ export const translations = {
   'cc-tile-instances.title': `Instances`,
   //#endregion
   //#region cc-tile-metrics
+  'cc-tile-requests.about-btn': `About this chart...`,
+  'cc-tile-requests.close-btn': `Display chart`,
   'cc-tile-metrics.cpu': `CPU`,
-  'cc-tile-metrics.docs.msg': `Placeholder doc`,
+  'cc-tile-metrics.docs.msg': ({grafanaLink, metricsLink}) => sanitize`CPU and RAM metrics received in the last 24 hours. Each bar represents a time window of <strong>1 hour</strong>. Grafana: ${grafanaLink}, Metrics: ${metricsLink}`,
   'cc-tile-metrics.empty': `No metrics. Your app is stopped.`,
   'cc-tile-metrics.error': `Something went wrong while loading metrics.`,
   'cc-tile-metrics.link-to-grafana': `Open grafana`,

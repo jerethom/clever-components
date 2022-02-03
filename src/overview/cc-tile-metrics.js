@@ -56,6 +56,8 @@ export class CcTileMetrics extends LitElement {
     return {
       cpuData: { type: Array },
       error: { type: Boolean, reflect: true },
+      metricsBaseLink: { type: String },
+      grafanaBaseLink: { type: String },
       ramData: { type: Array },
       _skeleton: { type: Boolean, attribute: false },
       _empty: { type: Boolean, attribute: false },
@@ -65,15 +67,28 @@ export class CcTileMetrics extends LitElement {
 
   constructor () {
     super();
-    this.cpuData = [];
+    this.cpuData = null;
     // Triggers setter (init _backgroundColor, _chartLabels, _data, _empty, _labels and _skeleton)
     this.error = null;
-    this.ramData = [];
+    this.metricsBaseLink = '';
+    this.grafanaBaseLink = '';
+    this.ramData = null;
     this.statusCodes = null;
     this._docs = false;
   }
 
-  // DOCS: 2. Constructor
+
+  _addColors (values) {
+    return values.map((percent) => {
+      if (percent > 0.2 && percent < 0.8) {
+        return COLOR_BLUE;
+      }
+      else if (percent < 0.2) {
+        return COLOR_LIGHTBLUE;
+      }
+      return COLOR_RED;
+    });
+  }
 
   _createChart (chartElement) {
     return new Chart(chartElement, {
@@ -100,123 +115,12 @@ export class CcTileMetrics extends LitElement {
           },
           tooltip: {
             enabled: false,
-            // external: this._externalTooltipHandler,
-            // callbacks: {
-            //   label: function (tooltipItem, data) {
-            //     return tooltipItem.raw;
-            //   },
           },
         },
       },
     });
   }
 
-  _externalTooltipHandler (context) {
-
-    const getOrCreateTooltip = (chart) => {
-      let tooltipEl = chart.canvas.parentNode.querySelector('div');
-
-      if (!tooltipEl) {
-        // Tooltip box style
-        tooltipEl = document.createElement('div');
-        tooltipEl.style.background = 'rgba(0, 0, 0, 1)';
-        tooltipEl.style.borderRadius = '3px';
-        tooltipEl.style.color = 'white';
-        tooltipEl.style.opacity = 0;
-        tooltipEl.style.pointerEvents = 'none';
-        tooltipEl.style.position = 'absolute';
-        tooltipEl.style.transform = 'translate(5%, -50%)';
-        tooltipEl.style.transition = 'all .1s ease';
-
-        const table = document.createElement('table');
-
-        tooltipEl.appendChild(table);
-        chart.canvas.parentNode.appendChild(tooltipEl);
-      }
-
-      return tooltipEl;
-    };
-    // Tooltip Element
-    const { chart, tooltip } = context;
-    const tooltipEl = getOrCreateTooltip(chart);
-
-    // Hide if no tooltip
-    if (tooltip.opacity === 0) {
-      tooltipEl.style.opacity = 0;
-      return;
-    }
-
-    // Set Text
-    if (tooltip.body) {
-      const titleLines = tooltip.title || [];
-      const bodyLines = tooltip.body.map((b) => b.lines);
-
-      const tableHead = document.createElement('thead');
-
-      titleLines.forEach((title) => {
-        const tr = document.createElement('tr');
-        tr.style.borderWidth = 0;
-
-        const th = document.createElement('th');
-        th.style.borderWidth = 0;
-        const text = document.createTextNode(i18n('cc-tile-metrics.tooltip.datetime', { timestamp: parseInt(title) }));
-
-        th.appendChild(text);
-        tr.appendChild(th);
-        tableHead.appendChild(tr);
-      });
-
-      const tableBody = document.createElement('tbody');
-      bodyLines.forEach((body, i) => {
-        const colors = tooltip.labelColors[i];
-
-        const span = document.createElement('span');
-        span.style.background = colors.backgroundColor;
-        span.style.borderColor = colors.borderColor;
-        span.style.borderWidth = '2px';
-        span.style.marginRight = '10px';
-        // Percent cube color
-        span.style.height = '10px';
-        span.style.width = '10px';
-        span.style.display = 'inline-block';
-
-        const tr = document.createElement('tr');
-        tr.style.backgroundColor = 'inherit';
-        tr.style.borderWidth = 0;
-        const parsed = parseFloat(body[0]);
-        const td = document.createElement('td');
-        td.style.borderWidth = 0;
-        const text = (parsed < 1)
-          ? document.createTextNode(i18n('cc-tile-metrics.percent', { percent: parsed }))
-          : document.createTextNode(Math.floor(parsed / 10000).toString());
-
-        td.appendChild(span);
-        td.appendChild(text);
-        tr.appendChild(td);
-        tableBody.appendChild(tr);
-      });
-
-      const tableRoot = tooltipEl.querySelector('table');
-
-      // Remove old children
-      while (tableRoot.firstChild) {
-        tableRoot.firstChild.remove();
-      }
-
-      // Add new children
-      tableRoot.appendChild(tableHead);
-      tableRoot.appendChild(tableBody);
-    }
-
-    const { offsetLeft: positionX, offsetTop: positionY } = chart.canvas;
-
-    // Display, position, and set styles for font for the box
-    tooltipEl.style.opacity = 1;
-    tooltipEl.style.left = positionX + tooltip.caretX + 'px';
-    tooltipEl.style.top = positionY - 25 + tooltip.caretY + 'px';
-    tooltipEl.style.font = tooltip.options.bodyFont.string;
-    tooltipEl.style.padding = tooltip.options.padding + 'px ' + tooltip.options.padding + 'px';
-  }
 
   _onToggleDocs () {
     this._docs = !this._docs;
@@ -234,29 +138,16 @@ export class CcTileMetrics extends LitElement {
   }
 
   // updated and not update because we need this._chart before
-  // TODO: refactor IF
   updated (changedProperties) {
 
-    // this._skeleton = (this.cpuUsed == null || this.ramUsed == null);
+    this._skeleton = (this.cpuData == null || this.ramData == null);
 
     if (changedProperties.has('cpuData')) {
 
-      const colors = [];
       const labels = this.cpuData.map((item) => item.timestamp);
-      const values = this.cpuData.map((item) => {
-        const { usedPercent: percent } = item;
-        if (percent > 0.8) {
-          colors.push(COLOR_RED);
-        }
-        else if (percent > 0.2 && percent < 0.8) {
-          colors.push(COLOR_BLUE);
-        }
-        else if (percent < 0.2) {
-          colors.push(COLOR_LIGHTBLUE);
-        }
-        return item.usedPercent;
-      });
+      const values = this.cpuData.map((item) => item.usedPercent);
       const totalValues = this.cpuData.map((item) => item.totalValue);
+      const colors = this._addColors(values);
 
       this._cpuChart.data = {
         labels,
@@ -280,22 +171,10 @@ export class CcTileMetrics extends LitElement {
 
     if (changedProperties.has('ramData')) {
 
-      const colors = [];
       const labels = this.ramData.map((item) => item.timestamp);
-      const values = this.ramData.map((item) => {
-        const { usedPercent: percent } = item;
-        if (percent > 0.8) {
-          colors.push(COLOR_RED);
-        }
-        else if (percent > 0.2 && percent < 0.8) {
-          colors.push(COLOR_BLUE);
-        }
-        else if (percent < 0.2) {
-          colors.push(COLOR_LIGHTBLUE);
-        }
-        return item.usedPercent;
-      });
+      const values = this.ramData.map((item) => item.usedPercent);
       const totalValues = this.ramData.map((item) => item.totalValue);
+      const colors = this._addColors(values);
 
       this._ramChart.data = {
         labels,
@@ -338,7 +217,7 @@ export class CcTileMetrics extends LitElement {
             image=${displayDocs ? closeSvg : infoSvg}
             hide-text
             @cc-button:click=${this._onToggleDocs}
-          >${this._docs ? i18n('cc-tile-requests.close-btn') : i18n('cc-tile-requests.about-btn')}
+          >${this._docs ? i18n('cc-tile-metrics.close-btn') : i18n('cc-tile-metrics.about-btn')}
           </cc-button>
         </div>
       </div>
@@ -346,8 +225,10 @@ export class CcTileMetrics extends LitElement {
       <div class="tile_body ${classMap({ 'tile--hidden': !displayChart })}">
 
         <div class="category">
+          ${!this._skeleton ? html`
           <div class="category-title ${classMap({ skeleton: this._skeleton })}">${i18n('cc-tile-metrics.cpu')}</div>
-          <div class="foobar-wrapper">
+          ` : ''}
+          <div class="chart-wrapper">
             <div class="chart-container ${classMap({ skeleton: this._skeleton })}">
               <canvas id="cpu_chart"></canvas>
             </div>
@@ -358,8 +239,10 @@ export class CcTileMetrics extends LitElement {
         </div>
         
         <div class="category">
+          ${!this._skeleton ? html`
           <div class="category-title ${classMap({ skeleton: this._skeleton })}">${i18n('cc-tile-metrics.ram')}</div>
-          <div class="foobar-wrapper">
+          ` : ''}
+          <div class="chart-wrapper">
             <div class="chart-container ${classMap({ skeleton: this._skeleton })}">
               <canvas id="ram_chart"></canvas>
             </div>
@@ -376,7 +259,7 @@ export class CcTileMetrics extends LitElement {
       <cc-error class="tile_message ${classMap({ 'tile--hidden': !displayError })}">${i18n('cc-tile-metrics.error')}</cc-error>
 
       <div class="tile_docs ${classMap({ 'tile--hidden': !displayDocs })}">
-        <p>${i18n('cc-tile-metrics.docs.msg')}</p>
+        <p>${i18n('cc-tile-metrics.docs.msg', {grafanaLink: this.grafanaBaseLink, metricsLink: this.metricsBaseLink})}</p>
       </div>
     `;
 
@@ -421,7 +304,7 @@ export class CcTileMetrics extends LitElement {
             align-items: center;
           }
           
-          .foobar-wrapper {
+          .chart-wrapper {
             /* TODO : find a way to resize width properly */
               /*width: 100%;*/
               /* Change chart height size */
