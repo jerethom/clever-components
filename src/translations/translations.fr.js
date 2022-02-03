@@ -570,11 +570,12 @@ export const translations = {
   //#endregion
   //#region cc-tile-metrics
   'cc-tile-metrics.cpu': `CPU`,
-  'cc-tile-metrics.ram': `RAM`,
   'cc-tile-metrics.docs.msg': `Template de doc blablabla`,
   'cc-tile-metrics.empty': `Pas de métriques. L'application est arrêtée.`,
   'cc-tile-metrics.error': `Une erreur est survenue pendant le chargement des métriques.`,
+  'cc-tile-metrics.link-to-grafana': `Ouvrir grafana`,
   'cc-tile-metrics.percent': ({ percent }) => formatPercent(lang, percent),
+  'cc-tile-metrics.ram': `RAM`,
   'cc-tile-metrics.title': `Métriques`,
   'cc-tile-metrics.tooltip.datetime': ({ timestamp }) => formatDatetime(lang, timestamp),
   //#endregion

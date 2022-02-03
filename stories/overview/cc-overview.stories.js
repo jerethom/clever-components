@@ -8,6 +8,7 @@ import { defaultStory as headerOrga } from './cc-header-orga.stories.js';
 import { defaultStory as consumption } from './cc-tile-consumption.stories.js';
 import { defaultStory as deployments } from './cc-tile-deployments.stories.js';
 import { defaultStory as instances } from './cc-tile-instances.stories.js';
+import { defaultStory as tileMetrics } from './cc-tile-metrics.stories.js';
 import { defaultStory as requests } from './cc-tile-requests.stories.js';
 import { defaultStory as scalability } from './cc-tile-scalability.stories.js';
 import { defaultStory as statusCodes } from './cc-tile-status-codes.stories.js';
@@ -97,7 +98,7 @@ export const appMode = makeStory(conf, {
       createStoryItem(instances),
       createStoryItem(scalability),
       createStoryItem(deployments),
-      createStoryItem(consumption),
+      createStoryItem(tileMetrics),
       createStoryItem(statusCodes),
       createStoryItem(requests, { style: '' }),
       createStoryItem(logsmap, { class: 'main' }),
@@ -113,7 +114,7 @@ export const appModeWithBeta = makeStory(conf, {
       createStoryItem(instances),
       createStoryItem(scalability),
       createStoryItem(deployments),
-      createStoryItem(consumption),
+      createStoryItem(tileMetrics),
       createStoryItem(betaWithTiles, {}, 1),
       createStoryItem(betaWithTiles, {}, 0),
       createStoryItem(betaWithMap, { class: 'main' }),

@@ -16,7 +16,7 @@ const conf = {
 };
 
 const baseItems = [
-  { style: 'width: 275px' },
+  {  },
   { style: 'width: 380px' },
   { style: 'width: 540px' },
 ];
@@ -94,7 +94,7 @@ export const linearIncrease = makeStory(conf, {
       ...item,
       cpuData: addTimestamp(fakeMetricData(24, 0.25, true)),
       ramData: addTimestamp([
-        ...fakeMetricData(24, 0.25, true),
+        ...fakeMetricData(24, 0.10, true),
       ]),
     })),
 });
@@ -172,6 +172,19 @@ export const bigScaleDown = makeStory(conf, {
       ]),
     })),
 });
+
+export const appDown = makeStory(conf, {
+  items:
+    baseItems.map((item) => ({
+      ...item,
+      cpuData: addTimestamp(fakeMetricData(24, 0.223)),
+      ramData: addTimestamp([
+        ...fakeMetricData(12, 0.10),
+        ...fakeMetricData(12, 0.10 * 8),
+      ]),
+    })),
+});
+
 export const skeleton = makeStory(conf, {
   items: [{}],
 });

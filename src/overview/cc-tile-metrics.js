@@ -4,9 +4,14 @@ import { classMap } from 'lit-html/directives/class-map.js';
 import { i18n } from '../lib/i18n.js';
 import { tileStyles } from '../styles/info-tiles.js';
 import { skeletonStyles } from '../styles/skeleton.js';
+import { ccLink } from '../../dist/templates/cc-link.js';
+import { linkStyles } from '../templates/cc-link.js';
 
 const closeSvg = new URL('../assets/close.svg', import.meta.url).href;
 const infoSvg = new URL('../assets/info.svg', import.meta.url).href;
+const grafanaSvg = new URL('../assets/grafana.svg', import.meta.url).href;
+
+const [COLOR_RED, COLOR_LIGHTBLUE, COLOR_BLUE] = ['rgb(237, 52, 97)', 'rgb(100, 146, 234)', 'rgb(78, 100, 234)'];
 
 /**
  * A component doing X and Y (one liner description of your component).
@@ -229,6 +234,7 @@ export class CcTileMetrics extends LitElement {
   }
 
   // updated and not update because we need this._chart before
+  // TODO: refactor IF
   updated (changedProperties) {
 
     // this._skeleton = (this.cpuUsed == null || this.ramUsed == null);
@@ -238,11 +244,15 @@ export class CcTileMetrics extends LitElement {
       const colors = [];
       const labels = this.cpuData.map((item) => item.timestamp);
       const values = this.cpuData.map((item) => {
-        if (item.usedPercent > 0.8) {
-          colors.push('rgb(204, 36, 61)');
+        const { usedPercent: percent } = item;
+        if (percent > 0.8) {
+          colors.push(COLOR_RED);
         }
-        else {
-          colors.push('rgb(71, 99, 188)');
+        else if (percent > 0.2 && percent < 0.8) {
+          colors.push(COLOR_BLUE);
+        }
+        else if (percent < 0.2) {
+          colors.push(COLOR_LIGHTBLUE);
         }
         return item.usedPercent;
       });
@@ -273,17 +283,20 @@ export class CcTileMetrics extends LitElement {
       const colors = [];
       const labels = this.ramData.map((item) => item.timestamp);
       const values = this.ramData.map((item) => {
-        if (item.usedPercent > 0.8) {
-          colors.push('rgb(204, 36, 61)');
+        const { usedPercent: percent } = item;
+        if (percent > 0.8) {
+          colors.push(COLOR_RED);
         }
-        else {
-          colors.push('rgb(71, 99, 188)');
+        else if (percent > 0.2 && percent < 0.8) {
+          colors.push(COLOR_BLUE);
+        }
+        else if (percent < 0.2) {
+          colors.push(COLOR_LIGHTBLUE);
         }
         return item.usedPercent;
       });
       const totalValues = this.ramData.map((item) => item.totalValue);
 
-      // console.log(labels, values, totalValues);
       this._ramChart.data = {
         labels,
         datasets: [
@@ -316,13 +329,18 @@ export class CcTileMetrics extends LitElement {
     return html`
       <div class="tile_title tile_title--image">
         ${i18n('cc-tile-metrics.title')}
-        <cc-button
-          class="docs-toggle"
-          image=${displayDocs ? closeSvg : infoSvg}
-          hide-text
-          @cc-button:click=${this._onToggleDocs}
-        >${this._docs ? i18n('cc-tile-requests.close-btn') : i18n('cc-tile-requests.about-btn')}
-        </cc-button>
+        <div class="docs-buttons">
+          <a class="cc-link" href="https://example.com">
+            <img class="grafana-logo" src=${grafanaSvg} alt="">
+          </a>
+          <cc-button
+            class="docs-toggle"
+            image=${displayDocs ? closeSvg : infoSvg}
+            hide-text
+            @cc-button:click=${this._onToggleDocs}
+          >${this._docs ? i18n('cc-tile-requests.close-btn') : i18n('cc-tile-requests.about-btn')}
+          </cc-button>
+        </div>
       </div>
 
       <div class="tile_body ${classMap({ 'tile--hidden': !displayChart })}">
@@ -366,23 +384,23 @@ export class CcTileMetrics extends LitElement {
 
   static get styles () {
     return [
+      linkStyles,
       tileStyles,
       skeletonStyles,
       // language=CSS
       css`
 
           .category {
-              color: #2d4287;
               display: contents;
           }
 
-          /*.category-title {*/
-          /*    font-weight: bold;*/
-          /*}*/
+          .category-title {
+            color: #5D5D5D;
+          }
 
           .current-percentage {
               font-size: 1.25em;
-              font-weight: bold;
+              /*font-weight: bold;*/
           }
 
           .tile_title {
@@ -391,12 +409,21 @@ export class CcTileMetrics extends LitElement {
               justify-content: space-between;
           }
 
-          .docs-toggle {
+          
+          .docs-toggle,
+          .docs-grafana-btn {
               font-size: 1rem;
               margin: 0 0 0 1rem;
           }
-
+          
+          .docs-buttons {
+            display: flex;
+            align-items: center;
+          }
+          
           .foobar-wrapper {
+            /* TODO : find a way to resize width properly */
+              /*width: 100%;*/
               /* Change chart height size */
               height: 2em;
               position: relative;
@@ -408,6 +435,12 @@ export class CcTileMetrics extends LitElement {
               min-width: 0;
               position: absolute;
               width: 100%;
+          }
+          
+          .grafana-logo {
+            display: block;
+            width: 1em;
+            height: 1em;
           }
 
           /*
