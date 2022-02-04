@@ -4,14 +4,13 @@ import { classMap } from 'lit-html/directives/class-map.js';
 import { i18n } from '../lib/i18n.js';
 import { tileStyles } from '../styles/info-tiles.js';
 import { skeletonStyles } from '../styles/skeleton.js';
-import { ccLink } from '../../dist/templates/cc-link.js';
-import { linkStyles } from '../templates/cc-link.js';
+import { ccLink, linkStyles } from '../templates/cc-link.js';
+import { getCssCustomProperties } from '../lib/css-custom-properties.js';
+import { defaultThemeStyles } from '../styles/default-theme.js';
 
 const closeSvg = new URL('../assets/close.svg', import.meta.url).href;
 const infoSvg = new URL('../assets/info.svg', import.meta.url).href;
 const grafanaSvg = new URL('../assets/grafana.svg', import.meta.url).href;
-
-const [COLOR_RED, COLOR_LIGHTBLUE, COLOR_BLUE] = ['rgb(237, 52, 97)', 'rgb(100, 146, 234)', 'rgb(78, 100, 234)'];
 
 /**
  * A component doing X and Y (one liner description of your component).
@@ -59,9 +58,12 @@ export class CcTileMetrics extends LitElement {
       metricsBaseLink: { type: String },
       grafanaBaseLink: { type: String },
       ramData: { type: Array },
+      _cpuData: { type: Array },
+      _ramData: { type: Array },
       _skeleton: { type: Boolean, attribute: false },
       _empty: { type: Boolean, attribute: false },
       _docs: { type: Boolean, attribute: false },
+      _currentP : {type: Object},
     };
   }
 
@@ -75,19 +77,28 @@ export class CcTileMetrics extends LitElement {
     this.ramData = null;
     this.statusCodes = null;
     this._docs = false;
+    this._cpuData = null;
+    this._ramData = null;
   }
 
+  _getColor (percent) {
+    if (this._colors == null) {
+      this._colors = getCssCustomProperties(this);
+    }
+    const type = this._getColorType(percent);
 
-  _addColors (values) {
-    return values.map((percent) => {
-      if (percent > 0.2 && percent < 0.8) {
-        return COLOR_BLUE;
-      }
-      else if (percent < 0.2) {
-        return COLOR_LIGHTBLUE;
-      }
-      return COLOR_RED;
-    });
+    return this._colors[`--chart-color-${type}`];
+  }
+
+  // TODO: put constant in top of file
+  _getColorType (percent) {
+    if (percent > 0.8) {
+      return 'top';
+    }
+    else if (percent > 0.2) {
+      return 'middle';
+    }
+    return 'bottom';
   }
 
   _createChart (chartElement) {
@@ -144,10 +155,11 @@ export class CcTileMetrics extends LitElement {
 
     if (changedProperties.has('cpuData')) {
 
+
       const labels = this.cpuData.map((item) => item.timestamp);
       const values = this.cpuData.map((item) => item.usedPercent);
       const totalValues = this.cpuData.map((item) => item.totalValue);
-      const colors = this._addColors(values);
+      const colors = values.map((percent) => this._getColor(percent));
 
       this._cpuChart.data = {
         labels,
@@ -156,7 +168,6 @@ export class CcTileMetrics extends LitElement {
             fill: 'origin',
             data: values,
             backgroundColor: colors,
-            borderColor: 'rgb(45, 66, 135)',
           },
           {
             fill: 'origin',
@@ -174,7 +185,8 @@ export class CcTileMetrics extends LitElement {
       const labels = this.ramData.map((item) => item.timestamp);
       const values = this.ramData.map((item) => item.usedPercent);
       const totalValues = this.ramData.map((item) => item.totalValue);
-      const colors = this._addColors(values);
+      const colors = values.map((percent) => this._getColor(percent));
+
 
       this._ramChart.data = {
         labels,
@@ -183,7 +195,6 @@ export class CcTileMetrics extends LitElement {
             fill: 'origin',
             data: values,
             backgroundColor: colors,
-            borderColor: 'rgb(45, 66, 135)',
           },
           {
             fill: 'origin',
@@ -205,11 +216,16 @@ export class CcTileMetrics extends LitElement {
     const displayEmpty = (this._empty && !this._docs);
     const displayDocs = (this._docs);
 
+    const cpuPercent = this.cpuData[this.cpuData.length - 1].usedPercent;
+    const cpuColorType = this._getColorType(cpuPercent);
+    const ramPercent = this.ramData[this.ramData.length - 1].usedPercent;
+    const ramColorType = this._getColorType(ramPercent);
+
     return html`
       <div class="tile_title tile_title--image">
         ${i18n('cc-tile-metrics.title')}
         <div class="docs-buttons">
-          <a class="cc-link" href="https://example.com">
+          <a class="cc-link" href="https://example.com" title=${i18n('cc-tile-metrics.link-to-grafana')}>
             <img class="grafana-logo" src=${grafanaSvg} alt="">
           </a>
           <cc-button
@@ -226,7 +242,7 @@ export class CcTileMetrics extends LitElement {
 
         <div class="category">
           ${!this._skeleton ? html`
-          <div class="category-title ${classMap({ skeleton: this._skeleton })}">${i18n('cc-tile-metrics.cpu')}</div>
+          <div class="category-title">${i18n('cc-tile-metrics.cpu')}</div>
           ` : ''}
           <div class="chart-wrapper">
             <div class="chart-container ${classMap({ skeleton: this._skeleton })}">
@@ -234,7 +250,7 @@ export class CcTileMetrics extends LitElement {
             </div>
           </div>
           ${this.cpuData != null ? html`
-            <div class="current-percentage">${i18n('cc-tile-metrics.percent', { percent: this.cpuData[this.cpuData.length - 1].usedPercent })}</div>
+            <div class="current-percentage" data-color-type=${cpuColorType}>${i18n('cc-tile-metrics.percent', { percent: cpuPercent })}</div>
           ` : ''}
         </div>
         
@@ -248,7 +264,7 @@ export class CcTileMetrics extends LitElement {
             </div>
           </div>
           ${this.ramData != null ? html`
-            <div class="current-percentage">${i18n('cc-tile-metrics.percent', { percent: this.ramData[this.ramData.length - 1].usedPercent })}</div>
+            <div class="current-percentage" data-color-type=${ramColorType}>${i18n('cc-tile-metrics.percent', { percent: ramPercent })}</div>
           ` : ''}
         </div>
 
@@ -270,8 +286,16 @@ export class CcTileMetrics extends LitElement {
       linkStyles,
       tileStyles,
       skeletonStyles,
+      defaultThemeStyles,
       // language=CSS
       css`
+        
+        :host {
+          /* Custom colors properties used in JavaScript for Chart.js bar colors */
+          --chart-color-bottom: #37a9d3;
+          --chart-color-middle: var(--cc-chart-color-blue);
+          --chart-color-top: var(--cc-chart-color-red);
+        }
 
           .category {
               display: contents;
@@ -284,6 +308,18 @@ export class CcTileMetrics extends LitElement {
           .current-percentage {
               font-size: 1.25em;
               /*font-weight: bold;*/
+          }
+          
+          .current-percentage[data-color-type="top"] {
+              color: var(--chart-color-top);
+          } 
+          
+          .current-percentage[data-color-type="middle"] {
+              color: var(--chart-color-middle);
+          }
+          
+          .current-percentage[data-color-type="bottom"] {
+              color: var(--chart-color-bottom);
           }
 
           .tile_title {
