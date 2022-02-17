@@ -2,15 +2,27 @@ import { Chart, registerables } from 'chart.js';
 import { css, html, LitElement } from 'lit-element';
 import { classMap } from 'lit-html/directives/class-map.js';
 import { i18n } from '../lib/i18n.js';
+import { defaultThemeStyles } from '../styles/default-theme.js';
 import { tileStyles } from '../styles/info-tiles.js';
 import { skeletonStyles } from '../styles/skeleton.js';
-import { ccLink, linkStyles } from '../templates/cc-link.js';
-import { getCssCustomProperties } from '../lib/css-custom-properties.js';
-import { defaultThemeStyles } from '../styles/default-theme.js';
+import { linkStyles } from '../templates/cc-link.js';
 
 const closeSvg = new URL('../assets/close.svg', import.meta.url).href;
 const infoSvg = new URL('../assets/info.svg', import.meta.url).href;
 const grafanaSvg = new URL('../assets/grafana.svg', import.meta.url).href;
+
+// TODO: split in constants
+const [TOP, MIDDLE, BOTTOM] = ['rgb(237, 52, 97)', 'rgb(100, 146, 234)', 'rgb(78, 100, 234)'];
+const EIGHTY_PERCENT = 0.8;
+const TWENTY_PERCENT = 0.2;
+
+const SKELETON_REQUESTS = Array
+  .from(new Array(24))
+  .map((_, index) => {
+    const startTs = new Date().getTime();
+    return { usedPercent: Math.random(), totalValue: 1, timestamp: startTs + index * 3600 };
+  });
+
 
 /**
  * A component doing X and Y (one liner description of your component).
@@ -63,7 +75,6 @@ export class CcTileMetrics extends LitElement {
       _skeleton: { type: Boolean, attribute: false },
       _empty: { type: Boolean, attribute: false },
       _docs: { type: Boolean, attribute: false },
-      _currentP : {type: Object},
     };
   }
 
@@ -79,26 +90,17 @@ export class CcTileMetrics extends LitElement {
     this._docs = false;
     this._cpuData = null;
     this._ramData = null;
+    this._skeleton = false;
   }
 
   _getColor (percent) {
-    if (this._colors == null) {
-      this._colors = getCssCustomProperties(this);
+    if (percent > EIGHTY_PERCENT) {
+      return TOP;
     }
-    const type = this._getColorType(percent);
-
-    return this._colors[`--chart-color-${type}`];
-  }
-
-  // TODO: put constant in top of file
-  _getColorType (percent) {
-    if (percent > 0.8) {
-      return 'top';
+    else if (percent > TWENTY_PERCENT) {
+      return MIDDLE;
     }
-    else if (percent > 0.2) {
-      return 'middle';
-    }
-    return 'bottom';
+    return BOTTOM;
   }
 
   _createChart (chartElement) {
@@ -132,6 +134,31 @@ export class CcTileMetrics extends LitElement {
     });
   }
 
+  _getChartData (inputData) {
+
+    const data = this._skeleton ? SKELETON_REQUESTS : inputData;
+    const labels = data.map((item) => item.timestamp);
+    const values = data.map((item) => item.usedPercent);
+    const totalValues = data.map((item) => item.totalValue);
+    const colors = this._skeleton
+      ? values.map((_) => '#bbb')
+      : values.map((percent) => this._getColor(percent));
+
+    return {
+      labels,
+      datasets: [
+        {
+          fill: 'origin',
+          data: values,
+          backgroundColor: colors,
+        },
+        {
+          fill: 'origin',
+          data: totalValues,
+        },
+      ],
+    };
+  }
 
   _onToggleDocs () {
     this._docs = !this._docs;
@@ -151,58 +178,14 @@ export class CcTileMetrics extends LitElement {
   // updated and not update because we need this._chart before
   updated (changedProperties) {
 
-    this._skeleton = (this.cpuData == null || this.ramData == null);
-
     if (changedProperties.has('cpuData')) {
-
-
-      const labels = this.cpuData.map((item) => item.timestamp);
-      const values = this.cpuData.map((item) => item.usedPercent);
-      const totalValues = this.cpuData.map((item) => item.totalValue);
-      const colors = values.map((percent) => this._getColor(percent));
-
-      this._cpuChart.data = {
-        labels,
-        datasets: [
-          {
-            fill: 'origin',
-            data: values,
-            backgroundColor: colors,
-          },
-          {
-            fill: 'origin',
-            data: totalValues,
-          },
-        ],
-      };
-
+      this._cpuChart.data = this._getChartData(this.cpuData);
       this._cpuChart.update();
       this._cpuChart.resize();
     }
 
     if (changedProperties.has('ramData')) {
-
-      const labels = this.ramData.map((item) => item.timestamp);
-      const values = this.ramData.map((item) => item.usedPercent);
-      const totalValues = this.ramData.map((item) => item.totalValue);
-      const colors = values.map((percent) => this._getColor(percent));
-
-
-      this._ramChart.data = {
-        labels,
-        datasets: [
-          {
-            fill: 'origin',
-            data: values,
-            backgroundColor: colors,
-          },
-          {
-            fill: 'origin',
-            data: totalValues,
-          },
-        ],
-      };
-
+      this._ramChart.data = this._getChartData(this.ramData);
       this._ramChart.update();
       this._ramChart.resize();
     }
@@ -215,11 +198,17 @@ export class CcTileMetrics extends LitElement {
     const displayError = (this.error && !this._docs);
     const displayEmpty = (this._empty && !this._docs);
     const displayDocs = (this._docs);
+    this._skeleton = (this.cpuData == null || this.ramData == null);
 
-    const cpuPercent = this.cpuData[this.cpuData.length - 1].usedPercent;
-    const cpuColorType = this._getColorType(cpuPercent);
-    const ramPercent = this.ramData[this.ramData.length - 1].usedPercent;
-    const ramColorType = this._getColorType(ramPercent);
+
+    const cpuPercent = this._skeleton
+      ? 0
+      : this.cpuData[this.cpuData.length - 1].usedPercent;
+    const cpuColorType = this._skeleton ? '#bbb' : this._getColor(cpuPercent);
+    const ramPercent = this._skeleton
+      ? 0
+      : this.ramData[this.ramData.length - 1].usedPercent;
+    const ramColorType = this._skeleton ? '#bbb' : this._getColor(ramPercent);
 
     return html`
       <div class="tile_title tile_title--image">
@@ -241,31 +230,23 @@ export class CcTileMetrics extends LitElement {
       <div class="tile_body ${classMap({ 'tile--hidden': !displayChart })}">
 
         <div class="category">
-          ${!this._skeleton ? html`
           <div class="category-title">${i18n('cc-tile-metrics.cpu')}</div>
-          ` : ''}
           <div class="chart-wrapper">
             <div class="chart-container ${classMap({ skeleton: this._skeleton })}">
               <canvas id="cpu_chart"></canvas>
             </div>
           </div>
-          ${this.cpuData != null ? html`
-            <div class="current-percentage" data-color-type=${cpuColorType}>${i18n('cc-tile-metrics.percent', { percent: cpuPercent })}</div>
-          ` : ''}
+            <div class="current-percentage ${classMap({ skeleton: this._skeleton })}" style=${`color: ${cpuColorType}`}>${i18n('cc-tile-metrics.percent', { percent: cpuPercent })}</div>
         </div>
         
         <div class="category">
-          ${!this._skeleton ? html`
-          <div class="category-title ${classMap({ skeleton: this._skeleton })}">${i18n('cc-tile-metrics.ram')}</div>
-          ` : ''}
+          <div class="category-title">${i18n('cc-tile-metrics.ram')}</div>
           <div class="chart-wrapper">
             <div class="chart-container ${classMap({ skeleton: this._skeleton })}">
               <canvas id="ram_chart"></canvas>
             </div>
           </div>
-          ${this.ramData != null ? html`
-            <div class="current-percentage" data-color-type=${ramColorType}>${i18n('cc-tile-metrics.percent', { percent: ramPercent })}</div>
-          ` : ''}
+            <div class="current-percentage ${classMap({ skeleton: this._skeleton })}" style=${`color: ${ramColorType}`}>${i18n('cc-tile-metrics.percent', { percent: ramPercent })}</div>
         </div>
 
       </div>
@@ -275,7 +256,7 @@ export class CcTileMetrics extends LitElement {
       <cc-error class="tile_message ${classMap({ 'tile--hidden': !displayError })}">${i18n('cc-tile-metrics.error')}</cc-error>
 
       <div class="tile_docs ${classMap({ 'tile--hidden': !displayDocs })}">
-        <p>${i18n('cc-tile-metrics.docs.msg', {grafanaLink: this.grafanaBaseLink, metricsLink: this.metricsBaseLink})}</p>
+        <p>${i18n('cc-tile-metrics.docs.msg', { grafanaLink: this.grafanaBaseLink, metricsLink: this.metricsBaseLink })}</p>
       </div>
     `;
 
@@ -289,7 +270,7 @@ export class CcTileMetrics extends LitElement {
       defaultThemeStyles,
       // language=CSS
       css`
-        
+
         :host {
           /* Custom colors properties used in JavaScript for Chart.js bar colors */
           --chart-color-bottom: #37a9d3;
@@ -309,37 +290,32 @@ export class CcTileMetrics extends LitElement {
               font-size: 1.25em;
               /*font-weight: bold;*/
           }
-          
-          .current-percentage[data-color-type="top"] {
-              color: var(--chart-color-top);
-          } 
-          
-          .current-percentage[data-color-type="middle"] {
-              color: var(--chart-color-middle);
-          }
-          
-          .current-percentage[data-color-type="bottom"] {
-              color: var(--chart-color-bottom);
-          }
 
+        .current-percentage.skeleton {
+          background-color: #bbb;
+          color: #000;
+          /*font-weight: bold;*/
+        }
+
+        
           .tile_title {
               align-items: center;
               display: flex;
               justify-content: space-between;
           }
 
-          
+
           .docs-toggle,
           .docs-grafana-btn {
               font-size: 1rem;
               margin: 0 0 0 1rem;
           }
-          
+
           .docs-buttons {
-            display: flex;
             align-items: center;
+            display: flex;
           }
-          
+
           .chart-wrapper {
             /* TODO : find a way to resize width properly */
               /*width: 100%;*/
@@ -355,11 +331,11 @@ export class CcTileMetrics extends LitElement {
               position: absolute;
               width: 100%;
           }
-          
+
           .grafana-logo {
             display: block;
-            width: 1em;
             height: 1em;
+            width: 1em;
           }
 
           /*

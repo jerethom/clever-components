@@ -186,7 +186,7 @@ export const appDown = makeStory(conf, {
 });
 
 export const skeleton = makeStory(conf, {
-  items: [{}],
+  items: baseItems,
 });
 
 export const empty = makeStory(conf, {
