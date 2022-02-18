@@ -125,7 +125,7 @@ function getCpuUsage() {
     },
     // This is ignored by Warp10, it's here to help identify HTTP calls in browser devtools
     queryParams: {
-      query: '100 - max(cpu.usage_idle{app_id="app_ac13fa80-0424-4ac1-8593-c7136a43c9e3"})',
+      query: '100 - max(cpu.usage_idle{app_id="app_b75977aa-563f-40fd-a592-224a5f6afbd6"})',
       start: Math.floor(start / 1000),
       end: Math.floor(ts / 1000),
       step: '3600',
@@ -166,7 +166,7 @@ async function run () {
   console.log('api call done');
 
   // ram.data.result.forEach((elems) => console.log(elems));
-  console.log(cpus.data.result);
+  console.log('cpus', cpus);
   cpus.data.result.forEach((elems) => console.log(elems));
 
   process.exit();

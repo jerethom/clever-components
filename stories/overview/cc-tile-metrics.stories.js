@@ -16,7 +16,7 @@ const conf = {
 };
 
 const baseItems = [
-  {  },
+  { },
   { style: 'width: 380px' },
   { style: 'width: 540px' },
 ];
@@ -177,10 +177,10 @@ export const appDown = makeStory(conf, {
   items:
     baseItems.map((item) => ({
       ...item,
-      cpuData: addTimestamp(fakeMetricData(24, 0.223)),
+      cpuData: addTimestamp(fakeMetricData(12, 0.223)),
       ramData: addTimestamp([
-        ...fakeMetricData(12, 0.10),
-        ...fakeMetricData(12, 0.10 * 8),
+        ...fakeMetricData(5, 0.10),
+        ...fakeMetricData(10, 0.10 * 8),
       ]),
     })),
 });
@@ -190,22 +190,43 @@ export const skeleton = makeStory(conf, {
 });
 
 export const empty = makeStory(conf, {
-  items: [{ three: [] }],
+  items: [{ cpuData: [], ramData: [] }],
 });
 
 export const error = makeStory(conf, {
   items: [{ error: true }],
 });
 
-export const simulations = makeStory(conf, {
-  items: [{}, {}],
+export const simulationsWithData = makeStory(conf, {
+  items: baseItems,
   simulations: [
-    storyWait(2000, ([component, componentError]) => {
-      component.three = [{ foo: 42 }];
-      componentError.error = true;
+    storyWait(2000, ([componentSmall, componentMedium, componentBig]) => {
+      componentSmall.cpuData = addTimestamp(fakeMetricData(24, 0.223));
+      componentSmall.ramData = addTimestamp([
+        ...fakeMetricData(12, 0.10),
+        ...fakeMetricData(12, 0.10 * 8),
+      ]);
+      componentMedium.cpuData = addTimestamp(fakeMetricData(24, 0.223));
+      componentMedium.ramData = addTimestamp([
+        ...fakeMetricData(12, 0.10),
+        ...fakeMetricData(12, 0.10 * 8),
+      ]);
+      componentBig.cpuData = addTimestamp(fakeMetricData(24, 0.223));
+      componentBig.ramData = addTimestamp([
+        ...fakeMetricData(12, 0.10),
+        ...fakeMetricData(12, 0.10 * 8),
+      ]);
     }),
-    storyWait(1000, ([component]) => {
-      component.three = [{ foo: 42 }, { foo: 43 }];
+  ],
+});
+
+export const simulationsWithError = makeStory(conf, {
+  items: baseItems,
+  simulations: [
+    storyWait(2000, ([componentSmall, componentMedium, componentBig]) => {
+      componentSmall.error = true;
+      componentMedium.error = true;
+      componentBig.error = true;
     }),
   ],
 });
@@ -216,5 +237,6 @@ enhanceStoriesNames({
   skeleton,
   empty,
   error,
-  simulations,
+  simulationsWithData,
+  simulationsWithError,
 });

@@ -12,9 +12,14 @@ const infoSvg = new URL('../assets/info.svg', import.meta.url).href;
 const grafanaSvg = new URL('../assets/grafana.svg', import.meta.url).href;
 
 // TODO: split in constants
-const [TOP, MIDDLE, BOTTOM] = ['rgb(237, 52, 97)', 'rgb(100, 146, 234)', 'rgb(78, 100, 234)'];
+const TOP = 'rgb(237, 52, 97)';
+const MIDDLE = 'rgb(100, 146, 234)';
+const BOTTOM = 'rgb(78, 100, 234)';
+
 const EIGHTY_PERCENT = 0.8;
 const TWENTY_PERCENT = 0.2;
+
+const NUMBER_OF_POINTS = 24;
 
 const SKELETON_REQUESTS = Array
   .from(new Array(24))
@@ -22,7 +27,6 @@ const SKELETON_REQUESTS = Array
     const startTs = new Date().getTime();
     return { usedPercent: Math.random(), totalValue: 1, timestamp: startTs + index * 3600 };
   });
-
 
 /**
  * A component doing X and Y (one liner description of your component).
@@ -67,40 +71,28 @@ export class CcTileMetrics extends LitElement {
     return {
       cpuData: { type: Array },
       error: { type: Boolean, reflect: true },
-      metricsBaseLink: { type: String },
       grafanaBaseLink: { type: String },
+      metricsBaseLink: { type: String },
       ramData: { type: Array },
-      _cpuData: { type: Array },
-      _ramData: { type: Array },
-      _skeleton: { type: Boolean, attribute: false },
-      _empty: { type: Boolean, attribute: false },
       _docs: { type: Boolean, attribute: false },
+      _empty: { type: Boolean, attribute: false },
+      _skeleton: { type: Boolean, attribute: false },
     };
   }
 
   constructor () {
     super();
-    this.cpuData = null;
+
+    this.cpuData = [];
     // Triggers setter (init _backgroundColor, _chartLabels, _data, _empty, _labels and _skeleton)
     this.error = null;
-    this.metricsBaseLink = '';
     this.grafanaBaseLink = '';
+    this.metricsBaseLink = '';
     this.ramData = null;
-    this.statusCodes = null;
-    this._docs = false;
-    this._cpuData = null;
-    this._ramData = null;
-    this._skeleton = false;
-  }
 
-  _getColor (percent) {
-    if (percent > EIGHTY_PERCENT) {
-      return TOP;
-    }
-    else if (percent > TWENTY_PERCENT) {
-      return MIDDLE;
-    }
-    return BOTTOM;
+    this._docs = false;
+    this._empty = false;
+    this._skeleton = false;
   }
 
   _createChart (chartElement) {
@@ -132,6 +124,16 @@ export class CcTileMetrics extends LitElement {
         },
       },
     });
+  }
+
+  _getColor (percent) {
+    if (percent > EIGHTY_PERCENT) {
+      return TOP;
+    }
+    else if (percent > TWENTY_PERCENT) {
+      return MIDDLE;
+    }
+    return BOTTOM;
   }
 
   _getChartData (inputData) {
@@ -194,21 +196,19 @@ export class CcTileMetrics extends LitElement {
   }
 
   render () {
-    const displayChart = (!this.error && !this._empty && !this._docs);
-    const displayError = (this.error && !this._docs);
-    const displayEmpty = (this._empty && !this._docs);
-    const displayDocs = (this._docs);
     this._skeleton = (this.cpuData == null || this.ramData == null);
+    this._empty = (!this._skeleton && (this.cpuData.length < NUMBER_OF_POINTS || this.ramData < NUMBER_OF_POINTS));
 
+    const displayDocs = (this._docs);
+    const displayError = (this.error && !this._docs);
+    const displayChart = (!this.error && !this._empty && !this._docs);
+    const displayEmpty = (this._empty && !this._docs);
 
-    const cpuPercent = this._skeleton
-      ? 0
-      : this.cpuData[this.cpuData.length - 1].usedPercent;
-    const cpuColorType = this._skeleton ? '#bbb' : this._getColor(cpuPercent);
-    const ramPercent = this._skeleton
-      ? 0
-      : this.ramData[this.ramData.length - 1].usedPercent;
-    const ramColorType = this._skeleton ? '#bbb' : this._getColor(ramPercent);
+    const cpuPercent = (!this._skeleton && !this._empty) ? this.cpuData[this.cpuData.length - 1].usedPercent : 0;
+    const ramPercent = (!this._skeleton && !this._empty) ? this.ramData[this.ramData.length - 1].usedPercent : 0;
+
+    const cpuColorType = (this._skeleton || this._empty) ? '#bbb' : this._getColor(cpuPercent);
+    const ramColorType = (this._skeleton || this._empty) ? '#bbb' : this._getColor(ramPercent);
 
     return html`
       <div class="tile_title tile_title--image">
@@ -228,7 +228,6 @@ export class CcTileMetrics extends LitElement {
       </div>
 
       <div class="tile_body ${classMap({ 'tile--hidden': !displayChart })}">
-
         <div class="category">
           <div class="category-title">${i18n('cc-tile-metrics.cpu')}</div>
           <div class="chart-wrapper">
@@ -238,7 +237,6 @@ export class CcTileMetrics extends LitElement {
           </div>
             <div class="current-percentage ${classMap({ skeleton: this._skeleton })}" style=${`color: ${cpuColorType}`}>${i18n('cc-tile-metrics.percent', { percent: cpuPercent })}</div>
         </div>
-        
         <div class="category">
           <div class="category-title">${i18n('cc-tile-metrics.ram')}</div>
           <div class="chart-wrapper">
@@ -248,7 +246,6 @@ export class CcTileMetrics extends LitElement {
           </div>
             <div class="current-percentage ${classMap({ skeleton: this._skeleton })}" style=${`color: ${ramColorType}`}>${i18n('cc-tile-metrics.percent', { percent: ramPercent })}</div>
         </div>
-
       </div>
 
       <div class="tile_message ${classMap({ 'tile--hidden': !displayEmpty })}">${i18n('cc-tile-metrics.empty')}</div>
@@ -267,17 +264,10 @@ export class CcTileMetrics extends LitElement {
       linkStyles,
       tileStyles,
       skeletonStyles,
-      defaultThemeStyles,
       // language=CSS
       css`
 
-        :host {
-          /* Custom colors properties used in JavaScript for Chart.js bar colors */
-          --chart-color-bottom: #37a9d3;
-          --chart-color-middle: var(--cc-chart-color-blue);
-          --chart-color-top: var(--cc-chart-color-red);
-        }
-
+        
           .category {
               display: contents;
           }
@@ -288,7 +278,6 @@ export class CcTileMetrics extends LitElement {
 
           .current-percentage {
               font-size: 1.25em;
-              /*font-weight: bold;*/
           }
 
         .current-percentage.skeleton {
@@ -296,7 +285,6 @@ export class CcTileMetrics extends LitElement {
           color: #000;
           /*font-weight: bold;*/
         }
-
         
           .tile_title {
               align-items: center;
@@ -317,8 +305,6 @@ export class CcTileMetrics extends LitElement {
           }
 
           .chart-wrapper {
-            /* TODO : find a way to resize width properly */
-              /*width: 100%;*/
               /* Change chart height size */
               height: 2em;
               position: relative;
