@@ -94,7 +94,7 @@ function getMemoryUsage() {
     },
     // This is ignored by Warp10, it's here to help identify HTTP calls in browser devtools
     queryParams: {
-      query: 'sum(label_replace({__name__=~"mem.used_percent|mem.total",app_id="app_ac13fa80-0424-4ac1-8593-c7136a43c9e3"}, "series_name", "$1", "__name__", "(.*)")) by (series_name, flavor_name)',
+      query: 'sum(label_replace({__name__=~"mem.used_percent|mem.total",app_id="app_67008db4-7bc3-4949-bb7f-fdf4afb17df8"}, "series_name", "$1", "__name__", "(.*)")) by (series_name, flavor_name)',
       start: Math.floor(start / 1000),
       end: Math.floor(ts / 1000),
       step: '3600',
@@ -125,7 +125,7 @@ function getCpuUsage() {
     },
     // This is ignored by Warp10, it's here to help identify HTTP calls in browser devtools
     queryParams: {
-      query: '100 - max(cpu.usage_idle{app_id="app_b75977aa-563f-40fd-a592-224a5f6afbd6"})',
+      query: '100 - max(cpu.usage_idle{app_id="app_67008db4-7bc3-4949-bb7f-fdf4afb17df8"})',
       start: Math.floor(start / 1000),
       end: Math.floor(ts / 1000),
       step: '3600',
@@ -153,21 +153,22 @@ async function run () {
     OAUTH_CONSUMER_SECRET: 'MgVMqTr6fWlf2M0tkC2MXOnhfqBWDT',
   };
 
+  console.log('token', token, 'secret', secret);
 
   const warpToken = await getWarp10MetricsToken({ orgaId: ownerId })
     .then(sendToApi({ apiConfig, cacheDelay: ONE_DAY }));
   apiConfig.PROMETHEUS_HOST = `https://u:${warpToken}@prometheus-c1-warp10-clevercloud-customers.services.clever-cloud.com`;
 
-  // const ram = await getMemoryUsage({ warpToken, ownerId, appId })
-  //   .then(sendToPrometheus({ apiConfig, timeout: THIRTY_SECONDS }));
-  console.log('making api call...');
-  const cpus = await getCpuUsage({ warpToken, ownerId, appId })
+  const ram = await getMemoryUsage({ warpToken, ownerId, appId })
     .then(sendToPrometheus({ apiConfig, timeout: THIRTY_SECONDS }));
+  console.log('making api call...');
+  // const cpus = await getCpuUsage({ warpToken, ownerId, appId })
+  //   .then(sendToPrometheus({ apiConfig, timeout: THIRTY_SECONDS }));
   console.log('api call done');
-
-  // ram.data.result.forEach((elems) => console.log(elems));
-  console.log('cpus', cpus);
-  cpus.data.result.forEach((elems) => console.log(elems));
+  console.log('ram', ram.data.result.length);
+  ram.data.result.forEach((elems) => console.log(elems));
+  // console.log('cpus', cpus.data.result);
+  // cpus.data.result.forEach((elems) => console.log(elems));
 
   process.exit();
 }
