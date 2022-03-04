@@ -30,19 +30,10 @@ export interface InstancesState {
 
 export type ModeType = "app" | "orga";
 
-export interface RamMetric {
+export interface Metric {
   // Timestamp are ms
   timestamp: number,
   usedPercent: number,
-  // Bytes
-  totalValue: number,
-}
-export interface CpuMetric {
-  // Timestamp are ms
-  timestamp: number,
-  usedPercent: number,
-  // CPU core numbers
-  totalValue: number,
 }
 
 export type RequestsData = [

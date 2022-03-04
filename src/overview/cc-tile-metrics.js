@@ -2,7 +2,6 @@ import { Chart, registerables } from 'chart.js';
 import { css, html, LitElement } from 'lit-element';
 import { classMap } from 'lit-html/directives/class-map.js';
 import { i18n } from '../lib/i18n.js';
-import { defaultThemeStyles } from '../styles/default-theme.js';
 import { tileStyles } from '../styles/info-tiles.js';
 import { skeletonStyles } from '../styles/skeleton.js';
 import { linkStyles } from '../templates/cc-link.js';
@@ -11,10 +10,9 @@ const closeSvg = new URL('../assets/close.svg', import.meta.url).href;
 const infoSvg = new URL('../assets/info.svg', import.meta.url).href;
 const grafanaSvg = new URL('../assets/grafana.svg', import.meta.url).href;
 
-// TODO: split in constants
 const TOP = 'rgb(237, 52, 97)';
-const MIDDLE = 'rgb(100, 146, 234)';
-const BOTTOM = 'rgb(78, 100, 234)';
+const MIDDLE = 'rgb(78, 100, 234)';
+const BOTTOM = 'rgb(100, 146, 234)';
 
 const EIGHTY_PERCENT = 0.8;
 const TWENTY_PERCENT = 0.2;
@@ -22,49 +20,28 @@ const TWENTY_PERCENT = 0.2;
 const NUMBER_OF_POINTS = 24;
 
 const SKELETON_REQUESTS = Array
-  .from(new Array(24))
+  .from(new Array(NUMBER_OF_POINTS))
   .map((_, index) => {
     const startTs = new Date().getTime();
     return { usedPercent: Math.random(), totalValue: 1, timestamp: startTs + index * 3600 };
   });
 
 /**
- * A component doing X and Y (one liner description of your component).
+ * @typedef {import('./types.js').Metric} Metric
+ */
+
+/**
+ * A "tile" component to display CPU and RAM metrics in a bar chart.
  *
  * ## Details
  *
- * * Details about bla.
- * * Details about bla bla.
- * * Details about bla bla bla.
+ * * When `cpuData` nor `ramData` is nullish, a skeleton screen UI pattern is displayed (loading hint).
+ * * A short doc is available when the (i) button is clicked.
  *
- * ## Technical details
  *
- * * Technical details about foo.
- * * Technical details about bar.
- * * Technical details about baz.
- *
- * ## Type definitions
- *
- * ```js
- * interface ExampleInterface {
- *   one: string,
- *   two: number,
- *   three: boolean,
- * }
- * ```
- *
- * @cssdisplay block
- *
- * @prop {String} one - Description for one.
- * @prop {Boolean} two - Description for two.
- * @prop {ExampleInterface[]} three - Description for three.
- *
- * @event {CustomEvent<ExampleInterface>} example-component:event-name - Fires XXX whenever YYY.
- *
- * @slot - The content of the button (text or HTML). If you want an image, please look at the `image` attribute.
- *
- * @cssprop {Color} --cc-loader-color - The color of the animated circle (defaults: `#2653af`).
+ * @cssdisplay grid
  */
+
 export class CcTileMetrics extends LitElement {
 
   static get properties () {
@@ -83,15 +60,28 @@ export class CcTileMetrics extends LitElement {
   constructor () {
     super();
 
-    this.cpuData = [];
-    // Triggers setter (init _backgroundColor, _chartLabels, _data, _empty, _labels and _skeleton)
+    /** @type {Metric[]|null} Sets CPU data with 24 points with the timestamp and the used percent. */
+    this.cpuData = null;
+
+    /** @type {boolean|null} Displays an error message. */
     this.error = null;
+
+    /** @type {string} Sets the link to the grafana. */
     this.grafanaBaseLink = '';
+
+    /** @type {string} Sets the link to the metrics. */
     this.metricsBaseLink = '';
+
+    /** @type {Metric[]|null} Sets CPU data with 24 points with the timestamp and the used percent. */
     this.ramData = null;
 
+    /** @type {boolean} */
     this._docs = false;
+
+    /** @type {boolean} */
     this._empty = false;
+
+    /** @type {boolean} */
     this._skeleton = false;
   }
 
@@ -141,7 +131,10 @@ export class CcTileMetrics extends LitElement {
     const data = this._skeleton ? SKELETON_REQUESTS : inputData;
     const labels = data.map((item) => item.timestamp);
     const values = data.map((item) => item.usedPercent);
-    const totalValues = data.map((item) => item.totalValue);
+    const totalValues = Array
+      .from(new Array(NUMBER_OF_POINTS))
+      .map((_) => 1);
+
     const colors = this._skeleton
       ? values.map((_) => '#bbb')
       : values.map((percent) => this._getColor(percent));
@@ -197,7 +190,7 @@ export class CcTileMetrics extends LitElement {
 
   render () {
     this._skeleton = (this.cpuData == null || this.ramData == null);
-    this._empty = (!this._skeleton && (this.cpuData.length < NUMBER_OF_POINTS || this.ramData < NUMBER_OF_POINTS));
+    this._empty = !this._skeleton && (this.cpuData.length === 0 || this.ramData.length === 0);
 
     const displayDocs = (this._docs);
     const displayError = (this.error && !this._docs);
@@ -266,96 +259,93 @@ export class CcTileMetrics extends LitElement {
       skeletonStyles,
       // language=CSS
       css`
+        .category {
+          display: contents;
+        }
 
-        
-          .category {
-              display: contents;
-          }
+        .category-title {
+          color: #5D5D5D;
+        }
 
-          .category-title {
-            color: #5D5D5D;
-          }
-
-          .current-percentage {
-              font-size: 1.25em;
-          }
+        .current-percentage {
+          font-size: 1.25em;
+        }
 
         .current-percentage.skeleton {
           background-color: #bbb;
           color: #000;
-          /*font-weight: bold;*/
         }
-        
-          .tile_title {
-              align-items: center;
-              display: flex;
-              justify-content: space-between;
-          }
+
+        .tile_title {
+          align-items: center;
+          display: flex;
+          justify-content: space-between;
+        }
 
 
-          .docs-toggle,
-          .docs-grafana-btn {
-              font-size: 1rem;
-              margin: 0 0 0 1rem;
-          }
+        .docs-toggle,
+        .docs-grafana-btn {
+          font-size: 1rem;
+          margin: 0 0 0 1rem;
+        }
 
-          .docs-buttons {
-            align-items: center;
-            display: flex;
-          }
+        .docs-buttons {
+          align-items: center;
+          display: flex;
+        }
 
-          .chart-wrapper {
-              /* Change chart height size */
-              height: 2em;
-              position: relative;
-          }
+        .chart-wrapper {
+          /* Change chart height size */
+          height: 2em;
+          position: relative;
+        }
 
-          .chart-container {
-              /*We need this because: https://github.com/chartjs/Chart.js/issues/4156 */
-              height: 100%;
-              min-width: 0;
-              position: absolute;
-              width: 100%;
-          }
+        .chart-container {
+          /*We need this because: https://github.com/chartjs/Chart.js/issues/4156 */
+          height: 100%;
+          min-width: 0;
+          position: absolute;
+          width: 100%;
+        }
 
-          .grafana-logo {
-            display: block;
-            height: 1em;
-            width: 1em;
-          }
+        .grafana-logo {
+          display: block;
+          height: 1em;
+          width: 1em;
+        }
 
-          /*
-            body, message and docs are placed in the same area (on top of each other)
-            this way, we can just hide the docs
-            and let the tile take at least the height of the docs text content
-           */
-          .tile_body,
-          .tile_message,
-          .tile_docs {
-              grid-area: 2 / 1 / 2 / 1;
-          }
+        /*
+          body, message and docs are placed in the same area (on top of each other)
+          this way, we can just hide the docs
+          and let the tile take at least the height of the docs text content
+         */
+        .tile_body,
+        .tile_message,
+        .tile_docs {
+          grid-area: 2 / 1 / 2 / 1;
+        }
 
-          /* See above why we hide instead of display:none */
-          .tile--hidden {
-              visibility: hidden;
-          }
+        /* See above why we hide instead of display:none */
+        .tile--hidden {
+          visibility: hidden;
+        }
 
-          .tile_body {
-              align-items: center;
-              gap: 1em;
-              grid-template-columns: min-content 1fr min-content;
-          }
+        .tile_body {
+          align-items: center;
+          gap: 1em;
+          grid-template-columns: min-content 1fr min-content;
+        }
 
-          .tile_docs {
-              align-self: center;
-              font-size: 0.9rem;
-              font-style: italic;
-          }
+        .tile_docs {
+          align-self: center;
+          font-size: 0.9rem;
+          font-style: italic;
+        }
 
-          .tile_docs_link {
-              color: #2b96fd;
-              text-decoration: underline;
-          }
+        .tile_docs_link {
+          color: #2b96fd;
+          text-decoration: underline;
+        }
       `,
     ];
   }

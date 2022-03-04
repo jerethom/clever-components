@@ -572,7 +572,7 @@ export const translations = {
   'cc-tile-metrics.about-btn': `À propos de ce graphe...`,
   'cc-tile-metrics.close-btn': `Afficher le graphe`,
   'cc-tile-metrics.cpu': `CPU`,
-  'cc-tile-metrics.docs.msg': ({grafanaLink, metricsLink}) => sanitize`Métriques serveur reçues durant les dernières 24 heures. Chaque barre représente une fenêtre de temps de  <strong>1 heure</strong>. <br> En savoir plus : <br> <a href="https://example.com">Grafana</a>, <a href="https://example.com">Métriques</a>`,
+  'cc-tile-metrics.docs.msg': ({ grafanaLink, metricsLink }) => sanitize`Métriques serveur reçues durant les dernières 24 heures. Chaque barre représente une fenêtre de temps de  <strong>1 heure</strong>. <br> En savoir plus : <br> <a href="https://example.com">Grafana</a>, <a href="https://example.com">Métriques</a>`,
   'cc-tile-metrics.empty': `Pas de métriques. L'application est arrêtée.`,
   'cc-tile-metrics.error': `Une erreur est survenue pendant le chargement des métriques.`,
   'cc-tile-metrics.link-to-grafana': `Ouvrir grafana`,

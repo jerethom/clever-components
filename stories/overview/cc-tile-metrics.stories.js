@@ -1,4 +1,5 @@
 import '../../src/overview/cc-tile-metrics.js';
+import '../../src/overview/cc-tile-metrics.smart.js';
 import { makeStory, storyWait } from '../lib/make-story.js';
 import { enhanceStoriesNames } from '../lib/story-names.js';
 
@@ -22,7 +23,7 @@ const baseItems = [
 ];
 
 const ONE_HOUR = 60 * 60 * 1000;
-function fakeMetricData (numberOfPoints, usedPercent, linearIncrease = false) {
+export function fakeMetricData (numberOfPoints, usedPercent, linearIncrease = false) {
   return Array
     .from({ length: numberOfPoints })
     .map((_, index) => {
@@ -39,7 +40,7 @@ function now () {
   return new Date().getTime();
 }
 
-function addTimestamp (array) {
+export function addTimestamp (array) {
   const startTs = now();
   return array.map((item, index) => {
     return {
@@ -177,10 +178,15 @@ export const appDown = makeStory(conf, {
   items:
     baseItems.map((item) => ({
       ...item,
-      cpuData: addTimestamp(fakeMetricData(12, 0.223)),
+      cpuData: addTimestamp([
+        ...fakeMetricData(6, 0.223),
+        ...fakeMetricData(6, 0),
+        ...fakeMetricData(12, 0.223),
+      ]),
       ramData: addTimestamp([
-        ...fakeMetricData(5, 0.10),
-        ...fakeMetricData(10, 0.10 * 8),
+        ...fakeMetricData(6, 0.10),
+        ...fakeMetricData(6, 0),
+        ...fakeMetricData(12, 0.10 * 8),
       ]),
     })),
 });

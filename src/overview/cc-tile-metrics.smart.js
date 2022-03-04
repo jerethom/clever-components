@@ -1,33 +1,34 @@
 import '../smart/cc-smart-container.js';
-import './cc-metrics.js';
-import { prefixUrl } from '@clevercloud/client/cjs/prefix-url.js';
-import { request } from '@clevercloud/client/cjs/request.superagent.js';
-import { withCache } from '@clevercloud/client/cjs/with-cache.js';
-import { withOptions } from '@clevercloud/client/cjs/with-options.js';
+import './cc-tile-metrics.js';
+import { prefixUrl } from '@clevercloud/client/esm/prefix-url.js';
 import { THIRTY_SECONDS } from '@clevercloud/client/esm/request.fetch-with-timeout.js';
-import { ONE_DAY } from '@clevercloud/client/esm/with-cache.js';
+import { request } from '@clevercloud/client/esm/request.fetch.js';
+import { ONE_DAY, withCache } from '@clevercloud/client/esm/with-cache.js';
+import { withOptions } from '@clevercloud/client/esm/with-options.js';
 import { LastPromise, unsubscribeWithSignal } from '../lib/observables.js';
-import { sendToApi } from '../lib/send-to-api.js';
+import { sendToApi, sendToPrometheus } from '../lib/send-to-api.js';
 import { defineComponent } from '../lib/smart-manager.js';
+import { addMissingPoints, roundHour } from '../lib/chart-add-points.js';
+
+const ONE_HOUR_MS = 60 * 60 * 1000;
+const ONE_HOUR = 60 * 60;
 
 defineComponent({
   selector: 'cc-tile-metrics',
   params: {
     apiConfig: { type: Object },
     ownerId: { type: String },
-    appId: { type: String, required: false },
+    appId: { type: String },
   },
   onConnect (container, component, context$, disconnectSignal) {
 
-    // const cpu_lp = new LastPromise();
-    // const ram_lp = new LastPromise();
     const metrics_lp = new LastPromise();
 
     unsubscribeWithSignal(disconnectSignal, [
 
       metrics_lp.error$.subscribe(console.error),
       metrics_lp.error$.subscribe(() => (component.error = true)),
-      metrics_lp.value$.subscribe(({ ram, cpu }) => {
+      metrics_lp.value$.subscribe(({ cpu, ram }) => {
         component.cpuData = cpu;
         component.ramData = ram;
       }),
@@ -37,7 +38,7 @@ defineComponent({
         component.cpuData = null;
         component.ramData = null;
 
-        if (apiConfig != null && ownerId != null) {
+        if (apiConfig != null && ownerId != null && appId != null) {
           metrics_lp.push((signal) => fetchMetrics({ apiConfig, signal, ownerId, appId }));
         }
       }),
@@ -46,9 +47,8 @@ defineComponent({
   },
 });
 
-// TODO : move this elsewhere
-
-function getCpuUsage () {
+// TODO clever-client
+function getCpuUsage (appId) {
   // const foo = "https://u:TOKEN@prometheus-c1-warp10-clevercloud-customers.services.clever-cloud.com/prometheus/api/v1/query_range?query=max(mem.used_percent%7Bapp_id%3D%22%24APP_ID%22%7D)%20by%20(host)&start=1623289800&end=1623311400&step=600";
   // await fetch("https://grafana.services.clever-cloud.com/api/datasources/proxy/4/api/v1/query_range", {
   //   "headers": {
@@ -60,8 +60,9 @@ function getCpuUsage () {
   //   "method": "POST",
   // "mode": "cors"
   // });
-  const ts = new Date().getTime();
-  const start = ts - 24 * 60 * 60 * 1000;
+  const now = new Date().getTime();
+  const end = now - (now % ONE_HOUR_MS);
+  const start = now - ONE_HOUR_MS * 24;
 
   return Promise.resolve({
     method: 'get',
@@ -71,15 +72,15 @@ function getCpuUsage () {
     },
     // This is ignored by Warp10, it's here to help identify HTTP calls in browser devtools
     queryParams: {
-      query: '100 - max(cpu.usage_idle{app_id="app_67008db4-7bc3-4949-bb7f-fdf4afb17df8"})',
+      query: `100 - max(cpu.usage_idle{app_id="${appId}"})`,
       start: Math.floor(start / 1000),
-      end: Math.floor(ts / 1000),
+      end: Math.floor(end / 1000),
       step: '3600',
     },
   });
 }
 
-function getMemoryUsage () {
+function getMemoryUsage (appId) {
   // const foo = "https://u:TOKEN@prometheus-c1-warp10-clevercloud-customers.services.clever-cloud.com/prometheus/api/v1/query_range?query=max(mem.used_percent%7Bapp_id%3D%22%24APP_ID%22%7D)%20by%20(host)&start=1623289800&end=1623311400&step=600";
   // await fetch("https://grafana.services.clever-cloud.com/api/datasources/proxy/4/api/v1/query_range", {
   //   "headers": {
@@ -91,8 +92,9 @@ function getMemoryUsage () {
   //   "method": "POST",
   // "mode": "cors"
   // });
-  const ts = new Date().getTime();
-  const start = ts - 24 * 60 * 60 * 1000;
+  const now = new Date().getTime();
+  const end = now - (now % ONE_HOUR_MS);
+  const start = now - ONE_HOUR_MS * 24;
 
   return Promise.resolve({
     method: 'get',
@@ -102,9 +104,9 @@ function getMemoryUsage () {
     },
     // This is ignored by Warp10, it's here to help identify HTTP calls in browser devtools
     queryParams: {
-      query: 'sum(label_replace({__name__=~"mem.used_percent|mem.total",app_id="app_67008db4-7bc3-4949-bb7f-fdf4afb17df8"}, "series_name", "$1", "__name__", "(.*)")) by (series_name, flavor_name)',
+      query: `max(mem.used_percent{app_id="${appId}"})`,
       start: Math.floor(start / 1000),
-      end: Math.floor(ts / 1000),
+      end: Math.floor(end / 1000),
       step: '3600',
     },
   });
@@ -122,29 +124,26 @@ function getWarp10MetricsToken (params) {
   });
 }
 
-function sendToPrometheus ({ apiConfig = {}, signal, cacheDelay, timeout }) {
-
-  return (requestParams) => {
-
-    const cacheParams = { ...apiConfig, ...requestParams };
-    return withCache(cacheParams, cacheDelay, () => {
-
-      const { PROMETHEUS_HOST } = apiConfig;
-      return Promise.resolve(requestParams)
-        .then(prefixUrl(PROMETHEUS_HOST))
-        .then(withOptions({ signal, timeout }))
-        .then(request);
-    });
-  };
-}
-
 async function fetchMetrics ({ apiConfig, signal, ownerId, appId }) {
   const warpToken = await getWarp10MetricsToken({ orgaId: ownerId })
     .then(sendToApi({ apiConfig, cacheDelay: ONE_DAY }));
-  apiConfig.PROMETHEUS_HOST = `https://u:${warpToken}@prometheus-c1-warp10-clevercloud-customers.services.clever-cloud.com`;
-  const cpu = await getCpuUsage({ warpToken, ownerId, appId })
-    .then(sendToPrometheus({ apiConfig, timeout: THIRTY_SECONDS }));
-  const ram = await getMemoryUsage({ warpToken, ownerId, appId })
-    .then(sendToPrometheus({ apiConfig, timeout: THIRTY_SECONDS }));
-  return { cpu, ram };
+  // TODO: Fetch in parallel
+  const cpu = await getCpuUsage(appId)
+    .then(sendToPrometheus({ apiConfig, signal, timeout: THIRTY_SECONDS, warpToken }));
+  const ram = await getMemoryUsage(appId)
+    .then(sendToPrometheus({ apiConfig, signal, timeout: THIRTY_SECONDS, warpToken }));
+
+  const now = new Date().getTime();
+  const end = now - (now % ONE_HOUR_MS);
+  const start = now - ONE_HOUR_MS * 24;
+  // console.log('cpu', addMissingPoints(cpu.data.result[0].values));
+  // console.log('ram', addMissingPoints(ram.data.result[0].values));
+  console.log('cpu', cpu.data.result[0].values);
+  console.log('ram', ram.data.result[0].values);
+
+  if (cpu.data.result.length === 0 || ram.data.result.length === 0) {
+    return { cpu: [], ram: [] };
+  }
+
+  return { cpu: addMissingPoints(cpu.data.result[0].values), ram: addMissingPoints(ram.data.result[0].values) };
 }

@@ -4,6 +4,7 @@ import { execWarpscript } from '@clevercloud/client/esm/request-warp10.fetch.js'
 import { request } from '@clevercloud/client/esm/request.fetch.js';
 import { withCache } from '@clevercloud/client/esm/with-cache.js';
 import { withOptions } from '@clevercloud/client/esm/with-options.js';
+// import { addBasicAuth } from '@clevercloud/client/esm/basicauth.js';
 
 /**
  *
@@ -28,6 +29,42 @@ export function sendToApi ({ apiConfig = {}, signal, cacheDelay, timeout }) {
       return Promise.resolve(requestParams)
         .then(prefixUrl(API_HOST))
         .then(addOauthHeader(tokens))
+        .then(withOptions({ signal, timeout }))
+        .then(request);
+    });
+  };
+}
+
+function addBasicAuth (user, password) {
+
+  return async function (requestParams) {
+
+    if (user != null && password != null) {
+      const base64Creds = window.btoa(`${user}:${password}`);
+      return {
+        ...requestParams,
+        headers: {
+          ...requestParams.headers,
+          Authorization: `Basic ${base64Creds}`,
+        },
+      };
+    }
+
+    return requestParams;
+  };
+}
+
+export function sendToPrometheus ({ apiConfig = {}, signal, cacheDelay, timeout, warpToken }) {
+
+  return (requestParams) => {
+
+    const cacheParams = { ...apiConfig, ...requestParams };
+    return withCache(cacheParams, cacheDelay, () => {
+
+      const { PROMETHEUS_HOST } = apiConfig;
+      return Promise.resolve(requestParams)
+        .then(prefixUrl(PROMETHEUS_HOST))
+        .then(addBasicAuth('u', warpToken))
         .then(withOptions({ signal, timeout }))
         .then(request);
     });

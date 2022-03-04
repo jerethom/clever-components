@@ -76,11 +76,14 @@ const injectAuthForSmartComponentsPlugin = {
 
     const {
       API_HOST,
+      WARP_10_HOST,
+      PROMETHEUS_HOST,
       API_OAUTH_TOKEN,
       API_OAUTH_TOKEN_SECRET,
       OAUTH_CONSUMER_KEY,
       OAUTH_CONSUMER_SECRET,
     } = process.env;
+
 
     const SMART_COMPONENT_STORY_REGEX = /^\/stories\/.*\/cc-.*\.smart.*\.md$/;
     if (SMART_COMPONENT_STORY_REGEX.test(context.path)) {
@@ -89,9 +92,13 @@ const injectAuthForSmartComponentsPlugin = {
       context.body += `
         import { updateRootContext } from '../../src/lib/smart-manager.js';
 
+
+
         updateRootContext({
           apiConfig: {
             API_HOST: '${API_HOST}',
+            WARP_10_HOST: '${WARP_10_HOST}',
+            PROMETHEUS_HOST: '${PROMETHEUS_HOST}',
             API_OAUTH_TOKEN: '${API_OAUTH_TOKEN}',
             API_OAUTH_TOKEN_SECRET: '${API_OAUTH_TOKEN_SECRET}',
             OAUTH_CONSUMER_KEY: '${OAUTH_CONSUMER_KEY}',

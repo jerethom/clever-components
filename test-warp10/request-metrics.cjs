@@ -55,9 +55,12 @@ function sendToWarp ({ apiConfig = {}, signal, cacheDelay, timeout }) {
   };
 }
 
-function sendToPrometheus ({ apiConfig = {}, signal, cacheDelay, timeout }) {
+function sendToPrometheus ({ apiConfig = {}, signal, cacheDelay, timeout, warpToken }) {
 
   return (requestParams) => {
+
+    requestParams.user = 'u';
+    requestParams.password = warpToken;
 
     const cacheParams = { ...apiConfig, ...requestParams };
     return withCache(cacheParams, cacheDelay, () => {
@@ -114,8 +117,11 @@ function getCpuUsage() {
   //   "method": "POST",
     // "mode": "cors"
   // });
-  const ts = new Date().getTime();
-  const start = ts - 24 * 60 * 60 * 1000;
+  const ONE_HOUR = 60 * 60 * 1000;
+  const now = new Date().getTime();
+  const end = now - (now % ONE_HOUR);
+  const start = now - ONE_HOUR * 24;
+  // const start = now - 24 * 60 * 60 * 1000;
 
   return Promise.resolve({
     method: 'get',
@@ -127,7 +133,7 @@ function getCpuUsage() {
     queryParams: {
       query: '100 - max(cpu.usage_idle{app_id="app_67008db4-7bc3-4949-bb7f-fdf4afb17df8"})',
       start: Math.floor(start / 1000),
-      end: Math.floor(ts / 1000),
+      end: Math.floor(end / 1000),
       step: '3600',
     },
   });
@@ -139,7 +145,7 @@ async function run () {
     .readFile('/home/mathieu/.config/clever-cloud', 'utf-8')
     .then((str) => JSON.parse(str));
 
-  const ownerId = 'orga_858600a8-74f4-4d75-a8a3-f5b868be093c';
+  const ownerId = 'orga_540caeb6-521c-4a19-a955-efe6da35d142';
   // const ownerId = null;
   // const appId = 'app_1246f211-d4a7-4787-ba62-56c163a8b4ef';
   const appId = null;
@@ -153,22 +159,21 @@ async function run () {
     OAUTH_CONSUMER_SECRET: 'MgVMqTr6fWlf2M0tkC2MXOnhfqBWDT',
   };
 
-  console.log('token', token, 'secret', secret);
 
   const warpToken = await getWarp10MetricsToken({ orgaId: ownerId })
     .then(sendToApi({ apiConfig, cacheDelay: ONE_DAY }));
-  apiConfig.PROMETHEUS_HOST = `https://u:${warpToken}@prometheus-c1-warp10-clevercloud-customers.services.clever-cloud.com`;
+  apiConfig.PROMETHEUS_HOST = `https://prometheus-c1-warp10-clevercloud-customers.services.clever-cloud.com`;
 
-  const ram = await getMemoryUsage({ warpToken, ownerId, appId })
-    .then(sendToPrometheus({ apiConfig, timeout: THIRTY_SECONDS }));
   console.log('making api call...');
-  // const cpus = await getCpuUsage({ warpToken, ownerId, appId })
-  //   .then(sendToPrometheus({ apiConfig, timeout: THIRTY_SECONDS }));
+  const cpus = await getCpuUsage({ warpToken, ownerId, appId })
+    .then(sendToPrometheus({ apiConfig, timeout: THIRTY_SECONDS, warpToken }));
+  const ram = await getMemoryUsage({ warpToken, ownerId, appId })
+    .then(sendToPrometheus({ apiConfig, timeout: THIRTY_SECONDS, warpToken }));
   console.log('api call done');
-  console.log('ram', ram.data.result.length);
-  ram.data.result.forEach((elems) => console.log(elems));
-  // console.log('cpus', cpus.data.result);
+  console.log(cpus.data.result[0].values.map((elem) => new Date(elem[0] * 1000).toISOString()));
   // cpus.data.result.forEach((elems) => console.log(elems));
+  ram.data.result.forEach((elems) => console.log(new Date(elems[0]).toISOString()));
+  // console.log('cpus', cpus.data.result);
 
   process.exit();
 }

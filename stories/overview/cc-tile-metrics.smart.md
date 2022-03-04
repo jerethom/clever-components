@@ -1,14 +1,14 @@
 ---
-kind: '🛠 Overview/<cc-tile-status-codes>'
+kind: '🛠 Overview/<cc-tile-metrics>'
 title: '💡 Smart'
 ---
-# 💡 Smart `<cc-tile-status-codes>`
+# 💡 Smart `<cc-tile-metrics>`
 
 ## ℹ️ Details
 
 <table>
-  <tr><td><strong>Component    </strong> <td><a href="https://www.clever-cloud.com/doc/clever-components/?path=/docs/ ..."><code>&lt;cc-tile-status-codes&gt;</code></a>
-  <tr><td><strong>Selector     </strong> <td><code>cc-tile-status-codes</code>
+  <tr><td><strong>Component    </strong> <td><a href="https://www.clever-cloud.com/doc/clever-components/?path=/docs/ ..."><code>&lt;cc-tile-metrics&gt;</code></a>
+  <tr><td><strong>Selector     </strong> <td><code>cc-tile-metrics</code>
   <tr><td><strong>Requires auth</strong> <td>Yes
 </table>
 
@@ -74,7 +74,7 @@ If you only specify a `ownerId` and no `appId`, the data represent the whole org
 <cc-smart-container context='{
   "apiConfig": {
     "API_HOST": "",
-    "WARP_10_HOST": "",
+    "WARP_10_HOST": ""
     "API_OAUTH_TOKEN": "",
     "API_OAUTH_TOKEN_SECRET": "",
     "OAUTH_CONSUMER_KEY": "",
@@ -86,10 +86,40 @@ If you only specify a `ownerId` and no `appId`, the data represent the whole org
   <cc-tile-status-codes></cc-tile-status-codes>
 </cc-smart-container>
 ```
-
+<h1>MON APP</h1>
 <cc-smart-container context='{
 "ownerId": "orga_540caeb6-521c-4a19-a955-efe6da35d142",
 "appId": "app_67008db4-7bc3-4949-bb7f-fdf4afb17df8"
 }'>
-<cc-tile-status-codes></cc-tile-status-codes>
+<cc-tile-metrics></cc-tile-metrics>
 </cc-smart-container>
+<h1>CONSOLE</h1>
+<cc-smart-container context='{
+"ownerId": "orga_858600a8-74f4-4d75-a8a3-f5b868be093c",
+"appId": "app_1246f211-d4a7-4787-ba62-56c163a8b4ef"
+}'>
+<cc-tile-metrics></cc-tile-metrics>
+</cc-smart-container>
+
+<h1>SB DE PROD</h1>
+<cc-smart-container context='{
+"ownerId": "orga_858600a8-74f4-4d75-a8a3-f5b868be093c",
+"appId": "app_91d78df5-c3dd-4c7f-b09a-8628e7e54860"
+}'>
+<cc-tile-metrics></cc-tile-metrics>
+</cc-smart-container>
+<h1>Fresh app stopped</h1>
+<cc-smart-container context='{
+"ownerId": "orga_858600a8-74f4-4d75-a8a3-f5b868be093c",
+"appId": "app_e9dfc3df-1a2a-4078-b3f5-601a55ff5d98"
+}'>
+<cc-tile-metrics></cc-tile-metrics>
+</cc-smart-container>
+<h1>Benchmark</h1>
+<cc-smart-container context='{
+"ownerId": "orga_2eb942c9-ae24-40fe-9e4c-53c9982a02b1",
+"appId": "app_ea67204f-6a09-433d-a1a9-c0a46592545c"
+}'>
+<cc-tile-metrics></cc-tile-metrics>
+</cc-smart-container>
+
