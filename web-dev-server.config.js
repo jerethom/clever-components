@@ -111,7 +111,7 @@ const cemAnalyzerPlugin = {
 export default {
   port: 6006,
   nodeResolve: true,
-  // watch: true,
+  watch: true,
   mimeTypes: {
     '**/*.md': 'js',
     '**/*.json': 'js',

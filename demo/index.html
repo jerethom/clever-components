@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Document</title>
+  <style>
+  body {
+    background-color: #000;
+  }
+  </style>
+  <script type="module">
+  import { css, html, LitElement } from 'lit-element';
+  import { classMap } from 'lit-html/directives/class-map.js';
+
+  export class CcInputText extends LitElement {
+
+    static get properties () {
+      return {
+        skeleton: { type: Boolean, reflect: true },
+      };
+    }
+
+    constructor () {
+      super();
+      this.skeleton = false;
+    }
+
+    render () {
+      return html`
+        <div class="meta-input">
+          <div class="wrapper ${classMap({ skeleton: this.skeleton })}">
+            <input class="input">
+            <div class="ring"></div>
+          </div>
+        </div>
+      `;
+    }
+
+    static get styles () {
+        return [
+          // language=CSS
+          css`
+        :host {
+          display: inline-block;
+        }
+
+        @keyframes skeleton-pulse {
+          from {
+            opacity: 0.85;
+          }
+
+          to {
+            opacity: 0.45;
+          }
+        }
+
+        .skeleton {
+          animation-direction: alternate;
+          animation-duration: 500ms;
+          animation-iteration-count: infinite;
+          animation-name: skeleton-pulse;
+          color: transparent;
+          cursor: progress;
+          -moz-user-select: none;
+          -webkit-user-select: none;
+          -ms-user-select: none;
+          user-select: none;
+        }
+
+
+        label {
+          cursor: pointer;
+          display: block;
+          padding-bottom: 0.35em;
+        }
+
+        .meta-input {
+          box-sizing: border-box;
+          display: inline-flex;
+          /* link to position:absolute of .ring */
+          position: relative;
+          vertical-align: top;
+          width: 100%;
+        }
+
+        .wrapper {
+          display: grid;
+          flex: 1 1 0;
+          /* see input to know why 0.15em */
+          margin: 0.15em 0.5em;
+          min-width: 0;
+          overflow: hidden;
+        }
+
+        /* RESET */
+        .input {
+          /* remove Safari box shadow */
+          -webkit-appearance: none;
+          background: #fff;
+          border: 1px solid #000;
+          box-sizing: border-box;
+          display: block;
+          font-family: monospace;
+          font-size: unset;
+          margin: 0;
+          padding: 0;
+          resize: none;
+          width: 100%;
+        }
+
+        /* BASE */
+        .input {
+          background: none;
+          border: none;
+          font-family: "SourceCodePro", "monaco", monospace;
+          font-size: 0.85em;
+          grid-area: 1 / 1 / 2 / 2;
+          height: 2em;
+          line-height: 2em;
+          overflow: hidden;
+          z-index: 2;
+        }
+
+        /* STATES */
+        .input:focus,
+        .input:active {
+          outline: 0;
+        }
+
+        .input[disabled] {
+          background-color: #e7e7e7;
+          color: #404040;
+          opacity: 1;
+          pointer-events: none;
+        }
+
+        /* We use this empty .ring element to decorate the input with background, border, box-shadows... */
+        .ring {
+          background: #fff;
+          border: 1px solid #aaa;
+          border-radius: 0.25em;
+          bottom: 0;
+          box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
+          left: 0;
+          overflow: hidden;
+          position: absolute;
+          right: 0;
+          top: 0;
+          z-index: 0;
+        }
+
+        .input:focus + .ring {
+          border-color: #777;
+          box-shadow: 0 0 0 .2em rgba(50, 115, 220, .25);
+        }
+
+        .input:hover + .ring {
+          border-color: #777;
+        }
+
+        /* SKELETON */
+        .skeleton .ring,
+        .skeleton:hover .ring,
+        .skeleton .input:hover + .ring {
+          background-color: #e7e7e7;
+          border-color: #eee;
+          cursor: progress;
+        }
+      `,
+        ];
+      }
+  }
+
+  window.customElements.define('cc-input-text', CcInputText);
+  </script>
+</head>
+<body>
+
+<cc-input-text></cc-input-text>
+<cc-input-text skeleton></cc-input-text>
+
+</body>
+</html>
