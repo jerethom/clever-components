@@ -579,6 +579,29 @@ export const translations = {
   //#region cc-select
   'cc-select.required': `obligatoire`,
   //#endregion
+  //#region cc-ssh-key-list
+  'cc-ssh-key-list.add.btn': `Ajouter la clé`,
+  'cc-ssh-key-list.add.info': () => sanitize`<p>Vous devez associer une clé SSH à votre compte si vous désirez déployer via Git. Utilisez ce formulaire à cet effet.</p><p>Créez une clé SSH avec la commande suivante :</p><code>ssh-keygen -t ed25519 -C "mail@example.com"</code>`,
+  'cc-ssh-key-list.add.name': `Nom`,
+  'cc-ssh-key-list.add.public-key': `Clé publique`,
+  'cc-ssh-key-list.add.title': `Ajouter une nouvelle clé`,
+  'cc-ssh-key-list.doc.info': () => sanitize`Pour plus d'aide, vous pouvez consulter notre <a href="https://www.clever-cloud.com/doc/admin-console/ssh-keys/">documentation</a>.`,
+  'cc-ssh-key-list.error.adding': `Une erreur est survenue pendant l'ajout de votre nouvelle clé personnelle.`,
+  'cc-ssh-key-list.error.empty.name': `Saisissez un nom pour votre clé SSH`,
+  'cc-ssh-key-list.error.empty.public-key': `Saisissez la valeur de votre clé publique`,
+  'cc-ssh-key-list.error.loading': `Une erreur est survenue pendant le chargement de vos clés personnelles.`,
+  'cc-ssh-key-list.error.loading-github': `Une erreur est survenue pendant le chargement de vos clés GitHub.`,
+  'cc-ssh-key-list.github.empty': `Il n'y a aucune clé SSH disponible à l'import depuis votre compte GitHub.`,
+  'cc-ssh-key-list.github.import': `Importer`,
+  'cc-ssh-key-list.github.info': `Voici les clés provenant de votre compte GitHub. Vous pouvez les importer pour les associer à votre compte Clever Cloud.`,
+  'cc-ssh-key-list.github.title': `Clés GitHub`,
+  'cc-ssh-key-list.github.unlinked': () => sanitize`Il n'y a pas de compte GitHub lié à votre compte Clever Cloud. Rendez-vous dans votre <a href="./information">profil</a> pour activer le lien.`,
+  'cc-ssh-key-list.personal.delete': `Supprimer`,
+  'cc-ssh-key-list.personal.empty': `Il n'y a aucune clé SSH associée à votre compte.`,
+  'cc-ssh-key-list.personal.info': () => sanitize`<p>Voici la liste des clés SSH associées à votre compte.</p><p>Si vous souhaitez vérifier qu'une clé est déjà associée ou non, vous pouvez lister les empreintes de vos clés locales avec la commande suivante :</p><code>ssh-add -l -E sha256</code>`,
+  'cc-ssh-key-list.personal.title': `Vos clés`,
+  'cc-ssh-key-list.title': `Clés SSH`,
+  //#endregion
   //#region cc-tcp-redirection
   'cc-tcp-redirection.create-button': `Créer`,
   'cc-tcp-redirection.delete-button': `Supprimer`,
