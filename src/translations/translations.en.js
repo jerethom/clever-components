@@ -548,6 +548,29 @@ export const translations = {
   //#region cc-select
   'cc-select.required': `required`,
   //#endregion
+  //#region cc-ssh-key-list.js
+  'cc-ssh-key-list.add.btn': `Add key`,
+  'cc-ssh-key-list.add.info': () => sanitize`<p>You need to associate an SSH key to your account to deploy via Git: associate a key with the dedicated form.</p><p>Create an SSH key with the following command:<br><code>ssh-keygen -t ed25519 -C "your@email.com"</code>.</p>`,
+  'cc-ssh-key-list.add.name': `Name`,
+  'cc-ssh-key-list.add.public-key': `Public key`,
+  'cc-ssh-key-list.add.title': `Add a new key`,
+  'cc-ssh-key-list.doc.info': () => sanitize`If you need any help, head up to our <a href="https://www.clever-cloud.com/doc/admin-console/ssh-keys/">documentation</a>.`,
+  'cc-ssh-key-list.error.empty.name': `Enter a name for your SSH key`,
+  'cc-ssh-key-list.error.empty.public-key': `Enter the public key value`,
+  'cc-ssh-key-list.error.adding': `An error occurred while adding your new personal key.`,
+  'cc-ssh-key-list.error.loading': `An error occurred while loading your personal keys.`,
+  'cc-ssh-key-list.error.loading-third-parties': `An error occurred while loading your third parties keys.`,
+  'cc-ssh-key-list.personal.delete': `Delete this key`,
+  'cc-ssh-key-list.personal.empty': `There are no SSH keys associated with your account.`,
+  'cc-ssh-key-list.personal.info': () => sanitize`<p>This is the SSH keys associated with your account.</p><p>List the fingerprints of your keys with the following command: <code>ssh-add -l -E sha256</code>.</p>`,
+  'cc-ssh-key-list.personal.title': `Your keys`,
+  'cc-ssh-key-list.third-parties.empty': `There are no SSH keys available for import from third parties accounts.`,
+  'cc-ssh-key-list.third-parties.import': `Import this key`,
+  'cc-ssh-key-list.third-parties.info': `This is the SSH keys from your GitHub account which are not associated with your Clever Cloud account: importing them will add them to your keys.`,
+  'cc-ssh-key-list.third-parties.title': `Third parties keys`,
+  'cc-ssh-key-list.third-parties.unlinked': () => sanitize`There are no third party account linked to your Clever Cloud account. Check your <a href="https://console.clever-cloud.com/users/me/information">profile</a> to activate the linkage.`,
+  'cc-ssh-key-list.title': `SSH Keys`,
+  //#endregion
   //#region cc-tcp-redirection
   'cc-tcp-redirection.create-button': `Create`,
   'cc-tcp-redirection.delete-button': `Delete`,

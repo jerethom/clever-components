@@ -561,6 +561,29 @@ export const translations = {
   //#region cc-select
   'cc-select.required': `obligatoire`,
   //#endregion
+  //#region cc-ssh-key-list.js
+  'cc-ssh-key-list.add.btn': `Ajouter la clé`,
+  'cc-ssh-key-list.add.info': () => sanitize`<p>Vous devez associer une clé SSH à votre compte si vous désirez déployer via Git : vous pouvez associer une clé via le formulaire dédié.</p><p>Créez une clé SSH avec la commande suivante :<br><code>ssh-keygen -t ed25519 -C "your@email.com"</code>.</p>`,
+  'cc-ssh-key-list.add.name': `Nom`,
+  'cc-ssh-key-list.add.public-key': `Clé publique`,
+  'cc-ssh-key-list.add.title': `Ajouter une nouvelle clé`,
+  'cc-ssh-key-list.doc.info': () => sanitize`Pour plus d'aide, vous pouvez consulter notre <a href="https://www.clever-cloud.com/doc/admin-console/ssh-keys/">documentation</a>.`,
+  'cc-ssh-key-list.error.empty.name': `Saisissez un nom pour votre clé SSH`,
+  'cc-ssh-key-list.error.empty.public-key': `Saisissez la valeur de votre clé publique`,
+  'cc-ssh-key-list.error.adding': `Une erreur est survenue pendant l'ajout de votre nouvelle clé personnelle.`,
+  'cc-ssh-key-list.error.loading': `Une erreur est survenue pendant le chargement de vos clés personnelles.`,
+  'cc-ssh-key-list.error.loading-third-parties': `Une erreur est survenue pendant le chargement de vos clés de tierces parties.`,
+  'cc-ssh-key-list.personal.delete': `Supprimer cette clé`,
+  'cc-ssh-key-list.personal.empty': `Il n'y a aucune clé SSH associée à votre compte.`,
+  'cc-ssh-key-list.personal.info': () => sanitize`<p>Voici la liste des clés SSH associées à votre compte.</p><p>Listez les empreintes de vos clés avec la commande suivante : <code>ssh-add -l -E sha256</code>.</p>`,
+  'cc-ssh-key-list.personal.title': `Vos clés`,
+  'cc-ssh-key-list.third-parties.empty': `Il n'y a aucune clé SSH disponible à l'import depuis des tierces parties.`,
+  'cc-ssh-key-list.third-parties.import': `Importer cette clé`,
+  'cc-ssh-key-list.third-parties.info': `Voici les clés provenant de votre compte GitHub qui ne sont pas associées à votre compte Clever Cloud : importez-les pour les ajouter à vos clés.`,
+  'cc-ssh-key-list.third-parties.title': `Clés de tierces parties`,
+  'cc-ssh-key-list.third-parties.unlinked': () => sanitize`Il n'y a pas de compte provenant de tierce partie lié à votre compte Clever Cloud. Rendez-vous dans votre <a href="https://console.clever-cloud.com/users/me/information">profil</a> pour activer le lien.`,
+  'cc-ssh-key-list.title': `Clés SSH`,
+  //#endregion
   //#region cc-tcp-redirection
   'cc-tcp-redirection.create-button': `Créer`,
   'cc-tcp-redirection.delete-button': `Supprimer`,

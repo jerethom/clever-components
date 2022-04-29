@@ -82,6 +82,7 @@ export function inputs (sourceDir, entryMapper) {
     `${sourceDir}/notices/*.js`,
     `${sourceDir}/overview/*.js`,
     `${sourceDir}/pricing/*.js`,
+    `${sourceDir}/profile/*.js`,
     `${sourceDir}/saas/*.js`,
     `${sourceDir}/smart/*.js`,
     `${sourceDir}/tcp-redirections/*.js`,
