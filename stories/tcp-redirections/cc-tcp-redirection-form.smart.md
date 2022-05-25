@@ -5,6 +5,13 @@ title: '💡 Smart'
 
 # 💡 Smart `<cc-tcp-redirection-form>`
 
+<cc-smart-container context='{
+  "ownerId": "orga_3547a882-d464-4c34-8168-add4b3e0c135",
+  "appId": "app_b75977aa-563f-40fd-a592-224a5f6afbd6"
+}'>
+  <cc-tcp-redirection-form></cc-tcp-redirection-form>
+</cc-smart-container>
+
 ## ℹ️ Details
 
 <table>
