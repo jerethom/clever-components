@@ -183,7 +183,7 @@ export class CcSshKeyList extends LitElement {
                     ? html`${this.keys?.map((key, index) => html`
                       ${this._renderKeyItem(key, {
                         keyId: 'key-id-' + index,
-                        disabled: this.deleting === key.name,
+                        isDisabled: this.deleting === key.name,
                         isPersonal: true,
                       })}
                     `)}`
@@ -217,7 +217,7 @@ export class CcSshKeyList extends LitElement {
                         ? html`${this.keysThirdParties?.map((key, index) => html`
                           ${this._renderKeyItem(key, {
                             keyId: 'key-tp-id-' + index,
-                            disabled: this.importing === key.name,
+                            isDisabled: this.importing === key.name,
                             isThirdParty: true,
                           })}
                         `)}`
@@ -296,7 +296,7 @@ export class CcSshKeyList extends LitElement {
 
   _renderKeyItem (key, details) {
     return html`
-      <div class="key ${classMap({ 'is-disabled': details.disabled })}">
+      <div class="key ${classMap({ 'is-disabled': details.isDisabled })}">
         <div class="key__content">
           <div class="key__name">
             <cc-img class="key__icon" src=${keySvg}></cc-img>
@@ -306,12 +306,34 @@ export class CcSshKeyList extends LitElement {
         </div>
         ${
           details.isPersonal
-          ? html`<cc-button @cc-button:click=${() => this._onDeleteKey(key)} aria-describedby=${details.keyId} circle class="key__circle-btn" ?disabled=${details.disabled} danger image=${deleteSvg} hide-text outlined ?waiting=${details.disabled}>${i18n('cc-ssh-key-list.personal.delete')}</cc-button>`
+          ? html`<cc-button
+            @cc-button:click=${() => this._onDeleteKey(key)}
+            aria-describedby=${details.keyId}
+            circle
+            class="key__circle-btn"
+            ?disabled=${details.isDisabled}
+            danger
+            image=${deleteSvg}
+            hide-text
+            outlined
+            ?waiting=${details.isDisabled}>
+              ${i18n('cc-ssh-key-list.personal.delete')}
+            </cc-button>`
           : null
         }
         ${
           details.isThirdParty
-            ? html`<cc-button @cc-button:click=${() => this._onImportKey(key)} aria-describedby=${details.keyId} circle class="key__circle-btn" ?disabled=${details.disabled} image=${importSvg} hide-text ?waiting=${details.disabled}>${i18n('cc-ssh-key-list.third-parties.import')}</cc-button>`
+            ? html`<cc-button
+              @cc-button:click=${() => this._onImportKey(key)}
+              aria-describedby=${details.keyId}
+              circle
+              class="key__circle-btn"
+              ?disabled=${details.isDisabled}
+              image=${importSvg}
+              hide-text
+              ?waiting=${details.isDisabled}>
+                ${i18n('cc-ssh-key-list.third-parties.import')}
+              </cc-button>`
             : null
         }
       </div>
