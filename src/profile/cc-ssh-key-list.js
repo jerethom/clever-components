@@ -229,7 +229,7 @@ export class CcSshKeyList extends LitElement {
 
         <!-- documentation link -->
         <cc-block-section>
-          <div slot="info">
+          <div class="documentation">
             ${i18n('cc-ssh-key-list.doc.info')}
           </div>
         </cc-block-section>
@@ -297,13 +297,13 @@ export class CcSshKeyList extends LitElement {
   _renderKeyItem (key, details) {
     return html`
       <div class="key ${classMap({ 'is-disabled': details.isDisabled })}">
-        <div class="key__content">
-          <div class="key__name">
+<!--        <div class="key__content">-->
+<!--          <div class="key__name">-->
             <cc-img class="key__icon" src=${keySvg}></cc-img>
-            <span id=${key.keyId}>${key.name}</span>
-          </div>
+            <span class="key__name" id=${key.keyId}>${key.name}</span>
+<!--          </div>-->
           <div class="key__fingerprint">${key.fingerprint}</div>
-        </div>
+<!--        </div>-->
         ${
           details.isPersonal
           ? html`<cc-button
@@ -314,7 +314,7 @@ export class CcSshKeyList extends LitElement {
             ?disabled=${details.isDisabled}
             danger
             image=${deleteSvg}
-            hide-text
+            hide-textt
             outlined
             ?waiting=${details.isDisabled}>
               ${i18n('cc-ssh-key-list.personal.delete')}
@@ -330,7 +330,7 @@ export class CcSshKeyList extends LitElement {
               class="key__circle-btn"
               ?disabled=${details.isDisabled}
               image=${importSvg}
-              hide-text
+              hide-textt
               ?waiting=${details.isDisabled}>
                 ${i18n('cc-ssh-key-list.third-parties.import')}
               </cc-button>`
@@ -395,16 +395,16 @@ export class CcSshKeyList extends LitElement {
 
         /* key list */
         .key-list {
-          align-items: stretch;
-          display: flex;
-          flex-direction: column;
         }
 
         /* key item */
         .key {
-          align-items: center;
-          display: flex;
-          gap: 2em;
+          display: grid;
+          gap: 0.5em 1em;
+          grid-template-areas:
+            "icon name name"
+            ". key btn";
+          grid-template-columns: min-content 1fr min-content;
         }
         .key:not(:last-child) {
           margin-bottom: 2.5em;
@@ -414,48 +414,51 @@ export class CcSshKeyList extends LitElement {
           opacity: 0.5;
         }
 
-        .key__circle-btn,
         .key__icon {
-          flex: none;
-        }
-        .key__content {
-          flex:1 1 auto;
-        }
-
-        .key__icon {
-          height: 1.25em;
-          margin-bottom: 0.125em;
-          width: 1.25em;
+          grid-area: icon;
+          height: 1.5rem;
+          width: 1.5rem;
         }
 
         .key__name {
           align-items: center;
           display: flex;
-          font-size: 1.125em;
+          font-weight: bold;
           gap: 0.25em;
-          margin-bottom: 0.5em;
+          grid-area: name;
           word-break: break-word;
         }
 
         .key__fingerprint {
           background-color: var(--color-grey-10);
-          border-radius: 0.125em;
+          border-left: 5px solid #aaa;
           font-family: var(--cc-ff-monospace);
-          line-height: 1.5;
-          padding: 0.75em 1em;
+          grid-area: key;
+          padding: 0.25em 0.5em;
           word-break: break-word;
         }
 
         .key__circle-btn {
-          font-size: 1.25em;
+          //font-size: 1.25em;
+          align-self: center;
+          grid-area: btn;
         }
 
         /* misc */
-        [slot=info] code {
+        [slot=info] code,
+        [slot=info] pre {
           background-color: var(--color-grey-10);
           border: 1px solid var(--color-grey-20);
           border-radius: 0.25em;
+          font-family: var(--cc-ff-monospace);
+          font-size: 0.8em;
           padding: 0.25em 0.4em;
+        }
+        
+        [slot=info] pre {
+          display: inline-block;
+          margin: 0;
+          padding: 0.5em 0.75em;
         }
 
         .skeleton {
@@ -466,6 +469,10 @@ export class CcSshKeyList extends LitElement {
           color: var(--color-text-light);
           font-style: italic;
           line-height: 1.5;
+        }
+        
+        .documentation {
+          text-align: right;
         }
       `,
     ];

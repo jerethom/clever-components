@@ -1,5 +1,5 @@
 /* global globalThis */
-const AUTHORIZED_TAGS = ['STRONG', 'EM', 'CODE', 'A', 'BR', 'P'];
+const AUTHORIZED_TAGS = ['STRONG', 'EM', 'CODE', 'A', 'BR', 'P', 'PRE'];
 
 function isAuthorizedAttribute (attributeName, tagName) {
   return (attributeName === 'title')
