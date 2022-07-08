@@ -1,6 +1,5 @@
 import { css, html, LitElement } from 'lit-element';
 import { classMap } from 'lit-html/directives/class-map.js';
-import { ifDefined } from 'lit-html/directives/if-defined.js';
 import { repeat } from 'lit-html/directives/repeat.js';
 import './cc-toast.js';
 
@@ -116,8 +115,6 @@ export class CcToaster extends LitElement {
 
     /** @type {Array<Toast>} Array of toasts currently displayed. This property should not be used directly. Instead, you should use the `show` public method. */
     this._toasts = [];
-
-    this._dismissingSet = new Set();
   }
 
   /**
@@ -136,10 +133,11 @@ export class CcToaster extends LitElement {
 
     // dismiss last toast if max is reached
     if (this.maxToasts != null && !Number.isNaN(this.maxToasts)) {
-      const activeToasts = this._toasts.filter((toast) => this._isDismissing(toast.key) !== true);
+      const activeToasts = this._toasts.filter((toast) => !toast.dismissing);
 
       if (activeToasts.length >= this.maxToasts) {
-        this._startDismissing(activeToasts[activeToasts.length - 1].key);
+        const lastToast = activeToasts[activeToasts.length - 1];
+        this._startDismissing(lastToast);
       }
     }
 
@@ -148,7 +146,7 @@ export class CcToaster extends LitElement {
     this._toasts = [toast, ...this._toasts];
 
     return () => {
-      this._startDismissing(toast.key);
+      this._startDismissing(toast);
     };
   }
 
@@ -164,43 +162,28 @@ export class CcToaster extends LitElement {
     return {
       ...notification,
       key: Math.random().toString(36).slice(2),
+      dismissing: false,
       options: {
+        // Same defaults as cc-toast
+        closeable: false,
+        showProgress: false,
+        timeout: 5000,
         ...this.toastDefaultOptions,
         ...notification.options,
       },
     };
   }
 
-  /**
-   * @param {string} key
-   * @returns {Toast|undefined}
-   * @private
-   */
-  _getToastByKey (key) {
-    return this._toasts.find((t) => t.key === key);
-  }
-
-  _startDismissing (key) {
-    const toast = this._getToastByKey(key);
-    if (toast != null) {
-      this._dismissingSet.add(toast.key);
-      this.requestUpdate();
-    }
+  _startDismissing (toastToDismiss) {
+    toastToDismiss.dismissing = true;
+    this.requestUpdate();
   }
 
   // TODO: in the future (when we have Lit2) we may want to implement that with https://github.com/lit/lit/tree/main/packages/labs/motion
-  _finishDismissing (key) {
-    const toast = this._getToastByKey(key);
-    if (toast != null) {
-      this._toasts = this._toasts.filter((t) => t !== toast);
-      this._dismissingSet.delete(toast.key);
-      // no need for this.requestUpdate() as this._toasts is reactive.
-    }
+  _finishDismissing (toastToRemove) {
+    this._toasts = this._toasts.filter((toast) => (toast !== toastToRemove));
   }
 
-  _isDismissing (key) {
-    return this._dismissingSet.has(key);
-  }
   /* endregion */
 
   render () {
@@ -208,39 +191,34 @@ export class CcToaster extends LitElement {
     if (positions.length === 1) {
       positions.push('center');
     }
-
     return html`
       <div class="toaster ${positions.join(' ')} ${this.animation}" aria-live="polite" aria-atomic="true">
-        ${repeat(
-          this._toasts,
-          (toast) => toast.key,
-          (toast) => this._renderToast(toast),
-        )}
+        ${repeat(this._toasts, (toast) => toast.key, (toast) => this._renderToast(toast))}
       </div>
     `;
   }
 
-  /**
-   * @param {Toast} toast
-   */
   _renderToast (toast) {
-    const dismissing = this._isDismissing(toast.key);
-    const onAnimationEnd = dismissing ? () => this._finishDismissing(toast.key) : undefined;
-    const onDismiss = dismissing ? undefined : () => this._startDismissing(toast.key);
+
+    const dismissing = toast.dismissing;
+
+    // We're only interested in the "dismiss" animation (not the "show" animation)
+    const onAnimationEnd = dismissing
+      ? () => this._finishDismissing(toast)
+      : () => null;
 
     return html`
       <cc-toast
-          class="${classMap({ dismissing })}"
-          intent="${toast.intent}"
-          .heading=${toast.heading}
-          .message=${toast.message}
-          .timeout=${ifDefined(toast.options.timeout)}
-          ?closeable=${ifDefined(toast.options.closeable)}
-          ?show-progress=${ifDefined(toast.options.showProgress)}
-          @animationend=${ifDefined(onAnimationEnd)}
-          @cc-toast:dismiss=${ifDefined(onDismiss)}
-      >
-      </cc-toast>
+        class="${classMap({ dismissing })}"
+        intent="${toast.intent}"
+        .heading=${toast.heading}
+        .message=${toast.message}
+        .timeout=${toast.options.timeout}
+        ?closeable=${toast.options.closeable}
+        ?show-progress=${toast.options.showProgress}
+        @animationend=${onAnimationEnd}
+        @cc-toast:dismiss=${() => this._startDismissing(toast)}
+      ></cc-toast>
     `;
   }
 
@@ -259,17 +237,20 @@ export class CcToaster extends LitElement {
           gap: 1em;
           pointer-events: none;
         }
-        
+
         /*region POSITION*/
         .toaster.left {
           align-items: start;
         }
+
         .toaster.right {
           align-items: end;
         }
+
         .toaster.bottom {
           flex-direction: column-reverse;
         }
+
         /*endregion*/
 
         /*region ANIMATION*/
@@ -278,13 +259,13 @@ export class CcToaster extends LitElement {
             animation-duration: 0s !important;
           }
         }
-        
+
         cc-toast {
           animation-duration: 0.4s;
           animation-fill-mode: forwards;
           animation-timing-function: ease;
         }
-        
+
         .toaster.fade cc-toast {
           animation-name: fade;
         }
@@ -292,13 +273,15 @@ export class CcToaster extends LitElement {
         .toaster.slide.top cc-toast {
           animation-name: slide-down;
         }
+
         .toaster.slide.bottom cc-toast {
           animation-name: slide-up;
         }
-       
+
         .toaster.fade-and-slide.top cc-toast {
           animation-name: fade, slide-down;
         }
+
         .toaster.fade-and-slide.bottom cc-toast {
           animation-name: fade, slide-up;
         }
@@ -313,9 +296,11 @@ export class CcToaster extends LitElement {
           animation-duration: 0s;
           animation-name: no-animation;
         }
+
         .toaster.slide.left cc-toast.dismissing {
           animation-name: slide-left-out;
         }
+
         .toaster.slide.right cc-toast.dismissing {
           animation-name: slide-right-out;
         }
@@ -323,13 +308,15 @@ export class CcToaster extends LitElement {
         .toaster.fade-and-slide.center cc-toast.dismissing {
           animation-name: fade-out;
         }
+
         .toaster.fade-and-slide.left cc-toast.dismissing {
           animation-name: fade-out, slide-left-out;
         }
+
         .toaster.fade-and-slide.right cc-toast.dismissing {
           animation-name: fade-out, slide-right-out;
         }
-        
+
 
         @keyframes fade {
           0% {
@@ -393,6 +380,7 @@ export class CcToaster extends LitElement {
             transform: translateX(0);
           }
         }
+
         /*endregion*/
       `,
     ];

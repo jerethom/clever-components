@@ -19,4 +19,5 @@ export interface ToastOptions {
 
 export interface Toast extends Notification{
   key: string,
+  dismissing: boolean,
 }

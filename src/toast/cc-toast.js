@@ -268,7 +268,7 @@ export class CcToast extends LitElement {
           display: flex;
           flex-direction: column;
           gap: 0.5em;
-          height:100%;
+          height: 100%;
           justify-content: center;
           padding: var(--padding);
         }
