@@ -74,6 +74,7 @@ export function inputs (sourceDir, entryMapper) {
     `${sourceDir}/atoms/*.js`,
     `${sourceDir}/env-var/*.js`,
     `${sourceDir}/homepage/*.js`,
+    `${sourceDir}/icons/*.js`,
     `${sourceDir}/invoices/*.js`,
     `${sourceDir}/lib/i18n.js`,
     `${sourceDir}/lib/smart-manager.js`,
