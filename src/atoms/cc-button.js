@@ -189,6 +189,7 @@ export class CcButton extends LitElement {
         @click=${this._onClick}
         title="${ifDefined(imageOnlyText)}"
         aria-label="${ifDefined(imageOnlyText)}"
+        tabindex="1"
       >
         <!--
           When delay mechanism is set, we need a cancel label.

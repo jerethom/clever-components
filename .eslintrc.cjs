@@ -1,11 +1,12 @@
 module.exports = {
-  'extends': 'standard',
+  'extends': ['plugin:lit-a11y/recommended', 'standard'],
   'env': {
     'browser': true,
   },
   'plugins': [
     'import',
     'lit',
+    'lit-a11y',
   ],
   'rules': {
     // custom rules
