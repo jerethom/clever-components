@@ -1,161 +1,191 @@
-import { readFileSync } from 'fs';
+import { readFileSync, writeFileSync } from 'fs';
 import path from 'path';
 
-// INFO: This is a first iteration of this plugin
-// we should add some tests and maybe refactor the code a bit
+export default function supportTypedefJsdoc () {
 
-// Everytime we go through a file in a module if go through it for the first time
-// we do cache it so that the other can use it back directly.
-const fileCache = new Map();
-// And everytime we find a type we do cache it for other files (components) to use them
-const typeCache = new Map();
+  const typesStore = new Map();
+  const fileCache = new Map();
+  const moduleTypeCache = new Map();
+  const typeMDStore = new Map();
 
-/**
- * The purpose of the function is to loop through each import, open the file and retrieve both the code (text)
- * and the AST associated (if we haven't already stored it in cache). Then, for each type of that import
- * we're gonna check and retrieve their subtypes if it has some. When it's done we're gonna convert it to the text
- * type definition.
- * @param ts
- * @param imports
- * @returns {string}
- */
-function convertImports (ts, imports) {
-  const asts = [];
-  imports.forEach((typesSet, filename) => {
-    let sourceCode;
-    let sourceAst;
-    const inMemory = fileCache.get(filename);
-    if (!inMemory) {
-      sourceCode = readFileSync(filename).toString();
-      sourceAst = ts.createSourceFile(filename, sourceCode, ts.ScriptTarget.ES2015, true);
-      fileCache.set(filename, { code: sourceCode, ast: sourceAst });
-    }
-    else {
-      sourceCode = inMemory.code;
-      sourceAst = inMemory.ast;
+  function findType (type, ts) {
+
+    const isCustomType = type.kind === ts.SyntaxKind.TypeReference || (type.kind === ts.SyntaxKind.ArrayType && type.elementType.kind === ts.SyntaxKind.TypeReference);
+    const isArrayType = type.kind === ts.SyntaxKind.ArrayType;
+    const isSpecialArray = type?.typeName?.getText() === 'Array';
+    const hasSpecialArrayArgs = type?.typeArguments != null && type.typeArguments[0]?.typeName != null;
+
+    if (!isCustomType || (isSpecialArray && !hasSpecialArrayArgs)) {
+      return null;
     }
 
-    const typesFromSet = Array.from(typesSet);
-    const subtypes = findSubtypes(ts, sourceAst, sourceCode, typesFromSet);
-    subtypes.forEach((type) => typesSet.add(type));
+    if (isArrayType) {
+      return type.elementType.typeName.getText();
+    }
+    else if (isSpecialArray) {
+      return type.typeArguments[0].typeName.getText();
+    }
 
-    typesSet.forEach((type) =>
-      (typeCache.has(`${type}-${filename}`))
-        ? asts.push(typeCache.get(`${type}-${filename}`))
-        : asts.push(convertInterface(ts, sourceAst, sourceCode, type, filename)));
-  });
-  return asts.join('\n');
-}
-
-/**
- * Convert a type interface to markdown and returns it.
- * @param ts
- * @param node
- * @param code
- * @param interfaceName
- * @returns {string}
- */
-function convertInterface (ts, node, code, interfaceName, filename) {
-  const st = node?.statements.find((st) => st?.name?.getText() === interfaceName);
-  if (st == null) {
-    return '';
+    return type.getText();
   }
 
-  const start = st?.modifiers?.find((modifier) => modifier.kind === ts.SyntaxKind.ExportKeyword)?.end ?? st?.pos;
-  const typeDeclaration = code.substring(start, st?.end).trim();
-  const typeDisplay = '```ts\n\n'
-    + typeDeclaration
-    + '\n\n```';
-  typeCache.set(`${interfaceName}-${filename}`, typeDisplay);
-  return typeDisplay;
-}
+  function convertImports (ts, imports, comp) {
+    const asts = [];
 
-/**
- * For a list of types, it will loop through each type and find their subtypes associated.
- * It will return all the subtypes of each type looped.
- * @param ts
- * @param node
- * @param code
- * @param types
- * @returns {string[]}
- */
-function findSubtypes (ts, node, code, types) {
-  const formattedTypes = [];
-  types?.forEach((type) => {
-    const st = node?.statements.find((st) => st?.name?.getText() === type);
-
-    st?.members?.forEach((member) => {
-      // We need the OR for the same reason as above to catch types who are array of objects
-      if (member.type.kind === ts.SyntaxKind.TypeReference || member.type?.elementType?.kind === ts.SyntaxKind.TypeReference) {
-        const type = member.type?.typeName?.getText() || member.type?.elementType?.typeName?.getText();
-        const foundType = node?.statements.find((st) => {
-          return (st.kind === ts.SyntaxKind.InterfaceDeclaration || st.kind === ts.SyntaxKind.TypeAliasDeclaration) && st.name.getText() === type;
-        });
-
-        if (foundType != null) {
-          formattedTypes.push(type);
-          formattedTypes.push(...findSubtypes(ts, node, code, [type]));
-        }
+    imports.forEach((typesSet, filename) => {
+      let sourceCode;
+      let sourceAst;
+      const inMemoryType = fileCache.get(filename);
+      if (inMemoryType == null) {
+        sourceCode = readFileSync(filename).toString();
+        sourceAst = ts.createSourceFile(filename, sourceCode, ts.ScriptTarget.ES2015, true);
+        fileCache.set(filename, { code: sourceCode, ast: sourceAst });
       }
-    });
-  });
-  return formattedTypes;
-}
+      else {
+        sourceCode = inMemoryType.code;
+        sourceAst = inMemoryType.ast;
+      }
 
-export default function supportTypedefJsdoc () {
-  const rootDir = process.cwd();
+      const typesFromSet = Array.from(typesSet);
+      const subtypes = findSubtypes(ts, sourceAst, sourceCode, typesFromSet);
+      subtypes.forEach((type) => typesSet.add(type));
+
+      typesSet.forEach((type) => {
+        if (typeMDStore.has(type)) {
+          const comps = typeMDStore.get(type);
+          comps.push(comp);
+        }
+        else {
+          typeMDStore.set(type, [comp]);
+        }
+        return (typesStore.has(`${type}-${filename}`))
+          ? asts.push(typesStore.get(`${type}-${filename}`))
+          : asts.push(convertInterface(ts, sourceAst, sourceCode, type, filename));
+      });
+
+    });
+
+    return asts.join('\n');
+  }
+
+  function findSubtypes (ts, node, code, types) {
+    const subtypes = [];
+
+    node.statements
+      .filter((typeDeclaration) => types.includes(typeDeclaration.name.getText()))
+      .forEach((td) => {
+        switch (td.kind) {
+          case ts.SyntaxKind.TypeAliasDeclaration: {
+            td.type?.types?.forEach((t) => {
+              const type = findType(t, ts);
+              if (type != null) {
+                subtypes.push(type);
+                subtypes.push(...findSubtypes(ts, node, code, [type]));
+              }
+            });
+            break;
+          }
+          case ts.SyntaxKind.TupleType: {
+            break;
+          }
+          default: {
+            td.members.forEach((t) => {
+              const type = findType(t.type, ts);
+              if (type != null) {
+                subtypes.push(type);
+                subtypes.push(...findSubtypes(ts, node, code, [type]));
+              }
+            });
+          }
+        }
+      });
+
+    console.log(subtypes);
+
+    return subtypes;
+  }
+
+  function convertInterface (ts, node, code, interfaceName, filename) {
+    const st = node?.statements.find((st) => st?.name?.getText() === interfaceName);
+    if (st == null) {
+      return '';
+    }
+
+    const start = st?.modifiers?.find((modifier) => modifier.kind === ts.SyntaxKind.ExportKeyword)?.end ?? st?.pos;
+    const typeDeclaration = code.substring(start, st?.end).trim();
+    const typeDisplay = '```ts\n\n'
+      + typeDeclaration
+      + '\n\n```';
+    typesStore.set(`${interfaceName}-${filename}`, typeDisplay);
+    return typeDisplay;
+  }
+
   return {
     name: 'support-typedef-jsdoc',
-    // go through public fields in constructor
-    // list all public types
-    // list all imports
-    // convert imports to AST
-    // extract types and subtypes only once
-    // for one path of file store file and AST in RAM (cache)
-    // Put ## type definitions if there's types import
     analyzePhase ({ ts, node, moduleDoc }) {
+
+      // return;
+
+      // First, we need to find the constructor
+      // It can be found as a member of ClassDeclaration
+
+      // If the node we loop through is not a ClassDeclaration we don't go any further
+      // as we only want the constructor
       if (node.kind !== ts.SyntaxKind.ClassDeclaration) {
         return;
       }
 
-      // First, we need to find the constructor
-      const constructor = node?.members.find((mb) => mb.kind === ts.SyntaxKind.Constructor);
+      moduleTypeCache.clear();
+      const rootDir = process.cwd();
+
+      // Now that we're in ClassDeclaration we find the constructor
+      const constructor = node.members.find((member) => member.kind === ts.SyntaxKind.Constructor);
+      // Check if we have some component without constructor
+      if (constructor == null) {
+        return;
+      }
+      // We then need to retrieve the variables initialized in our constructor
+      const constructorNodes = constructor.body.statements;
+      const comp = node.name.escapedText;
+      console.log('component', node.name.escapedText);
       const types = [];
-      const imports = new Map();
+      // Now that we have our constructor nodes we can find for each node (var) its associated type
+      constructorNodes.forEach((node) => {
+        // We don't want a node that doesn't contains js doc and the super() keyword
+        const isSuper = node.expression?.expression?.kind === ts.SyntaxKind.SuperKeyword;
+        const hasJsDoc = node?.jsDoc != null && node.jsDoc.length > 0;
+        const isVarInit = node.kind === ts.SyntaxKind.ExpressionStatement && node.expression?.left?.expression.kind === ts.SyntaxKind.ThisKeyword;
+        const hasTypeIdentifier = hasJsDoc && node.jsDoc[0].tags[0].kind === ts.SyntaxKind.JSDocTypeTag;
+        const isFieldPrivate = !isSuper && isVarInit && node.expression.left.name.getText().charAt(0) === '_';
+        if (isSuper || !hasJsDoc || !isVarInit || !hasTypeIdentifier || isFieldPrivate) {
+          return;
+        }
 
-      // Then we loop over it to find the public fields and add them in our types list
-      // if the type is not private and not primitive
-      constructor?.body.statements.forEach((mb) => {
-        const fieldName = mb?.expression?.left?.name.getText();
-        const isFieldPrivate = fieldName?.[0] === '_';
-        const isFieldTypeUnion = mb.jsDoc?.[0].tags?.[0].typeExpression?.type.kind === ts.SyntaxKind.UnionType;
-        const fieldDoc = mb.jsDoc?.[0].tags?.[0].typeExpression;
-        // We need to have an "OR" (||) to find types who are object arrays e.g: Plan[] for example
-        const customType = fieldDoc?.type?.typeName?.getText() || fieldDoc?.type?.elementType?.typeName?.getText();
+        const rawType = node.jsDoc[0].tags[0].typeExpression.type;
 
-        if (!isFieldPrivate && isFieldTypeUnion) {
-          fieldDoc.type.types.forEach((type) => {
-            // We need to have an "OR" (||) to find types who are object arrays e.g: Plan[] for example
-            const customType = type?.typeName?.getText() || type?.elementType?.typeName?.getText();
-            if (customType != null) {
-              types.push(customType);
+        const isUnionType = rawType.kind === ts.SyntaxKind.UnionType;
+        if (!isUnionType) {
+          const foundType = findType(rawType, ts);
+          if (foundType != null) {
+            types.push(foundType);
+          }
+        }
+        else {
+          rawType.types.forEach((type) => {
+            const foundType = findType(type, ts);
+            if (foundType != null) {
+              types.push(foundType);
             }
           });
         }
-        else if (!isFieldPrivate && customType) {
-          types.push(customType);
-        }
+
       });
 
-      // Then, we loop through each element of the jsdoc in order to find the type imports
+      // Check the jsDoc of the class and find the imports
       node?.jsDoc?.forEach((jsDoc) => {
-
-        // For each tags we're gonna extract the file path of the "types.d.ts" file
-        // Then, we're gonna check that we have a matching type from the types we found previously
-        // in the constructor and add it to our imports set
-        jsDoc?.tags
-          ?.filter((tag) => tag.tagName.getText() === 'typedef' && (tag.typeExpression.type.kind === ts.SyntaxKind.ImportType))
-          ?.forEach((tag) => {
+        jsDoc.tags
+          .filter((tag) => tag.kind === ts.SyntaxKind.JSDocTypedefTag)
+          .forEach((tag) => {
 
             const moduleDir = path.parse(moduleDoc.path).dir;
             // Remove leading and ending quotes
@@ -169,23 +199,37 @@ export default function supportTypedefJsdoc () {
             const type = types.find((type) => type === typeDefDisplay);
 
             if (type != null) {
-              (!imports.has(typePath))
-                ? imports.set(typePath, new Set([type]))
-                : imports.get(typePath).add(type);
+              (!moduleTypeCache.has(typePath))
+                ? moduleTypeCache.set(typePath, new Set([type]))
+                : moduleTypeCache.get(typePath).add(type);
             }
-
           });
-
       });
 
+      types.forEach((type) => {
+      });
       // Now that we have the types, and the path of where the types are located
       // We can convert the imports to md types
-      const convertedImports = convertImports(ts, imports);
+      const convertedImports = convertImports(ts, moduleTypeCache, comp);
       const displayText = (convertedImports) ? '### Type Definitions\n\n' + convertedImports : '';
       const declaration = moduleDoc.declarations.find((declaration) => declaration.name === node.name.getText());
 
       declaration.description = declaration.description + '\n\n' + displayText;
 
+    },
+    packageLinkPhase ({ customElementsManifest, context }) {
+      const html = [`## Types Reference`];
+      const sortedMD = new Map([...typeMDStore].sort());
+      for (const [key, value] of sortedMD.entries()) {
+        html.push(`### ${key}`);
+        value.forEach((comp) => html.push(`* ${comp}`));
+      }
+      const text = html.join('\n');
+      writeFileSync('./docs/references/types.reference.md', text, {
+        encoding: 'utf8',
+        flag: 'w',
+        mode: 0o666,
+      });
     },
   };
 }

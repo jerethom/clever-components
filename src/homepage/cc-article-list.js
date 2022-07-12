@@ -6,7 +6,7 @@ import '../molecules/cc-error.js';
 const ARTICLE_SKELETON_NUMBER = 9;
 
 /**
- * @typedef {import('./types.js').Article} Article
+ * @typedef {import('./types.js').EmailModel} EmailModel
  */
 
 /**
@@ -31,6 +31,9 @@ export class CcArticleList extends LitElement {
 
     /** @type {boolean} Displays an error message. */
     this.error = false;
+
+    /** @type {EmailModel}  */
+    this.foo = null;
   }
 
   render () {
