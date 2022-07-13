@@ -3,10 +3,65 @@ kind: '📌 Docs'
 ---
 # How to use notification system?
 
-We designed a notification system based on the toast pattern. This document explains how to integrate it in your application.
+We designed a notification system based on the toast pattern.
+This document explains how to integrate it in your application.
+
+This notification system has two parts:
+
+1. The `<cc-toaster>` component displays notifications as toasts
+2. The smart components emits `cc:notify` events when API calls finish (success or error)
+
+WARNING: the smart component definition is missing
+NOTE: peut-être qu'il faut expliquer vite fait ce qu'est un smart component
+
+Both parts a decoupled and it's up to the user to plug them together.
+
+## The toaster
+
+```html
+<html>
+  <body>
+    <!-- your application here ... -->
+    <cc-toaster></cc-toaster>
+  </body>
+</html>
+```
+
+To display a notification, you need to call the `show` method on the `<cc-toaster>` element like this:
+
+```javascript
+const toast = {
+  message: 'Message to be displayed!',
+  intent: 'success',
+}
+
+document.querySelector('cc-toaster').show(toast);
+```
+
+## Components
+
+PIERRE: oui mais on a jamais vraiment expliqué le system smart
+
+```js
+document.addEventListener('cc:notify', (event) => {
+  // event.notify
+  // some component had a success or error
+});
+```
+
+## Plug them together
+
+
+```javascript
+document.addEventListener('cc:notify', (event) => {
+  document.querySelector('cc-toaster').show(event.detail);
+});
+```
+
+## More details
+
 
 We provide two web components:
-
 1. The `cc-toast` component that represents a single notification.
 2. The `cc-toaster` component that helps you display them on your application.
 
