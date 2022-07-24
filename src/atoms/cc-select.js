@@ -1,5 +1,6 @@
 import { css, html, LitElement } from 'lit-element';
 import { classMap } from 'lit-html/directives/class-map.js';
+import { repeat } from 'lit-html/directives/repeat.js';
 import { dispatchCustomEvent } from '../lib/events.js';
 import { i18n } from '../lib/i18n.js';
 
@@ -32,6 +33,7 @@ export class CcSelect extends LitElement {
       _uniqueErrorId: { type: String, attribute: false },
       _uniqueHelpId: { type: String, attribute: false },
       _uniqueInputId: { type: String, attribute: false },
+      _value: { type: String, attribute: false },
     };
   }
 
@@ -46,23 +48,23 @@ export class CcSelect extends LitElement {
      */
     this.inline = false;
 
-    /** @type {string|null} Sets `name` attribute on inner native `<select>` element. */
-    this.name = null;
+    /** @type {string} Sets `name` attribute on inner native `<select>` element. */
+    this.name = '';
 
-    /** @type {string|null} Sets label for the input. Mandatory but can be hidden if necessary. */
-    this.label = null;
+    /** @type {string} Sets label for the input. Mandatory but can be hidden if necessary. */
+    this.label = '';
 
     /** @type {Option[]|[]} Sets the list of options displayed inside the select element. */
     this.options = [];
 
-    /** @type {string|null} Sets a default option with empty value. */
-    this.placeholder = null;
+    /** @type {string} Sets a default option with empty value. */
+    this.placeholder = '';
 
     /** @type {boolean} Sets the "required" text inside the label */
     this.required = false;
 
-    /** @type {string|null} Sets the selected value of the element. */
-    this.value = null;
+    /** @type {string} Sets the selected value of the element. */
+    this.value = '';
 
     // use this unique id for isolation (Safari seems to have a bug)
     /** @type {string} used by the aria-describedby attribute on the `<select>` element and the `id` attribute on the error slot container */
@@ -73,8 +75,23 @@ export class CcSelect extends LitElement {
     this._uniqueHelpId = Math.random().toString(36).slice(2);
 
     // use this unique name for isolation (Safari seems to have a bug)
-    /** @type {string} used by the for/id relation between `<label>` and `<select>` */
+    /** @type {string} used by the `for`/`id` relation between `<label>` and `<select>` */
     this._uniqueInputId = Math.random().toString(36).slice(2);
+
+    /** @type {string} Sets the selected value of the element. */
+    this._value = '';
+  }
+
+  updated (changedProperties) {
+    if (changedProperties.has('options')) {
+      this._value = this.value;
+    }
+
+    if (changedProperties.has('value')) {
+      this._value = this.value;
+    }
+
+    super.updated(changedProperties);
   }
 
   /**
@@ -102,15 +119,15 @@ export class CcSelect extends LitElement {
           id=${this._uniqueInputId}
           ?disabled=${this.disabled}
           aria-describedby="${this._uniqueHelpId} ${this._uniqueErrorId}"
+          .value="${this._value}"
           @input=${this._onSelectInput}
         >
-          ${this.placeholder != null && this.placeholder !== '' ? html`
+          ${this.placeholder !== '' ? html`
             <option value="" disabled selected>${this.placeholder}</option>
           ` : ''}
-          ${this.options.map((option) => html`
+          ${repeat(this.options, (option) => html`
             <option
               value=${option.value}
-              ?selected=${option.value === this.value}
             >
               ${option.label}
             </option>
