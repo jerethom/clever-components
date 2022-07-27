@@ -36,6 +36,12 @@ export type RequestsData = [
   number, // Number of request during this time window.
 ]
 
+type Foo = [number, Bar, string];
+
+interface Bar {
+  hello: string,
+}
+
 export interface Scalability {
   minFlavor: Flavor,
   maxFlavor: Flavor,
@@ -47,6 +53,7 @@ interface StatusCodesData {
   // Status code number as property.
   // Number of requests as value.
   [index: number]: number,
+  nt : [number, Foo, Scalability, number],
 }
 
 

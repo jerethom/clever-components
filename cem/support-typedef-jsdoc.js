@@ -1,4 +1,4 @@
-import { readFileSync, writeFileSync } from 'fs';
+import { readFileSync } from 'fs';
 import path from 'path';
 
 export default function supportTypedefJsdoc () {
@@ -6,32 +6,37 @@ export default function supportTypedefJsdoc () {
   const typesStore = new Map();
   const fileCache = new Map();
   const moduleTypeCache = new Map();
-  const typeMDStore = new Map();
+  // const typeMDStore = new Map();
 
-  function findType (type, ts) {
+  // TODO: test, test, test!!!!!
+  function findCustomType (nodeType, ts) {
 
-    const isCustomType = type.kind === ts.SyntaxKind.TypeReference || (type.kind === ts.SyntaxKind.ArrayType && type.elementType.kind === ts.SyntaxKind.TypeReference);
-    const isArrayType = type.kind === ts.SyntaxKind.ArrayType;
-    const isSpecialArray = type?.typeName?.getText() === 'Array';
-    const hasSpecialArrayArgs = type?.typeArguments != null && type.typeArguments[0]?.typeName != null;
+    const isCustomType = nodeType.kind === ts.SyntaxKind.TypeReference
+      || (nodeType.kind === ts.SyntaxKind.ArrayType && nodeType?.elementType?.kind === ts.SyntaxKind.TypeReference);
+    const isArrayType = nodeType.kind === ts.SyntaxKind.ArrayType;
+    // Array
+    const isSpecialArray = nodeType?.typeName?.getText() === 'Array';
+    // Array<Foo>
+    const hasSpecialArrayArgs = nodeType?.typeArguments != null && nodeType.typeArguments[0]?.typeName != null;
 
     if (!isCustomType || (isSpecialArray && !hasSpecialArrayArgs)) {
       return null;
     }
 
     if (isArrayType) {
-      return type.elementType.typeName.getText();
+      return nodeType.elementType.typeName.getText();
     }
     else if (isSpecialArray) {
-      return type.typeArguments[0].typeName.getText();
+      return nodeType.typeArguments[0].typeName.getText();
     }
 
-    return type.getText();
+    return nodeType.getText();
   }
 
-  function convertImports (ts, imports, comp) {
+  function convertImports (ts, imports) {
     const asts = [];
 
+    // addon type.d.ts [Foo, Bar...]
     imports.forEach((typesSet, filename) => {
       let sourceCode;
       let sourceAst;
@@ -51,14 +56,7 @@ export default function supportTypedefJsdoc () {
       subtypes.forEach((type) => typesSet.add(type));
 
       typesSet.forEach((type) => {
-        if (typeMDStore.has(type)) {
-          const comps = typeMDStore.get(type);
-          comps.push(comp);
-        }
-        else {
-          typeMDStore.set(type, [comp]);
-        }
-        return (typesStore.has(`${type}-${filename}`))
+         (typesStore.has(`${type}-${filename}`))
           ? asts.push(typesStore.get(`${type}-${filename}`))
           : asts.push(convertInterface(ts, sourceAst, sourceCode, type, filename));
       });
@@ -68,39 +66,87 @@ export default function supportTypedefJsdoc () {
     return asts.join('\n');
   }
 
-  function findSubtypes (ts, node, code, types) {
+  // [number, Baz,...]
+  function handleTuple (tuple, node, ts) {
+    const types = [];
+    tuple.type?.elements.forEach((element) => {
+      const type = findCustomType(element, ts);
+      if (type != null) {
+        types.push(type);
+        types.push(...findSubtypes(ts, node, [type]));
+      }
+    });
+    return types;
+  }
+
+  // interface {...}
+  function handleInterface (typeInterface, node, ts) {
+    const types = [];
+    typeInterface.members.forEach((t) => {
+      const type = findCustomType(t.type, ts);
+      if (type != null) {
+        types.push(type);
+        types.push(...findSubtypes(ts, node, [type]));
+      }
+      else if (t.type.kind === ts.SyntaxKind.TupleType) {
+        types.push(...handleTuple(t.type, node, ts));
+      }
+      else if (t.type.kind === ts.SyntaxKind.UnionType) {
+        types.push(...handleUnion(t.type, node, ts));
+      }
+    });
+    return types;
+  }
+
+  // type foo = ...;
+  function handleTypeDeclaration (typeDeclaration, node, ts) {
+    const types = [];
+    typeDeclaration?.types?.forEach((t) => {
+      const type = findCustomType(t, ts);
+      if (type != null) {
+        types.push(type);
+        types.push(...findSubtypes(ts, node, [type]));
+      }
+    });
+    return types;
+  }
+
+  function handleUnion (unionType, node, ts) {
+    const types = [];
+    unionType?.types?.forEach((t) => {
+      const type = findCustomType(t, ts);
+      if (type != null) {
+        types.push(type);
+        types.push(...findSubtypes(ts, node, [type]));
+      }
+    });
+    return types;
+  }
+
+  // TODO: now that we have a function that does handle Tuple Type
+  // Don't we want to have specific functions to handle these types (e.g: Union Type)
+
+  function findSubtypes (ts, node, types) {
     const subtypes = [];
+
 
     node.statements
       .filter((typeDeclaration) => types.includes(typeDeclaration.name.getText()))
       .forEach((td) => {
         switch (td.kind) {
           case ts.SyntaxKind.TypeAliasDeclaration: {
-            td.type?.types?.forEach((t) => {
-              const type = findType(t, ts);
-              if (type != null) {
-                subtypes.push(type);
-                subtypes.push(...findSubtypes(ts, node, code, [type]));
-              }
-            });
+            subtypes.push(...handleTypeDeclaration(td));
             break;
           }
           case ts.SyntaxKind.TupleType: {
+            subtypes.push(...handleTuple(td, node, ts));
             break;
           }
           default: {
-            td.members.forEach((t) => {
-              const type = findType(t.type, ts);
-              if (type != null) {
-                subtypes.push(type);
-                subtypes.push(...findSubtypes(ts, node, code, [type]));
-              }
-            });
+            subtypes.push(...handleInterface(td, node, ts));
           }
         }
       });
-
-    console.log(subtypes);
 
     return subtypes;
   }
@@ -123,8 +169,6 @@ export default function supportTypedefJsdoc () {
   return {
     name: 'support-typedef-jsdoc',
     analyzePhase ({ ts, node, moduleDoc }) {
-
-      // return;
 
       // First, we need to find the constructor
       // It can be found as a member of ClassDeclaration
@@ -151,7 +195,9 @@ export default function supportTypedefJsdoc () {
       const types = [];
       // Now that we have our constructor nodes we can find for each node (var) its associated type
       constructorNodes.forEach((node) => {
-        // We don't want a node that doesn't contains js doc and the super() keyword
+        // We don't want a node that doesn't contain jsDoc and the super() keyword
+        // We also want to make sure that the field that we're going through is a var init (this.X = Y)
+        // and that the field is not private (no this._X = Y)
         const isSuper = node.expression?.expression?.kind === ts.SyntaxKind.SuperKeyword;
         const hasJsDoc = node?.jsDoc != null && node.jsDoc.length > 0;
         const isVarInit = node.kind === ts.SyntaxKind.ExpressionStatement && node.expression?.left?.expression.kind === ts.SyntaxKind.ThisKeyword;
@@ -161,22 +207,24 @@ export default function supportTypedefJsdoc () {
           return;
         }
 
+        // Retrieve only the first @type found
         const rawType = node.jsDoc[0].tags[0].typeExpression.type;
 
         const isUnionType = rawType.kind === ts.SyntaxKind.UnionType;
-        if (!isUnionType) {
-          const foundType = findType(rawType, ts);
-          if (foundType != null) {
-            types.push(foundType);
-          }
-        }
-        else {
+        // TODO: should there be anything else than an union type {type|type} in '@typedef {type} - desc. ?
+        if (isUnionType) {
           rawType.types.forEach((type) => {
-            const foundType = findType(type, ts);
+            const foundType = findCustomType(type, ts);
             if (foundType != null) {
               types.push(foundType);
             }
           });
+        }
+        else {
+          const foundType = findCustomType(rawType, ts);
+          if (foundType != null) {
+            types.push(foundType);
+          }
         }
 
       });
@@ -199,37 +247,36 @@ export default function supportTypedefJsdoc () {
             const type = types.find((type) => type === typeDefDisplay);
 
             if (type != null) {
-              (!moduleTypeCache.has(typePath))
-                ? moduleTypeCache.set(typePath, new Set([type]))
-                : moduleTypeCache.get(typePath).add(type);
+              if (!moduleTypeCache.has(typePath)) {
+                moduleTypeCache.set(typePath, new Set());
+              }
+              moduleTypeCache.get(typePath).add(type);
             }
           });
       });
 
-      types.forEach((type) => {
-      });
       // Now that we have the types, and the path of where the types are located
       // We can convert the imports to md types
-      const convertedImports = convertImports(ts, moduleTypeCache, comp);
+      const convertedImports = convertImports(ts, moduleTypeCache);
       const displayText = (convertedImports) ? '### Type Definitions\n\n' + convertedImports : '';
       const declaration = moduleDoc.declarations.find((declaration) => declaration.name === node.name.getText());
 
       declaration.description = declaration.description + '\n\n' + displayText;
 
     },
-    packageLinkPhase ({ customElementsManifest, context }) {
-      const html = [`## Types Reference`];
-      const sortedMD = new Map([...typeMDStore].sort());
-      for (const [key, value] of sortedMD.entries()) {
-        html.push(`### ${key}`);
-        value.forEach((comp) => html.push(`* ${comp}`));
-      }
-      const text = html.join('\n');
-      writeFileSync('./docs/references/types.reference.md', text, {
-        encoding: 'utf8',
-        flag: 'w',
-        mode: 0o666,
-      });
-    },
+    // packageLinkPhase ({ customElementsManifest, context }) {
+    //   const html = [`## Types Reference`];
+    //   const sortedMD = new Map([...typeMDStore].sort());
+    //   for (const [key, value] of sortedMD.entries()) {
+    //     html.push(`### ${key}`);
+    //     value.forEach((comp) => html.push(`* ${comp}`));
+    //   }
+    //   const text = html.join('\n');
+    //   writeFileSync('./docs/references/types.reference.md', text, {
+    //     encoding: 'utf8',
+    //     flag: 'w',
+    //     mode: 0o666,
+    //   });
+    // },
   };
 }
