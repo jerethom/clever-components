@@ -1,6 +1,5 @@
 import { css, html, LitElement } from 'lit-element';
 import { classMap } from 'lit-html/directives/class-map.js';
-import { repeat } from 'lit-html/directives/repeat.js';
 import { dispatchCustomEvent } from '../lib/events.js';
 import { i18n } from '../lib/i18n.js';
 
@@ -88,7 +87,7 @@ export class CcSelect extends LitElement {
      * We need to make sure the value of the `<select>` element in only updated after
      * `<option>` elements have been rendered.
     */
-    if (changedProperties.has('options') || changedProperties.has('value')) {
+    if (changedProperties.has('value')) {
       this._value = this.value;
     }
 
