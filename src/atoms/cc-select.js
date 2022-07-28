@@ -77,19 +77,17 @@ export class CcSelect extends LitElement {
     // use this unique name for isolation (Safari seems to have a bug)
     /** @type {string} used by the `for`/`id` relation between `<label>` and `<select>` */
     this._uniqueInputId = Math.random().toString(36).slice(2);
+  }
 
-    /** @type {string} Sets the selected value of the element. */
-    this._value = '';
+  update (changedProperties) {
+    console.log('update - ', { options: this.options }, { componentValue: this.value });
+
+    super.update(changedProperties);
   }
 
   updated (changedProperties) {
-    if (changedProperties.has('options')) {
-      this._value = this.value;
-    }
-
-    if (changedProperties.has('value')) {
-      this._value = this.value;
-    }
+    const selectValue = this.shadowRoot.querySelector('select').value;
+    console.log('updated', { componentValue: this.value }, { nativeSelectValue: selectValue });
 
     super.updated(changedProperties);
   }
@@ -107,6 +105,7 @@ export class CcSelect extends LitElement {
   }
 
   render () {
+    console.log('rendering start - ', { options: this.options }, { componentValue: this.value });
     return html`
       <label for=${this._uniqueInputId}>
         <span>${this.label}</span>
@@ -119,19 +118,26 @@ export class CcSelect extends LitElement {
           id=${this._uniqueInputId}
           ?disabled=${this.disabled}
           aria-describedby="${this._uniqueHelpId} ${this._uniqueErrorId}"
-          .value="${this._value}"
+          .value="${(() => {
+            console.log('rendering and setting native select value');
+            return this.value;
+          })()}"
           @input=${this._onSelectInput}
         >
           ${this.placeholder !== '' ? html`
             <option value="" disabled selected>${this.placeholder}</option>
           ` : ''}
-          ${repeat(this.options, (option) => html`
+          ${repeat(this.options, (option) => {
+            console.log('rendering and generating options');
+
+            return html`
             <option
               value=${option.value}
             >
               ${option.label}
             </option>
-          `)}
+          `;
+          })}
         </select>
       </div>
 

@@ -52,10 +52,10 @@ export const defaultStory = makeStory(conf, {
 export const required = makeStory(conf, {
   items: [
     {
-      label: 'Favourite artist',
-      placeholder: '-- Select an artist --',
+      label: 'VALUE SHOULD BE GAGA',
       required: true,
       options: baseOptions,
+      value: 'GAGA',
     },
   ],
 });
