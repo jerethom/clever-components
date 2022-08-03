@@ -7,7 +7,7 @@ export interface Addon {
   creationDate: Date | number | string,
 }
 
-export type AddonType = "apm" | "elasticsearch" | Foo | "kibana" | "pulsar" ;
+type AddonType = "apm" | "elasticsearch" | Foo | "kibana" | "pulsar" ;
 
 interface Foo {
   bar: string,
