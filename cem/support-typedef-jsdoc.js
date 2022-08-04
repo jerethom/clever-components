@@ -1,7 +1,6 @@
 import { readFileSync } from 'fs';
 import path from 'path';
 import {
-  findCustomType,
   findSubtypes, findTypePath,
   getConstructorNode,
   getTypesFromConstructor,

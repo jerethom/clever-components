@@ -78,6 +78,15 @@ describe('findPath()', function () {
     const path = findTypePath(importsNode[0], rootDir, moduleDir);
     expect(path).to.equal(`${rootDir}/${moduleDir}/cc-test-component.types.d.ts`);
   });
+
+  it('should ', function () {
+    const rootDir = process.cwd();
+    const moduleDir = 'cem/test/fixtures';
+    const importsNode = classNode.jsDoc[0].tags;
+    const importLength = importsNode.length;
+    const path = findTypePath(importsNode[importLength - 1], rootDir, moduleDir);
+    expect(path).to.equal(`${rootDir}/cem/test/common.types.d.ts`);
+  });
 });
 
 // TODO: test findSubtypes()

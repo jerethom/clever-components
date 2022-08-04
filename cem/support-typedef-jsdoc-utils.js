@@ -87,12 +87,9 @@ export function findTypePath (importTag, rootDir, moduleDir, convert = false) {
   // Remove leading and ending quotes
   const typeRelativePath = importTag.typeExpression.type.argument?.literal.getText().slice(1, -1);
   const { dir: typeDir, name: typeName } = path.parse(typeRelativePath);
-  const typeToTs = path.format({ name: typeName, ext: '.d.ts' });
+  const typeToTs = path.format({ name: typeName, ext: '.ts' });
 
-  // TODO: convert is tmp until we switch to the new folder structure
-  return (convert)
-    ? path.resolve(rootDir, moduleDir, typeDir, typeToTs)
-    : path.resolve(rootDir, moduleDir, typeDir, typeRelativePath);
+  return path.resolve(rootDir, moduleDir, typeDir, typeToTs);
 }
 
 export function findSubtypes (ts, node, types) {

@@ -7,6 +7,7 @@ import { LitElement } from 'lit-element';
  * @typedef {import('./cc-test-component.types.d.ts').TheType} TheType
  * @typedef {import('./cc-test-component.types.d.ts').TupleFoo} TupleFoo
  * @typedef {import('./cc-test-component.types.d.ts').TupleBar} TupleBar
+ * @typedef {import('../common.types.d.ts').Common} Common
  */
 
 /**
