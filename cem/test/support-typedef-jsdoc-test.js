@@ -1,7 +1,8 @@
+import fs, { readFileSync } from 'fs';
 import { expect } from 'chai';
 import ts from 'typescript';
-import fs, { readFileSync } from 'fs';
 import {
+  convertInterface,
   findCustomType, findSubtypes, findTypePath, getConstructorNode, getTypesFromConstructor,
 } from '../support-typedef-jsdoc-utils.js';
 
@@ -89,7 +90,6 @@ describe('findPath()', function () {
   });
 });
 
-// TODO: test findSubtypes()
 describe('findSubtypes()', function () {
   it('should ', function () {
     // TODO: don't duplicate "fs"
@@ -105,6 +105,24 @@ describe('findSubtypes()', function () {
   });
 });
 
-// TODO: test the output of convertImports()
-
-// TODO: See if we can split more code and test them
+describe('convertInterface()', function () {
+  it('should ', function () {
+    const rootDir = process.cwd();
+    const moduleDir = 'cem/test/fixtures';
+    const importsNode = classNode.jsDoc[0].tags;
+    const path = findTypePath(importsNode[0], rootDir, moduleDir);
+    const sourceCode = readFileSync(path).toString();
+    const sourceAst = ts.createSourceFile(path, sourceCode, ts.ScriptTarget.ES2015, true);
+    const interfaceStr = convertInterface(ts, sourceAst, sourceCode, 'TheInterface', path);
+    expect(interfaceStr).to.equal(
+      '```ts\n\n'
+      + 'interface TheInterface {\n'
+      + '  one: number;\n'
+      + '  two: string;\n'
+      + '  sub: SubInterface;\n'
+      + '  subSpecialArray: Array<OtherInterface>;\n'
+      + '  subArray: OtherInterfaceTwo[];\n'
+      + '  subType: SubType;\n'
+      + '}\n' + '\n' + '```');
+  });
+});

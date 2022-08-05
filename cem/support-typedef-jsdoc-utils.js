@@ -83,7 +83,7 @@ function isVarInitWithDoc (node, ts) {
   return isVarInit && hasJsDoc && hasTypeIdentifier && !isFieldPrivate;
 }
 
-export function findTypePath (importTag, rootDir, moduleDir, convert = false) {
+export function findTypePath (importTag, rootDir, moduleDir) {
   // Remove leading and ending quotes
   const typeRelativePath = importTag.typeExpression.type.argument?.literal.getText().slice(1, -1);
   const { dir: typeDir, name: typeName } = path.parse(typeRelativePath);
@@ -172,4 +172,17 @@ function handleTuple (tuple, node, ts) {
   return types;
 }
 
+export function convertInterface (ts, node, code, interfaceName, filename, typesStore = null) {
+  const st = node?.statements.find((st) => st?.name?.getText() === interfaceName);
+  if (st == null) {
+    return '';
+  }
 
+  const start = st?.modifiers?.find((modifier) => modifier.kind === ts.SyntaxKind.ExportKeyword)?.end ?? st?.pos;
+  const typeDeclaration = code.substring(start, st?.end).trim();
+  const typeDisplay = '```ts\n\n'
+    + typeDeclaration
+    + '\n\n```';
+  typesStore?.set(`${interfaceName}-${filename}`, typeDisplay);
+  return typeDisplay;
+}
