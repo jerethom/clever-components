@@ -1,4 +1,4 @@
-export interface App {
+interface App {
   name: string,                   // Name of the application
   commit?: string,                // Head commit on remote repo if app is not brand new (full SHA-1)
   variantName: string,            // Human name of the variant (PHP, Ruby, Python...)
@@ -6,7 +6,7 @@ export interface App {
   lastDeploymentLogsUrl?: string, // URL to the logs for the last deployment if app is not brand new
 }
 
-export type AppStatus = "restart-failed" | "restarting" | "restarting-with-downtime"
+type AppStatus = "restart-failed" | "restarting" | "restarting-with-downtime"
   | "running" | "start-failed" | "starting" | "stopped" | "unknown";
 
 interface Application {
@@ -25,14 +25,14 @@ interface InstanceVariant {
 }
 
 
-export interface Organisation {
+interface Organisation {
   name: string,
   avatar: string,
   cleverEnterprise: boolean,
   emergencyNumber: string,
 }
 
-export interface Orga {
+interface Orga {
   name: string,
   avatar: string,
   cleverEnterprise: boolean,
@@ -47,5 +47,5 @@ interface Zone {
   tags: string[],        // Array of strings for semantic tags: ["region:eu", "infra:clever-cloud"], ["scope:private"]...
 }
 
-export type ToggleStateType = 'off' | 'open' | 'close';
+type ToggleStateType = 'off' | 'open' | 'close';
 

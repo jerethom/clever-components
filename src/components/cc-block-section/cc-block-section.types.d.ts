@@ -1,1 +1,1 @@
-export type ErrorModeType = "inline" | "info" | "loading" | "confirm";
+// export type ErrorModeType = "inline" | "info" | "loading" | "confirm";
