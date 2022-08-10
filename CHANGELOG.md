@@ -189,7 +189,7 @@ title: Changelog
 ### For devs
 
 * Improve type definitions documentation:
-  * move types to a `types.d.ts` for each web components section
+  * move types to a `cc-test-component.d.ts` for each web components section
   * add a script to automate type definition generation
   * moved typedef imports to above class declaration to avoid events not showing up on the docs
 * Storybook: update prebuilt Storybook to `0.1.32` (Storybook `6.4.9`)
