@@ -20,7 +20,6 @@ const SKELETON_INVOICE = {
 };
 
 /**
- * @typedef {import('./cc-invoice.types.d.ts').Amount} Amount
  * @typedef {import('./cc-invoice.types.d.ts').Invoice} Invoice
  */
 

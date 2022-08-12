@@ -21,7 +21,6 @@ const CURRENCY_EUR = { code: 'EUR', changeRate: 1 };
 
 /**
  * @typedef {import('./cc-pricing-header.types.d.ts').Currency} Currency
- * @typedef {import('./cc-pricing-header.types.d.ts').Plan} Plan
  * @typedef {import('../common.types.d.ts').Zone} Zone
  */
 

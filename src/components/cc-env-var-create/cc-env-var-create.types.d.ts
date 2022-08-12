@@ -1,5 +1,1 @@
-interface Variable {
-  name: string;
-  value: string;
-}
-
+// No need here

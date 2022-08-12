@@ -5,6 +5,7 @@ import identifyReadonlyMembers from './cem/identify-readonly-members.js';
 import addGithubSourceInDescription from './cem/add-github-source-in-description.js';
 import supportCssdisplayJsdoc from './cem/support-cssdisplay-jsdoc.js';
 import listImages from './cem/list-images.js';
+import supportTypedefJsdoc from './cem/support-typedef-jsdoc.js';
 
 // Temporary for now
 fs.mkdirSync('dist', { recursive: true });
@@ -19,7 +20,7 @@ export default {
     removePrivateMembers(),
     identifyReadonlyMembers(),
     supportCssdisplayJsdoc(),
-    // supportTypedefJsdoc(),
+    supportTypedefJsdoc(),
     addGithubSourceInDescription({ githubProject: 'CleverCloud/clever-components' }),
     listImages(),
   ],

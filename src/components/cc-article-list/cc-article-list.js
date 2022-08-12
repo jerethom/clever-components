@@ -1,12 +1,12 @@
 import { css, html, LitElement } from 'lit-element';
-import { i18n } from '../lib/i18n.js';
-import './cc-article-card.js';
-import '../molecules/cc-error.js';
+import { i18n } from '../../lib/i18n.js';
+import '../cc-article-card/cc-article-card.js';
+import '../cc-error/cc-error.js';
 
 const ARTICLE_SKELETON_NUMBER = 9;
 
 /**
- * @typedef {import('./types.js').EmailModel} EmailModel
+ * @typedef {import('./cc-article-list.types.d.ts').Article} Article
  */
 
 /**
@@ -32,8 +32,6 @@ export class CcArticleList extends LitElement {
     /** @type {boolean} Displays an error message. */
     this.error = false;
 
-    /** @type {EmailModel}  */
-    this.foo = null;
   }
 
   render () {

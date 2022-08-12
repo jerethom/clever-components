@@ -45,9 +45,7 @@ const SKELETON_INTERVALS = [
 
 /**
  * @typedef {import('./cc-pricing-product-consumption.types.d.ts').ActionType} ActionType
- * @typedef {import('./cc-pricing-product-consumption.types.d.ts').Interval} Interval
  * @typedef {import('./cc-pricing-product-consumption.types.d.ts').Currency} Currency
- * @typedef {import('./cc-pricing-product-consumption.types.d.ts').Plan} Plan
  * @typedef {import('./cc-pricing-product-consumption.types.d.ts').Section} Section
  */
 

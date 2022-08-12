@@ -8,8 +8,6 @@ import { i18n } from '../../lib/i18n.js';
 /**
  * @typedef {import('./cc-logsmap.types.d.ts').HeatmapPoint} HeatmapPoint
  * @typedef {import('./cc-logsmap.types.d.ts').MapModeType} MapModeType
- * @typedef {import('./cc-logsmap.types.d.ts').Point} Point
- * @typedef {import('./cc-logsmap.types.d.ts').PointsOptions} PointsOptions
  */
 
 /**

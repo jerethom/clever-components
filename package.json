@@ -23,6 +23,7 @@
     "components:publish-cdn": "node tasks/publish-cdn.js",
     "components:check-i18n": "node tasks/check-i18n.js",
     "components:check-lit": "lit-analyzer src",
+    "components:check-types-imports": "node tasks/check-type-imports.js",
     "components:docs": "cem analyze --litelement --outdir dist",
     "test-cem": "mocha cem/test/*.js",
     "test-cem:watch": "mocha --watch cem/test/*.js",

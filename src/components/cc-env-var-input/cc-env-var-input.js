@@ -8,11 +8,6 @@ import { i18n } from '../../lib/i18n.js';
 import { skeletonStyles } from '../../styles/skeleton.js';
 
 /**
- * @typedef {import('./cc-env-var-input.types.d.ts').Variable} Variable
- * @typedef {import('./cc-env-var-input.types.d.ts').VariableName} VariableName
- */
-
-/**
  * A small input to manipulate an environement variable.
  *
  * @cssdisplay block

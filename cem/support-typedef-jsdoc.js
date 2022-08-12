@@ -13,8 +13,6 @@ export default function supportTypedefJsdoc () {
   const fileCache = new Map();
   const moduleTypeCache = new Map();
 
-  // const typeMDStore = new Map();
-
   function convertImports (ts, imports) {
     const asts = [];
 
@@ -81,11 +79,15 @@ export default function supportTypedefJsdoc () {
           .filter((tag) => tag.kind === ts.SyntaxKind.JSDocTypedefTag)
           .forEach((tag) => {
 
+            // The module we are in (e.g: src/components/cc-*)
             const moduleDir = path.parse(moduleDoc.path).dir;
+            // Gather the type from @typedef(path) {type}
             const typePath = findTypePath(tag, rootDir, moduleDir);
 
+            // The typename from @typedef(path) {type}
             const typeDefDisplay = tag.name.getText();
 
+            // Check if there's a match between our types and the one imported
             const type = types.find((type) => type === typeDefDisplay);
 
             if (type != null) {

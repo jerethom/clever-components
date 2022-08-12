@@ -7,8 +7,8 @@ import { ccAddonEncryptionAtRestOption } from '../../templates/cc-addon-encrypti
 
 /**
  * @typedef {import('./cc-addon-mongodb-options.types.d.ts').Option} Option
- * @typedef {import('./cc-addon-mongodb-options.types.d.ts').GenericOptions} GenericOptions
  */
+
 /**
  * A component that displays the available options of a MongoDB add-on.
  *

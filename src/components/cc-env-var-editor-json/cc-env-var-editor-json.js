@@ -13,7 +13,6 @@ const SKELETON_VARIABLES = [
 ];
 
 /**
- * @typedef {import('./cc-env-var-editor-json.types.d.ts').ParseError} ParseError
  * @typedef {import('./cc-env-var-editor-json.types.d.ts').ParserOptions} ParserOptions
  * @typedef {import('./cc-env-var-editor-json.types.d.ts').Variable} Variable
  */

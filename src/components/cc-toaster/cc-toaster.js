@@ -6,9 +6,7 @@ import '../cc-toast/cc-toast.js';
 /**
  * @typedef {import('./cc-toaster.types.d.ts').ToastPosition} ToastPosition
  * @typedef {import('./cc-toaster.types.d.ts').ToastAnimation} ToastAnimation
- * @typedef {import('./cc-toaster.types.d.ts').Notification} Notification
  * @typedef {import('./cc-toaster.types.d.ts').ToastOptions} ToastOptions
- * @typedef {import('./cc-toaster.types.d.ts').Toast} Toast
  */
 
 /**

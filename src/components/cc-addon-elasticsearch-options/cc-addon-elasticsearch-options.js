@@ -10,7 +10,6 @@ const APM_LOGO_URL = 'https://assets.clever-cloud.com/logos/elasticsearch-apm.sv
 
 /**
  * @typedef {import('./cc-addon-elasticsearch-options.types.d.ts').Option} Option
- * @typedef {import('./cc-addon-elasticsearch-options.types.d.ts').ElasticOptions} ElasticOptions
  */
 
 /**

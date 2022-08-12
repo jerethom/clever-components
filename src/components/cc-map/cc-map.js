@@ -12,7 +12,6 @@ import { leafletStyles } from '../../styles/leaflet.js';
 /**
  * @typedef {import('./cc-map.types.d.ts').HeatmapPoint} HeatmapPoint
  * @typedef {import('./cc-map.types.d.ts').MapModeType} MapModeType
- * @typedef {import('./cc-map.types.d.ts').Point} Point
  */
 
 /**

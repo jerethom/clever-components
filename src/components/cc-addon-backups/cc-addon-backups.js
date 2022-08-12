@@ -22,8 +22,6 @@ const SKELETON_BACKUPS = {
 
 /**
  * @typedef {import('./cc-addon-backups.types.d.ts').BackupDetails} BackupDetails
- * @typedef {import('./cc-addon-backups.types.d.ts').Backup} Backup
- * @typedef {import('./cc-addon-backups.types.d.ts').OverlayType} OverlayType
  */
 
 /**
@@ -63,6 +61,7 @@ export class CcAddonBackups extends LitElement {
 
     /** @type {Backup|null} */
     this._selectedBackup = null;
+
   }
 
   _getDescription (providerId) {
