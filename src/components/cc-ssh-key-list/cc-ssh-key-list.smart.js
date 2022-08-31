@@ -1,10 +1,10 @@
 import './cc-ssh-key-list.js';
-import '../smart/cc-smart-container.js';
+import '../cc-smart-container/cc-smart-container.js';
 import { getKeys } from '@clevercloud/client/esm/api/v2/github.js';
 import {
-  todo_addSshKey,
-  todo_getSshKeys,
-  todo_removeSshKey,
+  todo_addSshKey, /* eslint-disable-line camelcase */
+  todo_getSshKeys, /* eslint-disable-line camelcase */
+  todo_removeSshKey, /* eslint-disable-line camelcase */
 } from '@clevercloud/client/esm/api/v2/user.js';
 import {
   fromCustomEvent,
@@ -12,9 +12,9 @@ import {
   merge,
   unsubscribeWithSignal,
   withLatestFrom,
-} from '../lib/observables.js';
-import { sendToApi } from '../lib/send-to-api.js';
-import { defineComponent } from '../lib/smart-manager.js';
+} from '../../lib/observables.js';
+import { sendToApi } from '../../lib/send-to-api.js';
+import { defineComponent } from '../../lib/smart-manager.js';
 
 function getSshKeyFromName (sshKeys, name) {
   return sshKeys.find((key) => key.name === name);

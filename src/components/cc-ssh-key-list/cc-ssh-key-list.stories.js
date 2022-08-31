@@ -1,7 +1,7 @@
-import '../../src/profile/cc-ssh-key-list.js';
-import '../../src/profile/cc-ssh-key-list.smart.js';
-import { makeStory, storyWait } from '../lib/make-story.js';
-import { enhanceStoriesNames } from '../lib/story-names.js';
+import './cc-ssh-key-list.js';
+import './cc-ssh-key-list.smart.js';
+import { makeStory, storyWait } from '../../stories/lib/make-story.js';
+import { enhanceStoriesNames } from '../../stories/lib/story-names.js';
 
 const DUMMY_KEY_1 = {
   name: 'Work laptop',
@@ -179,7 +179,7 @@ export const waitingWithDeletingPersonalKey = makeStory(conf, {
       },
       githubKeysModel: {
         keys: [],
-      }
+      },
     },
   ],
 });
@@ -347,7 +347,7 @@ export const simulationWithAddingKeyWithSuccess = makeStory(conf, {
         },
         inputKey: {
           value: '',
-        }
+        },
       },
       personalKeysModel: {
         keys: [
@@ -405,7 +405,7 @@ export const simulationWithAddingKeyWithError = makeStory(conf, {
         },
         inputKey: {
           value: '',
-        }
+        },
       },
       personalKeysModel: {
         keys: [
@@ -470,7 +470,7 @@ export const simulationWithDeletingKeyWithSuccess = makeStory(conf, {
       component.requestUpdate();
     }),
     storyWait(1500, ([component]) => {
-      component.personalKeysModel.keys = [ DUMMY_KEY_1 ];
+      component.personalKeysModel.keys = [DUMMY_KEY_1];
       component.requestUpdate();
     }),
   ],

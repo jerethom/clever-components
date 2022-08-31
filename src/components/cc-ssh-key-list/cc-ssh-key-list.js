@@ -1,25 +1,25 @@
-import '../atoms/cc-button.js';
-import '../atoms/cc-img.js';
-import '../atoms/cc-input-text.js';
-import '../molecules/cc-block.js';
-import '../molecules/cc-block-section.js';
-import '../molecules/cc-error.js';
-import { css, html, LitElement } from 'lit-element';
-import { classMap } from 'lit-html/directives/class-map.js';
-import { dispatchCustomEvent } from '../lib/events.js';
-import { fakeString } from '../lib/fake-strings.js';
-import { i18n } from '../lib/i18n.js';
-import { skeletonStyles } from '../styles/skeleton.js';
+import '../cc-button/cc-button.js';
+import '../cc-img/cc-img.js';
+import '../cc-input-text/cc-input-text.js';
+import '../cc-block/cc-block.js';
+import '../cc-block-section/cc-block-section.js';
+import '../cc-error/cc-error.js';
+import { css, html, LitElement } from 'lit';
+import { classMap } from 'lit/directives/class-map.js';
+import { dispatchCustomEvent } from '../../lib/events.js';
+import { fakeString } from '../../lib/fake-strings.js';
+import { i18n } from '../../lib/i18n.js';
+import { skeletonStyles } from '../../styles/skeleton.js';
 
-const deleteSvg = new URL('../assets/trash-red.svg', import.meta.url).href;
-const importSvg = new URL('../assets/add-circle-fill-blue.svg', import.meta.url).href;
-const keySvg = new URL('../assets/key-reverse.svg', import.meta.url).href;
+const deleteSvg = new URL('../../assets/trash-red.svg', import.meta.url).href;
+const importSvg = new URL('../../assets/add-circle-fill-blue.svg', import.meta.url).href;
+const keySvg = new URL('../../assets/key-reverse.svg', import.meta.url).href;
 
 /**
- * @typedef {import('./types.d.ts').CreateFormModel} CreateFormModel
- * @typedef {import('./types.d.ts').PersonalKeysModel} PersonalKeysModel
- * @typedef {import('./types.d.ts').GithubKeysModel} GithubKeysModel
- * @typedef {import('./types.d.ts').SSHKey} SSHKey
+ * @typedef {import('./cc-ssh-key-list.types.d.ts').CreateFormModel} CreateFormModel
+ * @typedef {import('./cc-ssh-key-list.types.d.ts').PersonalKeysModel} PersonalKeysModel
+ * @typedef {import('./cc-ssh-key-list.types.d.ts').GithubKeysModel} GithubKeysModel
+ * @typedef {import('./cc-ssh-key-list.types.d.ts').SSHKey} SSHKey
  */
 
 /**
