@@ -336,6 +336,8 @@ export const errorWithWhenAddingNewKey = makeStory(conf, {
   ],
 });
 
+// TODO remove all requestUdate()
+
 export const simulationWithAddingKeyWithSuccess = makeStory(conf, {
   items: [
     {

@@ -20,6 +20,8 @@ function getSshKeyFromName (sshKeys, name) {
   return sshKeys.find((key) => key.name === name);
 }
 
+// TODO remove all requestUpdate()
+
 defineComponent({
   selector: 'cc-ssh-key-list',
   params: {
@@ -41,11 +43,8 @@ defineComponent({
       if (apiConfig != null) {
         component.resetPersonalKeys();
         component.resetGithubKeys();
-    
-        component.personalKeysModel.keys = null;
+
         personalKeys_lp.push((signal) => fetchKeysPersonal({ apiConfig, signal, cacheDelay: 0 }));
-    
-        component.githubKeysModel.keys = null;
         githubKeys_lp.push((signal) => fetchKeysGithub({ apiConfig, signal, cacheDelay: 0 }));
       }
     }
@@ -55,11 +54,13 @@ defineComponent({
       errors$.subscribe(console.error),
 
       personalKeys_lp.error$.subscribe(() => {
-        component.personalKeysModel.state = 'error'; // TODO wire to new toast implementation
+        // TODO wire to new toast implementation
+        component.personalKeysModel.state = 'error';
         component.requestUpdate();
       }),
       githubKeys_lp.error$.subscribe(() => {
-        component.githubKeysModel.state = 'error'; // TODO wire to new toast implementation
+        // TODO wire to new toast implementation
+        component.githubKeysModel.state = 'error';
         component.requestUpdate();
       }),
 
@@ -88,7 +89,8 @@ defineComponent({
               refreshAllKeys({ apiConfig });
             })
             .catch(() => {
-              component.createFormModel.state = 'error'; // TODO wire to new toast implementation
+              // TODO wire to new toast implementation
+              component.createFormModel.state = 'error';
               component.requestUpdate();
             });
         });
@@ -101,14 +103,13 @@ defineComponent({
         githubKeys_lp.push((signal) => {
           return addKey({ apiConfig, signal, key })
             .then(() => {
-              importingKey.processing = false;
-
               refreshAllKeys({ apiConfig });
             })
             .catch(() => {
               importingKey.processing = false;
 
-              component.githubKeysModel.state = 'error'; // TODO wire to new toast implementation
+              // TODO wire to new toast implementation
+              component.githubKeysModel.state = 'error';
               component.requestUpdate();
             });
         });
@@ -121,14 +122,13 @@ defineComponent({
         personalKeys_lp.push((signal) => {
           return deleteKey({ apiConfig, signal, key })
             .then(() => {
-              deletingKey.processing = false;
-
               refreshAllKeys({ apiConfig });
             })
             .catch(() => {
               deletingKey.processing = false;
 
-              component.personalKeysModel.state = 'error'; // TODO wire to new toast implementation
+              // TODO wire to new toast implementation
+              component.personalKeysModel.state = 'error';
               component.requestUpdate();
             });
         });

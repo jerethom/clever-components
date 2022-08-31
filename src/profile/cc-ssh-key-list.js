@@ -16,10 +16,10 @@ const importSvg = new URL('../assets/add-circle-fill-blue.svg', import.meta.url)
 const keySvg = new URL('../assets/key-reverse.svg', import.meta.url).href;
 
 /**
- * @typedef {import('./types.js').CreateFormModel} CreateFormModel
- * @typedef {import('./types.js').PersonalKeysModel} PersonalKeysModel
- * @typedef {import('./types.js').GithubKeysModel} GithubKeysModel
- * @typedef {import('./types.js').SSHKey} SSHKey
+ * @typedef {import('./types.d.ts').CreateFormModel} CreateFormModel
+ * @typedef {import('./types.d.ts').PersonalKeysModel} PersonalKeysModel
+ * @typedef {import('./types.d.ts').GithubKeysModel} GithubKeysModel
+ * @typedef {import('./types.d.ts').SSHKey} SSHKey
  */
 
 /**
@@ -83,7 +83,7 @@ export class CcSshKeyList extends LitElement {
     };
   }
 
-    resetPersonalKeys () {
+  resetPersonalKeys () {
     /**
      * @type {PersonalKeysModel} personal key list model.
      */
@@ -94,6 +94,7 @@ export class CcSshKeyList extends LitElement {
   }
 
   _onCreateKey () {
+    // TODO refactor in smart?
     this.createFormModel.inputName.error = this.createFormModel.inputName.value === ''
       ? 'required'
       : 'none';
