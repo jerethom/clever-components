@@ -2,7 +2,7 @@ import { css, html, LitElement } from 'lit';
 import { withResizeObserver } from '../../mixins/with-resize-observer/with-resize-observer.js';
 
 /**
- * @typedef {import('./cc-overview.types.js').ModeType} ModeType
+ * @typedef {import('../common.types.js').ModeType} ModeType
  */
 
 /**

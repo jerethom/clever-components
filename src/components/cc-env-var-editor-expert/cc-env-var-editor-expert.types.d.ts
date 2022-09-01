@@ -1,26 +1,8 @@
-export type ContextType = "env-var" | "env-var-simple" | "env-var-addon" | "exposed-config" | "config-provider";
-
-export type EnvType = "addon" | "app";
-
-export interface Service {
-  name: string,
-  variables?: Variable[],
+interface ParseError {
+  line: number;
+  msg: string;
 }
 
-export interface Variable {
-  name: string,
-  value: string,
-}
-
-export interface ParseError {
-  line: number,
-  msg: string,
-}
-
-export interface ParserOptions {
-  mode: string,
-}
-
-export interface VariableName {
-  name: string,
+interface ParserOptions {
+  mode: string;
 }

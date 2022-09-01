@@ -18,7 +18,7 @@ const SKELETON_ZONE = {
 const PRIVATE_ZONE = 'scope:private';
 
 /**
- * @typedef {import('./cc-zone.types.js').ModeType} ModeType
+ * @typedef {import('../common.types.js').ModeType} ModeType
  * @typedef {import('../common.types.js').Zone} Zone
  */
 

@@ -7,7 +7,7 @@ import { i18n } from '../../lib/i18n.js';
 import { linkStyles } from '../../templates/cc-link/cc-link.js';
 
 /**
- * @typedef {import('./cc-addon-option-form.types.js').Option} Option
+ * @typedef {import('../common.types.js').AddonOption} AddonOption
  */
 
 /**
@@ -31,7 +31,7 @@ export class CcAddonOptionForm extends LitElement {
   constructor () {
     super();
 
-    /** @type {Option[]} List of Option object to render. */
+    /** @type {AddonOption[]} List of Option object to render. */
     this.options = null;
 
     /** @type {string} Title of the whole options form. */

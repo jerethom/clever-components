@@ -13,8 +13,7 @@ const SKELETON_REDIRECTIONS = [
 
 /**
  * @typedef {import('./cc-tcp-redirection-form.types.js').ContextRedirectionType} ContextRedirectionType
- * @typedef {import('./cc-tcp-redirection-form.types.js').Redirection} Redirection
- * @typedef {import('./cc-tcp-redirection-form.types.js').RedirectionNamespace} RedirectionNamespace
+ * @typedef {import('../common.types.js').Redirection} Redirection
  */
 
 /**

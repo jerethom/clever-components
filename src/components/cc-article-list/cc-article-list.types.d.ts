@@ -5,10 +5,3 @@ export interface Article {
   description: string,
   date: string,
 }
-
-export interface Documentation {
-  desc: string,
-  icons: string[],
-  link: string,
-  title: string,
-}

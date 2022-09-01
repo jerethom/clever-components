@@ -8,7 +8,7 @@ import { dispatchCustomEvent } from '../../lib/events.js';
 import { i18n } from '../../lib/i18n.js';
 
 /**
- * @typedef {import('./cc-addon-admin.types.js').Addon} Addon
+ * @typedef {import('../common.types.js').Addon} Addon
  * @typedef {import('./cc-addon-admin.types.js').ErrorType} ErrorType
  */
 

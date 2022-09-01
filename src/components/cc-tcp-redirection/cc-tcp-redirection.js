@@ -11,10 +11,6 @@ import { waitingStyles } from '../../styles/waiting.js';
 const noRedirectionSvg = new URL('../../assets/redirection-off.svg', import.meta.url).href;
 const redirectionSvg = new URL('../../assets/redirection-on.svg', import.meta.url).href;
 
-/**
- * @typedef {import('./cc-tcp-redirection.types.js').RedirectionNamespace} RedirectionNamespace
- * @typedef {import('./cc-tcp-redirection.types.js').Redirection} Redirection
- */
 
 /**
  * A small form to create or delete a TCP redirection.

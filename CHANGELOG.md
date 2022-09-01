@@ -25,7 +25,8 @@ title: Changelog
 ### For devs
 
 * Improve display of `components:check-i18n` task.
-* Upgrade from `lit-element@2.5.1` to `lit@2.3.1`
+* Upgrade from `lit-element@2.5.1` to `lit@2.3.1`.
+* Reorganize `component.types.d.ts` types and put the common ones into `common.types.d.ts`.
 
 ## 9.0.0 (2022-07-19)
 

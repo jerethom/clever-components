@@ -6,10 +6,8 @@ import { dispatchCustomEvent } from '../../lib/events.js';
 import { i18n } from '../../lib/i18n.js';
 
 /**
- * @typedef {import('./cc-logsmap.types.js').HeatmapPoint} HeatmapPoint
- * @typedef {import('./cc-logsmap.types.js').MapModeType} MapModeType
- * @typedef {import('./cc-logsmap.types.js').Point} Point
- * @typedef {import('./cc-logsmap.types.js').PointsOptions} PointsOptions
+ * @typedef {import('../common.types.js').HeatmapPoint} HeatmapPoint
+ * @typedef {import('../common.types.js').MapModeType} MapModeType
  */
 
 /**
