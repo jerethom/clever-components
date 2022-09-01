@@ -27,6 +27,8 @@ title: Changelog
 * Improve display of `components:check-i18n` task.
 * Upgrade from `lit-element@2.5.1` to `lit@2.3.1`.
 * Reorganize `component.types.d.ts` types and put the common ones into `common.types.d.ts`.
+* Rework cem type plugin with a new and improved version.
+* Add a simple script to check unused `@typedef ...` imports in components.
 
 ## 9.0.0 (2022-07-19)
 
