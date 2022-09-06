@@ -22,7 +22,7 @@
     "components:build-cdn:versions-list": "node tasks/update-versions-list.js",
     "components:publish-cdn": "node tasks/publish-cdn.js",
     "components:check-i18n": "node tasks/check-i18n.js",
-    "components:check-lit": "lit-analyzer src",
+    "components:check-lit": "lit-analyzer --rules.no-unknown-attribute off src",
     "components:docs": "cem analyze --litelement --outdir dist",
     "test": "wtr 'test/**/*.test.*' --node-resolve",
     "test:watch": "wtr 'test/**/*.test.*' --node-resolve --watch",
