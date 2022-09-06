@@ -179,7 +179,7 @@ export class CcButton extends LitElement {
     modes.circle = this.circle && this.hideText && this.image;
 
     const imageOnlyText = (this.image != null && this.hideText)
-      ? (this.textContent ?? '')
+      ? (this.textContent?.trim() ?? '')
       : undefined;
 
     return html`

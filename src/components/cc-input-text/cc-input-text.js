@@ -3,6 +3,7 @@ import { classMap } from 'lit/directives/class-map.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { dispatchCustomEvent } from '../../lib/events.js';
 import { i18n } from '../../lib/i18n.js';
+import { accessibilityStyles } from '../../styles/accessibility.js';
 import { skeletonStyles } from '../../styles/skeleton.js';
 
 const clipboardSvg = new URL('../../assets/clipboard.svg', import.meta.url).href;
@@ -62,6 +63,7 @@ export class CcInputText extends LitElement {
       clipboard: { type: Boolean, reflect: true },
       disabled: { type: Boolean, reflect: true },
       label: { type: String },
+      hiddenLabel: { type: Boolean, attribute: 'hidden-label' },
       inline: { type: Boolean, reflect: true },
       multi: { type: Boolean, reflect: true },
       name: { type: String, reflect: true },
@@ -97,6 +99,9 @@ export class CcInputText extends LitElement {
 
     /** @type {string|null} Sets label for the input. */
     this.label = null;
+
+    /** @type {boolean} Hides the label visually if `true`. */
+    this.hiddenLabel = false;
 
     /** @type {boolean} Enables multiline support (with a `<textarea>` instead of an `<input>`). */
     this.multi = false;
@@ -248,7 +253,7 @@ export class CcInputText extends LitElement {
     return html`
 
       ${this.label != null ? html`
-        <label for=${this._uniqueInputId}>
+        <label class=${classMap({ 'visually-hidden': this.hiddenLabel })} for=${this._uniqueInputId}>
           <span>${this.label}</span>
           ${this.required ? html`
             <span class="required">${i18n('cc-input-text.required')}</span>
@@ -343,6 +348,7 @@ export class CcInputText extends LitElement {
 
   static get styles () {
     return [
+      accessibilityStyles,
       skeletonStyles,
       // language=CSS
       css`

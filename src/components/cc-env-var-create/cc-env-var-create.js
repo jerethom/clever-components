@@ -99,6 +99,8 @@ export class CcEnvVarCreate extends LitElement {
       <cc-flex-gap>
 
         <cc-input-text
+          label=${i18n('cc-env-var-create.name.placeholder')}
+          hidden-label
           class="name"
           name="name"
           value=${this._variableName}
@@ -111,6 +113,8 @@ export class CcEnvVarCreate extends LitElement {
         <cc-flex-gap class="input-btn">
 
           <cc-input-text
+            label=${i18n('cc-env-var-create.name.placeholder')}
+            hidden-label
             class="value"
             name="value"
             value=${this._variableValue}

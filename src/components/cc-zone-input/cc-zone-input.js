@@ -197,7 +197,7 @@ export class CcZoneInput extends withResizeObserver(LitElement) {
           <cc-error>${i18n('cc-zone-input.error')}</cc-error>
         ` : ''}
         ${!this.error ? html`
-          <div class="zone-list">
+          <div class="zone-list" tabindex="0">
             ${repeat(zones, (z) => z?.name ?? '', (z) => this._renderZoneInput(z))}
           </div>
         ` : ''}
