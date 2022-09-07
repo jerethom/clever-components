@@ -573,9 +573,17 @@ export const translations = {
   'cc-ssh-key-list.add.public-key': `Public key`,
   'cc-ssh-key-list.add.title': `Add a new key`,
   'cc-ssh-key-list.doc.info': () => sanitize`If you need any help, head up to our <a href="https://www.clever-cloud.com/doc/admin-console/ssh-keys/">documentation</a>.`,
-  'cc-ssh-key-list.error.adding': `An error occurred while adding your new personal key.`,
+  'cc-ssh-key-list.error.add': ({ name, error }) => {
+    return sanitize`An error occurred while adding your new personal key <strong>${name}</strong><br>(<em>${error}</em>).`;
+  },
+  'cc-ssh-key-list.error.delete': ({ name, error }) => {
+    return sanitize`An error occurred while deleting your personal key <strong>${name}</strong><br>(<em>${error}</em>).`;
+  },
   'cc-ssh-key-list.error.empty.name': `Enter a name for your SSH key`,
   'cc-ssh-key-list.error.empty.public-key': `Enter the public key value`,
+  'cc-ssh-key-list.error.import': ({ name, error }) => {
+    return sanitize`An error occurred while importing your GitHub key <strong>${name}</strong><br>(<em>${error}</em>).`;
+  },
   'cc-ssh-key-list.error.loading': `An error occurred while loading your personal keys.`,
   'cc-ssh-key-list.error.loading-github': `An error occurred while loading your GitHub keys.`,
   'cc-ssh-key-list.github.empty': `There are no SSH keys available for import from your Github account.`,
@@ -587,6 +595,15 @@ export const translations = {
   'cc-ssh-key-list.personal.empty': `There are no SSH keys associated with your account.`,
   'cc-ssh-key-list.personal.info': () => sanitize`<p>These are the SSH keys associated with your account.</p><p>If you want to check whether a key is already associated or not, you can list the fingerprints of your local keys with the following command:</p><code>ssh-add -l -E sha256</code>`,
   'cc-ssh-key-list.personal.title': `Your keys`,
+  'cc-ssh-key-list.success.add': ({ name }) => {
+    return sanitize`Your key <strong>${name}</strong> has been added successfully.`;
+  },
+  'cc-ssh-key-list.success.delete': ({ name }) => {
+    return sanitize`Your key <strong>${name}</strong> has been deleted successfully.`;
+  },
+  'cc-ssh-key-list.success.import': ({ name }) => {
+    return sanitize`Your key <strong>${name}</strong> has been imported successfully.`;
+  },
   'cc-ssh-key-list.title': `SSH Keys`,
   //#endregion
   //#region cc-tcp-redirection

@@ -6,6 +6,8 @@ import {
   todo_getSshKeys, /* eslint-disable-line camelcase */
   todo_removeSshKey, /* eslint-disable-line camelcase */
 } from '@clevercloud/client/esm/api/v2/user.js';
+import { i18n } from '../../lib/i18n.js';
+import { notifyError, notifySuccess } from '../../lib/notifications.js';
 import {
   fromCustomEvent,
   LastPromise,
@@ -19,8 +21,6 @@ import { defineComponent } from '../../lib/smart-manager.js';
 function getSshKeyFromName (sshKeys, name) {
   return sshKeys.find((key) => key.name === name);
 }
-
-// TODO remove all requestUpdate()
 
 defineComponent({
   selector: 'cc-ssh-key-list',
@@ -54,14 +54,16 @@ defineComponent({
       errors$.subscribe(console.error),
 
       personalKeys_lp.error$.subscribe(() => {
-        // TODO wire to new toast implementation
-        component.personalKeysModel.state = 'error';
-        component.requestUpdate();
+        component.personalKeysModel = {
+          ...component.personalKeysModel,
+          state: 'error',
+        };
       }),
       githubKeys_lp.error$.subscribe(() => {
-        // TODO wire to new toast implementation
-        component.githubKeysModel.state = 'error';
-        component.requestUpdate();
+        component.githubKeysModel = {
+          ...component.githubKeysModel,
+          state: 'error',
+        };
       }),
 
       personalKeys_lp.value$.subscribe((keys) => {
@@ -85,13 +87,21 @@ defineComponent({
         createKey_lp.push((signal) => {
           return addKey({ apiConfig, signal, key })
             .then(() => {
-              component.createFormModel.state = 'ready';
+              component.createFormModel = {
+                ...component.createFormModel,
+                state: 'ready',
+              };
+
               refreshAllKeys({ apiConfig });
+              notifySuccess(component, i18n('cc-ssh-key-list.success.add', { name: key.name }));
             })
-            .catch(() => {
-              // TODO wire to new toast implementation
-              component.createFormModel.state = 'error';
-              component.requestUpdate();
+            .catch((error) => {
+              component.createFormModel = {
+                ...component.createFormModel,
+                state: 'ready',
+              };
+
+              notifyError(component, i18n('cc-ssh-key-list.error.add', { name: key.name, error }));
             });
         });
       }),
@@ -104,13 +114,17 @@ defineComponent({
           return addKey({ apiConfig, signal, key })
             .then(() => {
               refreshAllKeys({ apiConfig });
+              notifySuccess(component, i18n('cc-ssh-key-list.success.import', { name: key.name }));
             })
-            .catch(() => {
+            .catch((error) => {
               importingKey.processing = false;
 
-              // TODO wire to new toast implementation
-              component.githubKeysModel.state = 'error';
-              component.requestUpdate();
+              component.githubKeysModel = {
+                ...component.githubKeysModel,
+                state: 'error',
+              };
+
+              notifyError(component, i18n('cc-ssh-key-list.error.import', { name: key.name, error }));
             });
         });
       }),
@@ -123,13 +137,18 @@ defineComponent({
           return deleteKey({ apiConfig, signal, key })
             .then(() => {
               refreshAllKeys({ apiConfig });
+
+              notifySuccess(component, i18n('cc-ssh-key-list.success.delete', { name: key.name }));
             })
-            .catch(() => {
+            .catch((error) => {
               deletingKey.processing = false;
 
-              // TODO wire to new toast implementation
-              component.personalKeysModel.state = 'error';
-              component.requestUpdate();
+              component.personalKeysModel = {
+                ...component.personalKeysModel,
+                state: 'error',
+              };
+
+              notifyError(component, i18n('cc-ssh-key-list.error.delete', { name: key.name, error }));
             });
         });
       }),

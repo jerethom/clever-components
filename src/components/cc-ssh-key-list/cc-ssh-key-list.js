@@ -102,7 +102,6 @@ export class CcSshKeyList extends LitElement {
       ? 'required'
       : 'none';
 
-    // TODO or spread affectation?
     this.requestUpdate();
 
     if (this.createFormModel.inputName.error === 'required') {
@@ -261,12 +260,6 @@ export class CcSshKeyList extends LitElement {
           }
         </cc-input-text>
         <div class="create-form__footer">
-          ${
-            // TODO remove 'error' when wiring to toast
-            this.createFormModel.state === 'error'
-              ? html`<cc-error class="create-form__error">${i18n('cc-ssh-key-list.error.adding')}</cc-error>`
-              : ''
-          }
           <cc-button
             @cc-button:click=${() => this._onCreateKey()}
             class="create-form__add-btn"

@@ -586,9 +586,17 @@ export const translations = {
   'cc-ssh-key-list.add.public-key': `Clé publique`,
   'cc-ssh-key-list.add.title': `Ajouter une nouvelle clé`,
   'cc-ssh-key-list.doc.info': () => sanitize`Pour plus d'aide, vous pouvez consulter notre <a href="https://www.clever-cloud.com/doc/admin-console/ssh-keys/">documentation</a>.`,
-  'cc-ssh-key-list.error.adding': `Une erreur est survenue pendant l'ajout de votre nouvelle clé personnelle.`,
+  'cc-ssh-key-list.error.add': ({ name, error }) => {
+    return sanitize`Une erreur est survenue pendant l'ajout de votre nouvelle clé personnelle <strong>${name}</strong><br>(<em>${error}</em>).`;
+  },
+  'cc-ssh-key-list.error.delete': ({ name, error }) => {
+    return sanitize`Une erreur est survenue pendant la suppression de votre clé personnelle <strong>${name}</strong><br>(<em>${error}</em>).`;
+  },
   'cc-ssh-key-list.error.empty.name': `Saisissez un nom pour votre clé SSH`,
   'cc-ssh-key-list.error.empty.public-key': `Saisissez la valeur de votre clé publique`,
+  'cc-ssh-key-list.error.import': ({ name, error }) => {
+    return sanitize`Une erreur est survenue pendant l'import de votre clé personnelle <strong>${name}</strong><br>(<em>${error}</em>).`;
+  },
   'cc-ssh-key-list.error.loading': `Une erreur est survenue pendant le chargement de vos clés personnelles.`,
   'cc-ssh-key-list.error.loading-github': `Une erreur est survenue pendant le chargement de vos clés GitHub.`,
   'cc-ssh-key-list.github.empty': `Il n'y a aucune clé SSH disponible à l'import depuis votre compte GitHub.`,
@@ -600,6 +608,15 @@ export const translations = {
   'cc-ssh-key-list.personal.empty': `Il n'y a aucune clé SSH associée à votre compte.`,
   'cc-ssh-key-list.personal.info': () => sanitize`<p>Voici la liste des clés SSH associées à votre compte.</p><p>Si vous souhaitez vérifier qu'une clé est déjà associée ou non, vous pouvez lister les empreintes de vos clés locales avec la commande suivante :</p><code>ssh-add -l -E sha256</code>`,
   'cc-ssh-key-list.personal.title': `Vos clés`,
+  'cc-ssh-key-list.success.add': ({ name }) => {
+    return sanitize`Votre clé <strong>${name}</strong> a été ajoutée avec succès.`;
+  },
+  'cc-ssh-key-list.success.delete': ({ name }) => {
+    return sanitize`Votre clé <strong>${name}</strong> a été supprimée avec succès.`;
+  },
+  'cc-ssh-key-list.success.import': ({ name }) => {
+    return sanitize`Votre clé <strong>${name}</strong> a été importée avec succès.`;
+  },
   'cc-ssh-key-list.title': `Clés SSH`,
   //#endregion
   //#region cc-tcp-redirection
