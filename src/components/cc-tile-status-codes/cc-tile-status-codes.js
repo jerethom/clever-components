@@ -80,75 +80,77 @@ export class CcTileStatusCodes extends LitElement {
 
   firstUpdated () {
 
-    this._ctx = this.renderRoot.getElementById('chart');
-    this._chart = new Chart(this._ctx, {
-      type: 'doughnut',
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          datalabels: {
-            display: false,
-          },
-          legend: {
-            onClick: function (e, legendItem) {
-              this.chart.data.labels.forEach((label, i) => {
-                const sameLabel = (label === legendItem.text);
-                if (xor(e.native.shiftKey, sameLabel)) {
-                  this.chart.toggleDataVisibility(i);
-                }
-              });
-              this.chart.update();
+    if (!this.error) {
+      this._ctx = this.renderRoot.getElementById('chart');
+      this._chart = new Chart(this._ctx, {
+        type: 'doughnut',
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            datalabels: {
+              display: false,
             },
-            onHover: (e) => {
-              this._ctx.style.cursor = 'pointer';
-            },
-            onLeave: (e) => {
-              this._ctx.style.cursor = null;
-            },
-            position: 'right',
-            labels: {
-              fontFamily: 'monospace',
-              usePointStyle: true,
-              // Filter legend items so we can only keep 1xx, 2xx... instead of all status codes
-              filter: (current, all) => {
-                const label = current.text;
-                const previousLabel = all.labels[current.index - 1];
-                return label !== previousLabel;
+            legend: {
+              onClick: function (e, legendItem) {
+                this.chart.data.labels.forEach((label, i) => {
+                  const sameLabel = (label === legendItem.text);
+                  if (xor(e.native.shiftKey, sameLabel)) {
+                    this.chart.toggleDataVisibility(i);
+                  }
+                });
+                this.chart.update();
+              },
+              onHover: (e) => {
+                this._ctx.style.cursor = 'pointer';
+              },
+              onLeave: (e) => {
+                this._ctx.style.cursor = null;
+              },
+              position: 'right',
+              labels: {
+                fontFamily: 'monospace',
+                usePointStyle: true,
+                // Filter legend items so we can only keep 1xx, 2xx... instead of all status codes
+                filter: (current, all) => {
+                  const label = current.text;
+                  const previousLabel = all.labels[current.index - 1];
+                  return label !== previousLabel;
+                },
               },
             },
-          },
-          tooltip: {
-            backgroundColor: '#000',
-            displayColors: false,
-            callbacks: {
+            tooltip: {
+              backgroundColor: '#000',
+              displayColors: false,
+              callbacks: {
               // Add official english title of the HTTP status code
-              title: ([context]) => {
-                const statusCode = this._labels[context.dataIndex];
-                return `HTTP ${statusCode}: ${status.message[statusCode]}`;
-              },
-              // Display number of requests and percentage
-              label: (context) => {
-                const allData = context.dataset.data;
-                const total = allData.reduce((a, b) => a + b, 0);
-                const value = allData[context.dataIndex];
-                const percent = value / total;
-                return i18n('cc-tile-status-codes.tooltip', { value, percent });
+                title: ([context]) => {
+                  const statusCode = this._labels[context.dataIndex];
+                  return `HTTP ${statusCode}: ${status.message[statusCode]}`;
+                },
+                // Display number of requests and percentage
+                label: (context) => {
+                  const allData = context.dataset.data;
+                  const total = allData.reduce((a, b) => a + b, 0);
+                  const value = allData[context.dataIndex];
+                  const percent = value / total;
+                  return i18n('cc-tile-status-codes.tooltip', { value, percent });
+                },
               },
             },
           },
+          animation: {
+            duration: 0,
+          },
         },
-        animation: {
-          duration: 0,
-        },
-      },
-    });
+      });
+    }
   }
 
   // updated and not udpate because we need this._chart before
   updated (changedProperties) {
 
-    if (changedProperties.has('statusCodes')) {
+    if (changedProperties.has('statusCodes') && !this.error) {
 
       this._skeleton = (this.statusCodes == null);
 
