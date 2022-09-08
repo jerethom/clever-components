@@ -42,6 +42,7 @@ title: Changelog
   * add visually hidden label for `<cc-input-number>` showing the size or the quantity so that they can be identified by assistive technologies.
 * `<cc-pricing-table>`: add text content to `<cc-button>` elements (toggle State and add buttons) so that they can be identified by assistive technologies.
 * `<cc-zone-input>`: add `tabindex="0"` to the list container so that people can focus and scroll the list without having the change their selection.
+* `resizeObserver`: add `window.requestAnimationFrame` in the resize observer callback to mitigate the `resize observer loop limit exceeded issue`.
 * New component:
   * `<cc-action-dispatcher>`
 
