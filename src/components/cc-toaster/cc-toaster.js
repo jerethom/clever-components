@@ -1,7 +1,6 @@
 import { animate, fadeIn, fadeOut, none } from '@lit-labs/motion';
 import { css, html, LitElement } from 'lit';
 import { repeat } from 'lit/directives/repeat.js';
-import { MediaQueryController } from './MediaQueryController.js';
 import '../cc-toast/cc-toast.js';
 
 const slideFromTop = [{ transform: 'translateY(-100%)' }];
@@ -158,7 +157,7 @@ export class CcToaster extends LitElement {
     /** @type {Array<Toast>} Internal array of toasts currently displayed */
     this._toasts = [];
 
-    this._mediaQueryController = new MediaQueryController(this, '(prefers-reduced-motion: reduce)');
+    this._mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
   }
 
   /**
@@ -224,10 +223,10 @@ export class CcToaster extends LitElement {
   /* endregion */
 
   render () {
-    const positions = this.position.split('-');
+    const positionsClasses = this.position.split('-').join(' ');
 
     return html`
-      <div class="toaster ${positions.join(' ')}" aria-live="polite" aria-atomic="true">
+      <div class="toaster ${positionsClasses}" aria-live="polite" aria-atomic="true">
         ${repeat(this._toasts, (toast) => toast.key, (toast) => this._renderToast(toast))}
       </div>
     `;
@@ -251,7 +250,7 @@ export class CcToaster extends LitElement {
       easing: 'ease',
     };
 
-    if (this._mediaQueryController.matches) {
+    if (this._mediaQuery != null && this._mediaQuery.matches) {
       return null;
     }
     else {
