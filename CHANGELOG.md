@@ -12,6 +12,7 @@ title: Changelog
 * `<cc-input-text>`: set default font back to `--cc-ff-monospace` when the input contains tags (BREAKING CHANGE).
 * Introduce a new project file structure (BREAKING CHANGE).
 * all components: change `rem` units to `em` (BREAKING CHANGE).
+* `<cc-html-frame>`: change `title` prop to `iframeTitle` (`iframe-title` when used as an attribute) to avoid conflicts with the native `title` attribute (BREAKING CHANGE).
 
 ### Components
 
