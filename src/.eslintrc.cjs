@@ -7,4 +7,7 @@ module.exports = {
       'peerDependencies': false,
     }],
   },
+  'env': {
+    'mocha': true,
+  },
 };
