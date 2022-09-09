@@ -24,7 +24,7 @@ const BREAKPOINT_SMALL = 580;
 const BREAKPOINT_TINY = 350;
 
 /**
- * @typedef {import('./cc-orga-member-card.js').MemberCardState} MemberCardState
+ * @typedef {import('./cc-orga-member-card.js').StateMemberCard} StateMemberCard
  * @typedef {import('./cc-orga-member-card.js').EditMemberPayload} EditMemberPayload
  */
 
@@ -42,20 +42,12 @@ const BREAKPOINT_TINY = 350;
  */
 export class CcOrgaMemberCard extends withResizeObserver(LitElement) {
 
+  /* TODO ok, this is great because isEditing is actually not part of `memberInfo` but how would we handle props that need to be reflected but are nested within our state object ? Is this a realistic case though ? Maybe its nonsense because all reflected props are bound to be flat props anyway*/
   static get properties () {
     return {
-      avatar: { type: String },
-      email: { type: String },
       errorMessage: { type: String, attribute: 'error-message' },
-      id: { type: String },
       isEditing: { type: Boolean, reflect: true, attribute: 'is-editing' },
-      isCurrentUser: { type: Boolean, attribute: 'is-current-user' },
-      isLastAdmin: { type: Boolean, attribute: 'is-last-admin' },
-      jobTitle: { type: String, attribute: 'job-title' },
-      mfa: { type: Boolean },
-      name: { type: String },
-      role: { type: String },
-      state: { type: String },
+      member: { type: Object },
       _newRole: { type: String, attribute: false },
       _size: { type: String, attribute: false },
     };
@@ -64,47 +56,20 @@ export class CcOrgaMemberCard extends withResizeObserver(LitElement) {
   constructor () {
     super();
 
-    /** @type {string} Sets the user avatar displayed in the card. If not provided, a fallback icon is displayed. */
-    this.avatar = '';
-
-    /** @type {string} Sets the email address displayed in the card. */
-    this.email = '';
-
-    /** @type {string} Sets the error message displayed in case one tries to edit or remove the last admin of the org. */
-    this.errorMessage = '';
-
-    /** @type {string} Sets the member `id`, not visible but used in the remove and update editing event payloads. */
-    this.id = '';
-
-    /** @type {boolean} Changes the remove button into a leave button and adds a small text to see that this card represents the current user. */
-    this.isCurrentUser = false;
-
-    /** @type {boolean} Sets the card in edit mode. If true, displays a form to edit the role of the user. This property is controlled by `cc-orga-member-list` so that only one card can be in edit mode at a time. */
+    /** @type {boolean} Toggles the edit mode for the member card. */
     this.isEditing = false;
 
-    /** @type {boolean} Prevents from role updates or user deletion. Displays an error message if user tries to delete or edit. */
-    this.isLastAdmin = false;
+    /* TODO default values are not respected, member is replaced by another member object passed as prop.
+        If one of the subprops is omitted, bye bye its default value.
+        To show this, pass default mfa to true and remove mfa from story */
+    /* TODO our doc plugin will need to pickup the default values, also, should we set to empty strings etc. or null, or not at all (probably). */
+    /* TODO is errorMessage a simple input like isEditing ? i'd say no because it can only be set by checking the member list but dunno */
+    this.member = {
+      state: 'loaded',
+      value: { },
+    };
 
-    /** @type {string} Sets the job title displayed when hovering the username or email. */
-    this.jobTitle = '';
-
-    /** @type {string} Sets the name of the member displayed in the card. */
-    this.name = '';
-
-    /** @type {boolean} Sets the Two-Factor Auth status displayed in the card. */
-    this.mfa = false;
-
-    /** @type {string} Sets the role displayed in the card. */
-    this.role = '';
-
-    /** @type {MemberCardState} Sets the state of the component. */
-    this.state = 'loaded';
-
-    /** @type {string} Synced with the `<cc-select>` value. This value is used in the edit member payload event. */
     this._newRole = '';
-
-    /** @type {number|null} Reflects the size of the component. Set by the resizeObserver and used to toggle different styles for buttons (img, imgOnly, text only...). */
-    this._size = null;
 
     /** @protected */
     this.breakpoints = {
@@ -114,9 +79,12 @@ export class CcOrgaMemberCard extends withResizeObserver(LitElement) {
   }
 
   updated (changedProperties) {
-    if (changedProperties.has('role') || changedProperties.has('isEditing')) {
-      // Set or reset the default value of the `<cc-select>`.
-      this._newRole = this.role;
+    /* TODO interesting, how would you watch changes for property inside your nested prop ? I'd like to trigger this only when role */
+    if (changedProperties.has('member') || changedProperties.has('isEditing')) {
+      if (this._newRole !== this.member.value.role) {
+        // Set or reset the default value of the `<cc-select>`.
+        this._newRole = this.member.value.role;
+      }
     }
 
     super.updated(changedProperties);
@@ -139,15 +107,9 @@ export class CcOrgaMemberCard extends withResizeObserver(LitElement) {
   }
 
   _onRemoveMember () {
-    if (this.isLastAdmin) {
-      // We don't disable btns by default but if one tries to remove last admin, we display an error message and disable btns.
-      this.errorMessage = i18n('cc-orga-member-card.error-remove');
-      return;
-    }
-
     dispatchCustomEvent(this, 'remove', {
-      memberId: this.id,
-      memberIdentity: this.name !== '' ? this.name : this.email,
+      memberId: this.member.value.id,
+      memberIdentity: this.member.value.name !== '' ? this.member.value.name : this.member.value.email,
     });
   }
 
@@ -158,78 +120,82 @@ export class CcOrgaMemberCard extends withResizeObserver(LitElement) {
   _onToggleEdit () {
     // edit toggling is managed by `cc-orga-member-list` so that only one card can be edited at a time.
     dispatchCustomEvent(this, 'update-editing', {
-      memberId: this.id,
+      memberId: this.member.value.id,
       isEditing: !this.isEditing,
     });
   }
 
   _onRoleSubmit () {
     dispatchCustomEvent(this, 'edit', {
-      memberId: this.id,
+      memberId: this.member.value.id,
       role: this._newRole,
-      memberIdentity: this.name !== '' ? this.name : this.email,
+      memberIdentity: this.member.value.name !== '' ? this.member.value.name : this.member.value.email,
     });
   }
 
   render () {
-    const avatar = (this.avatar !== '')
-      ? this.avatar
-      : profileSvg;
-
+    const avatar = this.member.value.avatar === '' || this.member.value.avatar === undefined
+      ? profileSvg
+      : this.member.value.avatar;
+    const hasErrorMessage = this.errorMessage !== '' && this.errorMessage !== undefined;
     return html`
-      <cc-img class="avatar" src=${avatar}></cc-img>
+      <cc-img class="avatar ${classMap({ waiting: this.member.state === 'waiting' })}" src=${avatar}></cc-img>
       <div
-        class="identity ${classMap({ waiting: this.state === 'waiting' })}"
+        class="identity ${classMap({ waiting: this.member.state === 'waiting' })}"
         title="${ifDefined(this.jobTitle ?? undefined)}"
       >
-        ${this.name !== '' ? html`<p class="name">
-          <strong>${this.name}</strong>
-          ${this.isCurrentUser ? html`<cc-badge>${i18n('cc-orga-member-card.current-user')}</cc-badge>` : ''}
+        ${this.member.value.name !== '' ? html`<p class="name">
+          <strong>${this.member.value.name}</strong>
+          ${this.member.value.isCurrentUser ? html`<cc-badge>${i18n('cc-orga-member-card.current-user')}</cc-badge>` : ''}
         </p>` : ''}
-        <p class="email">${this.email}</p>
+        <p class="email">${this.member.value.email}</p>
       </div>
 
-      <div class="status ${classMap({ waiting: this.state === 'waiting' })}">
+      <div class="status ${classMap({ waiting: this.member.state === 'waiting' })}">
         ${this._renderStatusBadges()}
         <cc-select
           label="${i18n('cc-orga-member-card.label-role')}"
           .options=${this._getRoleOptions()}
           .value=${this._newRole}
           ?inline=${this._size > BREAKPOINT_TINY}
-          ?disabled=${this.state === 'waiting' || this.errorMessage !== ''}
+          ?disabled=${this.member.state === 'waiting' || hasErrorMessage}
           @cc-select:input=${this._onRoleInput}
         >
         </cc-select>
       </div>
 
       <div class="actions">
-        <!-- TODO move ?disabled test in variable. internal prop or 2 local render variables ? -->
         ${this._renderActionBtns()}
       </div>
-      <div class="error-wrapper ${classMap({ 'out-of-flow': this.errorMessage === '' })}" aria-live="polite" aria-atomic="true">
-        ${this.errorMessage !== '' ? this._renderLastAdminError() : ''}
+      <div class="error-wrapper ${classMap({ 'out-of-flow': !hasErrorMessage })}" aria-live="polite" aria-atomic="true">
+        ${hasErrorMessage ? this._renderLastAdminError() : ''}
       </div>
     `;
   }
 
   _renderStatusBadges () {
     return html`
-      <cc-badge class="status__role ${classMap({ visible: this.role === 'ADMIN' })}" intent="info" weight="dimmed">${i18n('cc-orga-member-card.role-admin')}</cc-badge>
-      <cc-badge class="status__role ${classMap({ visible: this.role === 'ACCOUNTING' })}" intent="info" weight="dimmed">${i18n('cc-orga-member-card.role-accounting')}</cc-badge>
-      <cc-badge class="status__role ${classMap({ visible: this.role === 'DEVELOPER' })}" intent="info" weight="dimmed">${i18n('cc-orga-member-card.role-developer')}</cc-badge>
-      <cc-badge class="status__role ${classMap({ visible: this.role === 'MANAGER' })}" intent="info" weight="dimmed">${i18n('cc-orga-member-card.role-manager')}</cc-badge>
-      <cc-badge class="status__mfa ${classMap({ visible: this.mfa })}" intent="success" weight="outlined" icon-src="${tickSvg}">
+      <!--region role badge-->
+      <cc-badge class="status__role ${classMap({ visible: this.member.value.role === 'ADMIN' })}" intent="info" weight="dimmed">${i18n('cc-orga-member-card.role-admin')}</cc-badge>
+      <cc-badge class="status__role ${classMap({ visible: this.member.value.role === 'ACCOUNTING' })}" intent="info" weight="dimmed">${i18n('cc-orga-member-card.role-accounting')}</cc-badge>
+      <cc-badge class="status__role ${classMap({ visible: this.member.value.role === 'DEVELOPER' })}" intent="info" weight="dimmed">${i18n('cc-orga-member-card.role-developer')}</cc-badge>
+      <cc-badge class="status__role ${classMap({ visible: this.member.value.role === 'MANAGER' })}" intent="info" weight="dimmed">${i18n('cc-orga-member-card.role-manager')}</cc-badge>
+      <!--endregion-->
+      <!--region mfa badge-->
+      <cc-badge class="status__mfa ${classMap({ visible: this.member.value.mfa })}" intent="success" weight="outlined" icon-src="${tickSvg}">
           ${i18n('cc-orga-member-card.mfa-label')}
           ${i18n('cc-orga-member-card.mfa-enabled')}
       </cc-badge>
-      <cc-badge class="status__mfa ${classMap({ visible: !this.mfa })}" intent="danger" weight="outlined" icon-src="${errorSvg}">
+      <cc-badge class="status__mfa ${classMap({ visible: !this.member.value.mfa })}" intent="danger" weight="outlined" icon-src="${errorSvg}">
           ${i18n('cc-orga-member-card.mfa-label')}
           ${i18n('cc-orga-member-card.mfa-disabled')}
       </cc-badge>
+      <!--endregion-->
     `;
   }
 
   _renderActionBtns () {
+    const hasErrorMessage = this.errorMessage !== '' && this.errorMessage !== undefined;
     const isBtnImgOnly = (this._size > BREAKPOINT_MEDIUM);
     return html`
         <!-- TODO handle focus switch -->
@@ -240,34 +206,34 @@ export class CcOrgaMemberCard extends withResizeObserver(LitElement) {
           outlined
           image=${penSvg}
           ?circle=${isBtnImgOnly}
-          ?disabled=${this.state === 'waiting' || this.errorMessage !== ''}
+          ?disabled=${this.member.state === 'waiting' || hasErrorMessage}
           ?hide-text=${isBtnImgOnly}
           @cc-button:click=${this._onToggleEdit}
         >
           ${i18n('cc-orga-member-card.btn-edit')}
         </cc-button>
         <cc-button
-          class="actions__second ${classMap({ visible: !this.isEditing && !this.isCurrentUser })}"
+          class="actions__second ${classMap({ visible: !this.isEditing && !this.member.value.isCurrentUser })}"
           danger
           outlined
           image=${trashSvg}
-          ?disabled=${this.errorMessage !== ''}
+          ?disabled=${hasErrorMessage}
           ?circle=${isBtnImgOnly}
           ?hide-text=${isBtnImgOnly}
-          ?waiting=${this.state === 'waiting'}
+          ?waiting=${this.member.state === 'waiting'}
           @cc-button:click=${this._onRemoveMember}
         >
           ${i18n('cc-orga-member-card.btn-remove')}
         </cc-button>
         <cc-button
-          class="actions__second ${classMap({ visible: !this.isEditing && this.isCurrentUser })}"
+          class="actions__second ${classMap({ visible: !this.isEditing && this.member.value.isCurrentUser })}"
           danger
           outlined
           image=${trashSvg}
-          ?disabled=${this.errorMessage !== ''}
+          ?disabled=${hasErrorMessage}
           ?circle=${isBtnImgOnly}
           ?hide-text=${isBtnImgOnly}
-          ?waiting=${this.state === 'waiting'}
+          ?waiting=${this.member.state === 'waiting'}
           @cc-button:click=${this._onRemoveMember}
         >
           ${i18n('cc-orga-member-card.btn-leave')}
@@ -280,7 +246,7 @@ export class CcOrgaMemberCard extends withResizeObserver(LitElement) {
           outlined
           image=${closeSvg}
           ?circle=${isBtnImgOnly}
-          ?disabled=${this.state === 'waiting' || this.errorMessage !== ''}
+          ?disabled=${this.member.state === 'waiting' || hasErrorMessage}
           ?hide-text=${isBtnImgOnly}
           @cc-button:click=${this._onToggleEdit}
         >
@@ -291,10 +257,10 @@ export class CcOrgaMemberCard extends withResizeObserver(LitElement) {
           primary
           outlined
           image=${tickBlueSvg}
-          ?disabled=${this.errorMessage !== ''}
+          ?disabled=${hasErrorMessage}
           ?circle=${isBtnImgOnly}
           ?hide-text=${isBtnImgOnly}
-          ?waiting=${this.state === 'waiting'}
+          ?waiting=${this.member.state === 'waiting'}
           @cc-button:click=${this._onRoleSubmit}
         >
           ${i18n('cc-orga-member-card.btn-validate')}
@@ -343,82 +309,82 @@ export class CcOrgaMemberCard extends withResizeObserver(LitElement) {
         }
 
         .avatar {
-            border-radius: 100%;
-            grid-area: avatar;
-            height: 2.5em;
-            width: 2.5em;
+          border-radius: 100%;
+          grid-area: avatar;
+          height: 2.5em;
+          width: 2.5em;
         }
 
         .identity {
-            display: flex;
-            flex-direction: column;
-            gap: 0.3em;
-            grid-area: identity;
-            justify-content: center;
-            word-break: break-all;
+          display: flex;
+          flex-direction: column;
+          gap: 0.3em;
+          grid-area: identity;
+          justify-content: center;
+          word-break: break-all;
         }
 
         .status {
-            align-items: center;
-            display: grid;
-            gap: 0.5em;
-            grid-area: status;
-            grid-template-columns: min-content max-content;
-            justify-items: center;
+          align-items: center;
+          display: grid;
+          gap: 0.5em;
+          grid-area: status;
+          grid-template-columns: min-content max-content;
+          justify-items: center;
         }
 
         .actions {
-            display: grid;
-            gap: 0.5em;
-            grid-area: actions;
-            grid-template-columns: max-content max-content;
+          display: grid;
+          gap: 0.5em;
+          grid-area: actions;
+          grid-template-columns: max-content max-content;
         }
         
         .actions cc-button {
-            visibility: hidden;
+          visibility: hidden;
         }
         
         .actions__first {
-            grid-area: 1 / 1 / 1 / 1;    
+          grid-area: 1 / 1 / 1 / 1;    
         }
 
         .actions__second {
-            grid-area: 1 / 2 / 1 / 2;
+          grid-area: 1 / 2 / 1 / 2;
         }
         
         .actions cc-button.visible {
-            visibility: visible;
+          visibility: visible;
         }
 
         p {
-            margin: 0;
+          margin: 0;
         }
 
         cc-badge {
-            width: max-content;
+          width: max-content;
         }
 
         cc-select {
-            grid-area: 1 / 1 / 1 / 3;
-            visibility: hidden;
+          grid-area: 1 / 1 / 1 / 3;
+          visibility: hidden;
         }
 
         .error-wrapper {
-            display: flex;
-            grid-area: unset;
-            grid-column: 2 / -1;
-            justify-content: end;
+          display: flex;
+          grid-area: unset;
+          grid-column: 2 / -1;
+          justify-content: end;
         }
 
         .error-wrapper.out-of-flow {
-            grid-area: avatar / actions;
+          grid-area: avatar / actions;
         }
         
         .error-wrapper p {
-            background-color: var(--cc-color-bg-danger-weaker);
-            border: 1px solid var(--cc-color-bg-danger);
-            border-radius: 0.4em;
-            padding: 0.5em 1em;
+          background-color: var(--cc-color-bg-danger-weaker);
+          border: 1px solid var(--cc-color-bg-danger);
+          border-radius: 0.4em;
+          padding: 0.5em 1em;
         }
         /*endregion */
         
