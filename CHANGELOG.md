@@ -19,7 +19,6 @@ title: Changelog
 * `<cc-zone-input>`: make server markers not focusable.
 * `<cc-addon-admin>`: fix skeleton mode
 * `<cc-env-var-form>`: fix toggling to JSON mode while in skeleton state.
-* `<cc-badge>`: add skeleton mode
 * New component:
   * `<cc-action-dispatcher>`
 
@@ -38,6 +37,7 @@ title: Changelog
 * Upgrade from `@web/test-runner-mocha@0.7.2` to `@web/test-runner-mocha@0.7.5`.
 * Upgrade from `@custom-elements-manifest/analyzer@0.4.1` to `@custom-elements-manifest/analyzer@0.6.4`.
 * Fix Custom Element Manifest generation web dev server plugin: disable caching
+* Add new eslint plugin `eslint-plugin-lit-a11y` to prevent accessibility issues.
 
 ## 9.0.0 (2022-07-19)
 
