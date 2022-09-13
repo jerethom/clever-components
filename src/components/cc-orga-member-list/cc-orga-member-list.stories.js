@@ -6,40 +6,60 @@ import { notifySuccess } from '../../lib/notifications.js';
 import { makeStory, storyWait } from '../../stories/lib/make-story.js';
 import { enhanceStoriesNames } from '../../stories/lib/story-names.js';
 
-const baseItems = [
-  {
-    id: 'member1',
-    avatar: '',
-    name: 'John Doe',
-    jobTitle: 'Frondend Developer',
-    role: 'ADMIN',
-    email: 'john.doe@example.com',
-    mfa: false,
+const baseMemberList = [{
+  member: {
+    state: 'loaded',
+    value: {
+      id: 'member1',
+      avatar: '',
+      name: 'John Doe',
+      isCurrentUser: true,
+      jobTitle: 'Frontend Developer',
+      role: 'ADMIN',
+      email: 'john.doe@example.com',
+      mfa: false,
+    },
   },
-  {
-    id: 'member2',
-    avatar: 'http://placekitten.com/202/202',
-    name: 'Jane Doe',
-    jobTitle: 'Backend Developer',
-    role: 'DEVELOPER',
-    email: 'jane.doe@example.com',
-    mfa: true,
+},
+{
+  member: {
+    state: 'loaded',
+    value: {
+      id: 'member2',
+      avatar: 'http://placekitten.com/202/202',
+      name: 'Jane Doe',
+      jobTitle: 'Backend Developer',
+      role: 'DEVELOPER',
+      email: 'jane.doe@example.com',
+      mfa: true,
+    },
   },
-  {
-    id: 'member3',
-    avatar: '',
-    name: 'Veryveryveryveryveryveryveryveryvery long name',
-    role: 'MANAGER',
-    email: 'very-very-very-long-email-address@very-very-very-very-very-very-very-long-example.com',
-    mfa: true,
+},
+{
+  member: {
+    state: 'loaded',
+    value: {
+      id: 'member3',
+      avatar: '',
+      name: 'Veryveryveryveryveryveryveryveryvery long name',
+      role: 'MANAGER',
+      email: 'very-very-very-long-email-address@very-very-very-very-very-very-very-long-example.com',
+      mfa: true,
+    },
   },
-  {
-    id: 'member4',
-    avatar: 'http://placekitten.com/205/205',
-    role: 'ACCOUNTING',
-    email: 'john.doe@example.com',
-    mfa: false,
+},
+{
+  member: {
+    state: 'loaded',
+    value: {
+      id: 'member4',
+      avatar: 'http://placekitten.com/205/205',
+      role: 'ACCOUNTING',
+      email: 'john.doe@example.com',
+      mfa: false,
+    },
   },
+},
 ];
 
 export default {
@@ -53,94 +73,166 @@ const conf = {
 
 export const defaultStory = makeStory(conf, {
   items: [{
-    currentUserId: 'member1',
-    stateMemberList: 'loaded',
-    memberList: baseItems,
+    stateMemberList: {
+      state: 'loaded',
+      value: baseMemberList,
+    },
   }],
 });
 
 export const defaultWithInviteLongEmail = makeStory(conf, {
   items: [{
-    currentUserId: 'member1',
-    emailField: 'very-very-very-very-very-very-very-very-very-very-very-very-very-very-very-very-very-very-very-very-very-very-long-email-address@very-very-very-very-very-very-very-long-domain.eu',
-    roleField: 'ADMIN',
-    stateMemberList: 'loaded',
-    memberList: baseItems,
+    stateMemberInvite: {
+      state: 'idle',
+      email: {
+        state: 'idle',
+        value: 'very-very-very-very-very-very-very-very-very-very-very-very-very-very-very-very-very-very-very-very-very-very-long-email-address@very-very-very-very-very-very-very-long-domain.eu',
+      },
+      role: {
+        state: 'idle',
+        value: 'ADMIN',
+      },
+    },
+    stateMemberList: {
+      state: 'loaded',
+      value: baseMemberList,
+    },
   }],
 });
 
 /* TODO might not be a good idea to use i18n here */
 export const errorWithInviteEmptyEmail = makeStory(conf, {
   items: [{
-    currentUserId: 'member1',
-    emailField: 'john.doe',
-    roleField: 'ADMIN',
-    stateMemberList: 'loaded',
-    memberList: baseItems,
-    inviteErrorMessage: i18n('cc-orga-member-list.invite-error-empty'),
+    stateMemberInvite: {
+      state: 'idle',
+      email: {
+        state: 'error',
+        value: '',
+        errorType: 'empty',
+      },
+      role: {
+        state: 'idle',
+        value: 'ADMIN',
+      },
+    },
+    stateMemberList: {
+      state: 'loaded',
+      value: baseMemberList,
+    },
   }],
 });
 
 /* TODO might not be a good idea to use i18n here */
 export const errorWithInviteBadEmail = makeStory(conf, {
   items: [{
-    currentUserId: 'member1',
-    emailField: 'john.doe',
-    roleField: 'ADMIN',
-    stateMemberList: 'loaded',
-    memberList: baseItems,
-    inviteErrorMessage: i18n('cc-orga-member-list.invite-error-format'),
+    stateMemberInvite: {
+      state: 'idle',
+      email: {
+        state: 'error',
+        value: 'jane.doe',
+        errorType: 'format',
+      },
+      role: {
+        state: 'idle',
+        value: 'ADMIN',
+      },
+    },
+    stateMemberList: {
+      state: 'loaded',
+      value: baseMemberList,
+    },
   }],
 });
 
 /* TODO might not be a good idea to use i18n here */
 export const errorWithInviteMemberAlreadyInsideOrganisation = makeStory(conf, {
-  items: [
-    {
-      currentUserId: 'member1',
-      emailField: 'john.doe@example.com',
-      roleField: 'ADMIN',
-      memberList: baseItems,
-      stateMemberList: 'loaded',
-      inviteErrorMessage: i18n('cc-orga-member-list.invite-error-duplicate'),
+  items: [{
+    stateMemberInvite: {
+      state: 'idle',
+      email: {
+        state: 'error',
+        value: 'john.doe@example.com',
+        errorType: 'duplicate',
+      },
+      role: {
+        state: 'idle',
+        value: 'ADMIN',
+      },
     },
+    stateMemberList: {
+      state: 'loaded',
+      value: baseMemberList,
+    },
+  },
   ],
 });
 
 export const waitingWithInviteMember = makeStory(conf, {
-  items: [
-    {
-      currentUserId: 'member1',
-      emailField: 'john.doe@example.com',
-      roleField: 'ADMIN',
-      memberList: baseItems,
-      stateMemberInvite: 'waiting',
-      stateMemberList: 'loaded',
+  items: [{
+    stateMemberInvite: {
+      state: 'waiting',
+      email: {
+        state: 'idle',
+        value: 'jane.doe@example.com',
+      },
+      role: {
+        state: 'idle',
+        value: 'ADMIN',
+      },
     },
-  ],
+    stateMemberList: {
+      state: 'loaded',
+      value: [baseMemberList[0]],
+    },
+  }],
 });
 
 /* TODO might not be a good idea to use notify here */
 export const simulationsWithInviteMember = makeStory(conf, {
   items: [{
-    currentUserId: 'member1',
-    stateMemberList: 'loaded',
-    memberList: baseItems,
+    stateMemberList: {
+      state: 'loaded',
+      value: baseMemberList,
+    },
   }],
   simulations: [
     storyWait(1000, ([component]) => {
-      component.emailField = 'john.doe@example.com';
+      component.stateMemberInvite = {
+        ...component.stateMemberInvite,
+        email: {
+          ...component.stateMemberInvite.email,
+          value: 'john.doe@example.com',
+        },
+      };
     }),
     storyWait(1000, ([component]) => {
-      component.roleField = 'ADMIN';
+      component.stateMemberInvite = {
+        ...component.stateMemberInvite,
+        role: {
+          ...component.stateMemberInvite.role,
+          value: 'ADMIN',
+        },
+      };
     }),
     storyWait(500, ([component]) => {
-      component.stateMemberInvite = 'waiting';
+      component.stateMemberInvite = {
+        ...component.stateMemberInvite,
+        state: 'waiting',
+      };
     }),
-    storyWait(1000, ([component]) => {
-      component.emailField = '';
-      component.roleField = 'DEVELOPER';
-      component.stateMemberInvite = 'loaded';
+    storyWait(2000, ([component]) => {
+      component.stateMemberInvite = {
+        ...component.stateMemberInvite,
+        state: 'idle',
+        email: {
+          ...component.stateMemberInvite.email,
+          value: '',
+        },
+        role: {
+          ...component.stateMemberInvite.role,
+          value: 'DEVELOPER',
+        },
+      };
       notifySuccess(component, 'Member has been invited');
     }),
   ],
@@ -149,85 +241,91 @@ export const simulationsWithInviteMember = makeStory(conf, {
 export const loadingWithMemberList = makeStory(conf, {
   items: [{
     // TODO since default, not necessary ?
-    stateMemberList: 'loading',
+    stateMemberList: { state: 'loading' },
   }],
 });
 
 export const errorWithLoadingMemberList = makeStory(conf, {
   items: [{
-    stateMemberList: 'error',
+    stateMemberList: { state: 'error' },
   }],
 });
 
 export const dataLoaded = makeStory(conf, {
   items: [{
-    currentUserId: 'member1',
-    memberList: baseItems,
-    stateMemberList: 'loaded',
+    stateMemberList: {
+      state: 'loaded',
+      value: baseMemberList,
+    },
   }],
 });
 
 export const dataLoadedWithOnlyOneMember = makeStory(conf, {
   items: [{
-    currentUserId: 'member1',
-    memberList: [baseItems[0]],
-    stateMemberList: 'loaded',
+    stateMemberList: { state: 'loaded', value: [baseMemberList[0]] },
   }],
 });
 
 export const dataLoadedWithTwoFactorAuthenticationEnabledOnly = makeStory(conf, {
   items: [{
-    currentUserId: 'member1',
-    memberList: baseItems.map((baseItem) => ({
-      ...baseItem,
-      mfa: true,
-    })),
-    stateMemberList: 'loaded',
+    stateMemberList: {
+      state: 'loaded',
+      value: baseMemberList.map((baseMemberListItem) => ({
+        ...baseMemberListItem,
+        member: {
+          ...baseMemberListItem.member,
+          value: {
+            ...baseMemberListItem.member.value,
+            mfa: true,
+          },
+        },
+      })),
+    },
   }],
 });
 
 export const errorWithDeletingLastAdmin = makeStory(conf, {
   items: [{
-    currentUserId: 'member1',
-    memberList: baseItems.map((member) => {
-      if (member.role === 'ADMIN') {
-        return {
-          ...member,
-          errorMessage: i18n('cc-orga-member-card.error-remove'),
-        };
-      }
-      return member;
-    }),
-    stateMemberList: 'loaded',
+    stateMemberList: {
+      state: 'loaded',
+      value: baseMemberList.map((baseMemberListItem) => {
+        if (baseMemberListItem.member.value.role === 'ADMIN') {
+          return {
+            ...baseMemberListItem,
+            errorMessage: i18n('cc-orga-member-card.error-remove'),
+          };
+        }
+        return baseMemberListItem;
+      }),
+    },
   }],
 });
 
 export const errorWithEditingLastAdmin = makeStory(conf, {
   items: [{
-    currentUserId: 'member1',
-    memberList: baseItems.map((member) => {
-      if (member.role === 'ADMIN') {
-        return {
-          ...member,
-          errorMessage: i18n('cc-orga-member-card.error-edit'),
-        };
-      }
-      return member;
-    }),
-    _memberInEditing: 'member1',
-    stateMemberList: 'loaded',
+    stateMemberList: {
+      state: 'loaded',
+      value: baseMemberList.map((baseMemberListItem) => {
+        if (baseMemberListItem.member.value.role === 'ADMIN') {
+          return {
+            ...baseMemberListItem,
+            errorMessage: i18n('cc-orga-member-card.error-edit'),
+          };
+        }
+        return baseMemberListItem;
+      }),
+    },
   }],
 });
 
 export const simulationsWithMemberList = makeStory(conf, {
-  items: [{
-    stateMemberList: 'loading',
-  }],
+  items: [{}],
   simulations: [
     storyWait(2000, ([component]) => {
-      component.stateMemberList = 'loaded';
-      component.currentUserId = 'member1';
-      component.memberList = baseItems;
+      component.stateMemberList = {
+        state: 'loaded',
+        value: baseMemberList,
+      };
     }),
   ],
 });

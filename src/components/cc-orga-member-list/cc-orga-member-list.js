@@ -17,7 +17,6 @@ import { linkStyles } from '../../templates/cc-link/cc-link.js';
 
 const DEFAULT_ROLE = 'DEVELOPER';
 /**
- * @typedef {import('./cc-orga-member-list.types.js').Member} Member
  * @typedef {import('./cc-orga-member-list.types.js').StateMemberList} StateMemberList
  * @typedef {import('./cc-orga-member-list.types.js').StateMemberInvite} StateMemberInvite
  */
@@ -34,13 +33,8 @@ const DEFAULT_ROLE = 'DEVELOPER';
 export class CcOrgaMemberList extends LitElement {
   static get properties () {
     return {
-      emailField: { type: String, attribute: 'email-field' },
-      inviteErrorMessage: { type: String, attribute: 'invite-error-message' },
-      memberList: { type: Array, attribute: 'member-list' },
-      memberInEditing: { type: Boolean, attribute: false },
-      roleField: { type: String, attribute: 'role-field' },
-      stateMemberInvite: { type: String },
-      stateMemberList: { type: String },
+      stateMemberInvite: { type: Object },
+      stateMemberList: { type: Object },
       _filterIdentity: { type: String, attribute: false },
       _showDisabledTfaOnly: { type: Boolean, attribute: false },
     };
@@ -49,27 +43,21 @@ export class CcOrgaMemberList extends LitElement {
   constructor () {
     super();
 
-    /** @type {string} Sets the `cc-input-text` value. */
-    this.emailField = '';
-
-    /** @type {string} Sets the error message below the email address field */
-    this.inviteErrorMessage = '';
-
-    /* TODO rename this prop */
-    /** @type {string} Sets the card of the member being edited in edit mode */
-    this.memberInEditing = '';
-
-    /** @type {Member[]} Sets the list of members. This list may be filtered with user criteria. */
-    this.memberList = [];
-
-    /** @type {string} Sets the `cc-select` value. */
-    this.roleField = DEFAULT_ROLE;
-
     /** @type {StateMemberInvite} Sets the state of the member invite form. */
-    this.stateMemberInvite = 'loaded';
+    this.stateMemberInvite = {
+      state: 'idle',
+      email: {
+        state: 'idle',
+        value: '',
+      },
+      role: {
+        state: 'idle',
+        value: '',
+      },
+    };
 
     /** @type {StateMemberList} Sets the state of the member list. */
-    this.stateMemberList = 'loading';
+    this.stateMemberList = { state: 'loading' };
 
     /** @type {string} Sets the name/email criterion to filter the member list. */
     this._filterIdentity = '';
@@ -81,41 +69,45 @@ export class CcOrgaMemberList extends LitElement {
   _getRoles () {
     return [
       {
-        label: i18n('cc-orga-member-list.invite-role-admin'),
+        label: i18n('cc-orga-member-list.invite.role-admin'),
         value: 'ADMIN',
       },
       {
-        label: i18n('cc-orga-member-list.invite-role-developer'),
+        label: i18n('cc-orga-member-list.invite.role-developer'),
         value: 'DEVELOPER',
       },
       {
-        label: i18n('cc-orga-member-list.invite-role-accounting'),
+        label: i18n('cc-orga-member-list.invite.role-accounting'),
         value: 'ACCOUNTING',
       },
       {
-        label: i18n('cc-orga-member-list.invite-role-manager'),
+        label: i18n('cc-orga-member-list.invite.role-manager'),
         value: 'MANAGER',
       },
     ];
   }
 
   _onEmailInput ({ detail: value }) {
-    this.emailField = value;
+    this.stateMemberInvite.email.value = value;
   }
 
   _onRoleInput ({ detail: value }) {
-    this.roleField = value;
+    this.stateMemberInvite.role.value = value;
   }
 
   _onSubmit () {
     dispatchCustomEvent(this, 'invite', {
-      email: this.emailField,
-      role: this.roleField,
+      email: this.stateMemberInvite.email.value,
+      role: this.stateMemberInvite.role.value,
     });
   }
 
   _getFilteredMemberList () {
-    const filteredMemberList = this.memberList.filter((member) => {
+    if (this.stateMemberList.state !== 'loaded') {
+      return;
+    }
+
+    const filteredMemberList = this.stateMemberList.value.filter(({ value: member }) => {
 
       const matchIdentity = this._filterIdentity === ''
         || member.name?.toLowerCase().includes(this._filterIdentity)
@@ -137,51 +129,73 @@ export class CcOrgaMemberList extends LitElement {
     this._showDisabledTfaOnly = !this._showDisabledTfaOnly;
   }
 
-  _toggleCardEditing ({ detail: cardInfo }) {
-    this.memberInEditing = cardInfo.isEditing ? cardInfo.memberId : null;
+  _toggleCardEditing ({ detail: { memberId, isEditing } }) {
+    this.stateMemberList = isEditing
+      ? {
+          ...this.stateMemberList,
+          memberInEditing: memberId,
+        }
+      : {
+          ...this.stateMemberList,
+          memberInEditing: null,
+        };
+  }
+
+  _getEmailErrorType () {
+    switch (this.stateMemberInvite.email.errorType) {
+      case 'empty':
+        return i18n('cc-orga-member-list.invite.email-error-empty');
+      case 'format':
+        return i18n('cc-orga-member-list.invite.email-error-format');
+      case 'duplicate':
+        return i18n('cc-orga-member-list.invite.email-error-duplicate');
+    }
   }
 
   resetInviteForm () {
-    this.emailField = '';
-    this.roleField = DEFAULT_ROLE;
+    this.stateMemberInvite.email.value = '';
+    this.stateMemberInvite.role.value = DEFAULT_ROLE;
     this.inviteErrrorMessage = '';
   }
 
   render () {
-    const containsAtLeast2Members = this.memberList.length >= 2;
-    const containsDisabledTfa = this.memberList.some((member) => !member.mfa);
+    /* TODO since stateMemberList has no value when loading, these break unless we use conditional chaining */
+    const containsAtLeast2Members = this.stateMemberList?.value?.length >= 2;
+    const containsDisabledTfa = this.stateMemberList?.value?.some(({ member }) => !member.value.mfa);
     const filteredMemberList = this._getFilteredMemberList();
-
     return html`
       <cc-block>
-        <div slot="title">${i18n('cc-orga-member-list.invite-heading')}</div>
-        <p class="info">${i18n('cc-orga-member-list.invite-info')}</p>
+        <div slot="title">${i18n('cc-orga-member-list.invite.heading')}</div>
+        <p class="info">${i18n('cc-orga-member-list.invite.info')}</p>
         <form class="invite-form">
           <cc-input-text
-            ?disabled=${this.waiting}
-            label=${i18n('cc-orga-member-list.invite-label-email')}
+            ?disabled=${this.stateMemberInvite.state === 'waiting'}
+            label=${i18n('cc-orga-member-list.invite.email-label')}
             required
-            .value=${this.emailField}
+            .value=${this.stateMemberInvite.email.value}
             @cc-input-text:input=${this._onEmailInput}
             @cc-input-text:requestimplicitsubmit=${this._onSubmit}
           > 
-            <p slot="help">${i18n('cc-orga-member-list.invite-format-email')}</p>
-            ${this.inviteErrorMessage !== '' ? html`
-              <p slot="error">${this.inviteErrorMessage}</p>
+            <p slot="help">${i18n('cc-orga-member-list.invite.email-format')}</p>
+            ${this.stateMemberInvite.email.state === 'error' ? html`
+              <p slot="error">${this._getEmailErrorType()}</p>
             ` : ''}
           </cc-input-text>
           <cc-select
-            ?disabled=${this.waiting}
-            label=${i18n('cc-orga-member-list.invite-label-role')}
+            ?disabled=${this.stateMemberInvite.state === 'waiting'}
+            label=${i18n('cc-orga-member-list.invite.role-label')}
             .options=${this._getRoles()}
             required
-            .value=${this.roleField}
+            .value=${this.stateMemberInvite.role.value}
             @cc-select:input=${this._onRoleInput}
           >
+            ${this.stateMemberInvite.role.state === 'error' ? html`
+              <p slot="error">${i18n('cc-orga-member-list.invite.role-error-empty')}</p>
+            ` : ''}
           </cc-select>
           <div class="submit">
-            <cc-button primary ?waiting=${this.stateMemberInvite === 'waiting'} @cc-button:click=${this._onSubmit}>
-              ${i18n('cc-orga-member-list.invite-submit')}
+            <cc-button primary ?waiting=${this.stateMemberInvite.state === 'waiting'} @cc-button:click=${this._onSubmit}>
+              ${i18n('cc-orga-member-list.invite.submit')}
             </cc-button>
           </div>
         </form>
@@ -190,8 +204,8 @@ export class CcOrgaMemberList extends LitElement {
       <cc-block>
         <div slot="title">
           ${i18n('cc-orga-member-list.heading')}
-          ${this.stateMemberList === 'loaded' ? html`
-            <cc-badge class="member-count" weight="dimmed" intent="neutral" circle>${this.memberList.length}</cc-badge>
+          ${this.stateMemberList.state === 'loaded' ? html`
+            <cc-badge class="member-count" weight="dimmed" intent="neutral" circle>${this.stateMemberList.value.length}</cc-badge>
           ` : ''}
         </div>
           ${containsAtLeast2Members ? html`
@@ -207,25 +221,15 @@ export class CcOrgaMemberList extends LitElement {
             </div>
           ` : ''}
           <div class="member-list">
-            ${this.stateMemberList === 'loading' ? html`<cc-loader></cc-loader>` : ''}
+            ${this.stateMemberList.state === 'loading' ? html`<cc-loader></cc-loader>` : ''}
 
-            ${this.stateMemberList === 'error' ? html`<cc-error>${i18n('cc-orga-member-list.error')}</cc-error>` : ''}
-            
-            <!-- TODO check ifDefined, also, should this be a oneliner ? -->
-            ${this.stateMemberList === 'loaded' ? repeat(filteredMemberList, (member) => member.id, (member) => html`
+            ${this.stateMemberList.state === 'error' ? html`<cc-error>${i18n('cc-orga-member-list.error')}</cc-error>` : ''}
+              
+            ${this.stateMemberList.state === 'loaded' ? repeat(filteredMemberList, ({ member }) => member.value.id, ({ isEditing, errorMessage, member }) => html`
               <cc-orga-member-card
-                id=${member.id}
-                email=${member.email}
-                job-title=${ifDefined(member.jobTitle ?? undefined)}
-                name=${ifDefined(member.name ?? undefined)}
-                avatar=${ifDefined(member.avatar ?? undefined)}
-                role=${member.role}
-                state=${member.state}
-                error-message="${ifDefined(member.errorMessage ?? undefined)}"
-                ?is-current-user=${member.isCurrentUser}
-                ?is-last-admin=${member.isLastAdmin}
-                ?is-editing=${member.id === this.memberInEditing}
-                ?mfa=${member.mfa}
+                .member=${member}
+                error-message="${ifDefined(errorMessage ?? undefined)}"
+                ?is-editing=${member.value.id === this.stateMemberList.memberInEditing}
                 @cc-orga-member-card:update-editing=${this._toggleCardEditing}
               ></cc-orga-member-card>
             `) : ''}
