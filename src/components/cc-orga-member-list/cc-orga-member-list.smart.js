@@ -1,9 +1,10 @@
 import './cc-orga-member-list.js';
 import '../cc-smart-container/cc-smart-container.js';
 import { getAllMembers, addMember, removeMemeber as removeMember, updateMember } from '@clevercloud/client/esm/api/v2/organisation.js';
+import { CcEventTarget } from '../../lib/events.js';
 import { i18n } from '../../lib/i18n.js';
+import { produce } from '../../lib/immer.js';
 import { notifyError, notifySuccess } from '../../lib/notifications.js';
-import { fromCustomEvent, LastPromise, unsubscribeWithSignal, withLatestFrom } from '../../lib/observables.js';
 import { sendToApi } from '../../lib/send-to-api.js';
 import { defineComponent } from '../../lib/smart-manager.js';
 
@@ -14,135 +15,100 @@ defineComponent({
     ownerId: { type: String },
     currentUserId: { type: String },
   },
-  onConnect (container, component, context$, disconnectSignal) {
-    const memberList_lp = new LastPromise();
-    const inviteMember_lp = new LastPromise();
-    const removeMember_lp = new LastPromise();
-    const editMember_lp = new LastPromise();
+  onContextUpdate ({ component, context, updateSignal }) {
+    const target = new CcEventTarget();
 
-    const onInvite$ = fromCustomEvent(component, 'cc-orga-member-list:invite')
-      .pipe(withLatestFrom(context$));
+    const { apiConfig, ownerId, currentUserId } = context;
 
-    const onDelete$ = fromCustomEvent(component, 'cc-orga-member-card:remove').pipe(
-      withLatestFrom(context$),
-    );
+    if (apiConfig == null || ownerId == null || currentUserId == null) {
+      console.error('One of the smart component params is missing');
+      console.log(context);
+      return;
+    }
 
-    const onEdit$ = fromCustomEvent(component, 'cc-orga-member-card:edit').pipe(
-      withLatestFrom(context$),
-    );
+    target.on('set-member-list', (newStateMemberList) => {
+      component.stateMemberList = newStateMemberList;
+    });
 
-    unsubscribeWithSignal(disconnectSignal, [
-      // TODO: deal with too many requests vs other errors
-      inviteMember_lp.error$.subscribe(console.error),
+    target.on('reset-member-invite', () => {
+      component.stateMemberInvite = produce(component.stateMemberInvite, (draft) => {
+        draft.email.value = '';
+        draft.role.value = 'DEVELOPER';
+      });
+    });
 
-      memberList_lp.error$.subscribe((error) => {
-        console.error(error);
-        component.stateMemberList = 'error';
-      }),
+    component.addEventListener('cc-orga-member-list:invite', ({ detail: { email, role } }) => {
+      component.stateMemberInvite = produce(component.stateMemberInvite, (draft) => {
+        draft.state = 'waiting';
+      });
 
-      memberList_lp.value$.subscribe((memberList) => {
-        component.memberList = memberList;
-        component.stateMemberList = 'loaded';
-      }),
-
-      removeMember_lp.error$.subscribe(console.error),
-
-      editMember_lp.error$.subscribe(console.error),
-
-      onInvite$.subscribe(([{ email, role }, { apiConfig, ownerId }]) => {
-        component.stateMemberInvite = 'waiting';
-        // TODO Form control
-        // TODO change ownerId to ownerId
-        return postNewMember({ apiConfig, ownerId, email, role })
-          .then(() => {
-            notifySuccess(component, i18n('cc-orga-member-list.invite-submit-success', { userEmail: email }));
-            component.resetInviteForm();
-          })
-          .catch((error) => {
-            // TODO issue when 403 + provide specific message
-            notifyError(component, i18n('cc-orga-member-list.invite-submit-error', { userEmail: email }));
-            console.log(error);
-          })
-          .finally(() => {
-            component.stateMemberInvite = 'loaded';
+      postNewMember({ apiConfig, ownerId, email, role })
+        .then(() => {
+          notifySuccess(component, i18n('cc-orga-member-list.invite.submit-success', { userEmail: email }));
+          target.dispatch('reset-member-invite');
+        })
+        .catch(() => {
+          notifyError(component, i18n('cc-orga-member-list.invite.submit-error', { userEmail: email }));
+        })
+        .finally(() => {
+          component.stateMemberInvite = produce(component.stateMemberInvite, (draft) => {
+            draft.state = 'loaded';
           });
-      }),
-
-      onDelete$.subscribe(([{ memberId, memberIdentity }, { apiConfig, ownerId, currentUserId }]) => {
-        updateMemberCard({ component, memberId, property: 'state', value: 'waiting' });
-
-        removeMember_lp.push((signal) => {
-          return deleteMember({ apiConfig, ownerId, memberId, memberIdentity, currentUserId, signal })
-            .then(() => {
-              notifySuccess(component, i18n('cc-orga-member-list.remove-success', { userIdentity: memberIdentity }));
-              component.memberList = component.memberList.filter((member) => member.id !== memberId);
-            })
-            .catch((err) => {
-              // TODO issue when trying to remove twice
-              console.error(err);
-              notifyError(component, i18n('cc-orga-member-list.remove-error', { userIdentity: memberIdentity }));
-            })
-            .finally(() => {
-              updateMemberCard({ component, memberId, property: 'state', value: 'loaded' });
-            });
         });
-      }),
+    });
 
-      /* TODO fix refetch here and use it for delete stuff after */
-      onEdit$.subscribe(([{ memberId, role, memberIdentity }, { apiConfig, ownerId, currentUserId }]) => {
-        updateMemberCard({ component, memberId, property: 'state', value: 'waiting' });
-
-        editMember_lp.push((signal) => {
-          return editMember({ apiConfig, ownerId, currentUserId, memberId, role, memberIdentity, signal })
-            .then(() => {
-              notifySuccess(component, i18n('cc-orga-member-list.edit-success', { userIdentity: memberIdentity }));
-              updateMemberCard({ component, memberId, property: 'role', value: role });
-              component.memberInEditing = '';
-            })
-            .catch(() => notifyError(component, i18n('cc-orga-member-list.edit-error', { userIdentity: memberIdentity })))
-            .finally(() => {
-              updateMemberCard({ component, memberId, property: 'state', value: 'loaded' });
-            });
+    fetchMemberList({ apiConfig, ownerId, currentUserId, signal: updateSignal })
+      .then((memberList) => {
+        target.dispatch('populate-member-list', memberList);
+      })
+      .catch((error) => {
+        console.error(error);
+        component.stateMemberList = produce(component.stateMemberList, (draft) => {
+          draft.state = 'error-loading';
         });
-      }),
-
-      context$.subscribe(({ apiConfig, ownerId, currentUserId }) => {
-        if (apiConfig != null && ownerId != null) {
-          memberList_lp.push((signal) => fetchMemberList({ apiConfig, ownerId, currentUserId, signal }));
-        }
-      }),
-    ]);
+      });
   },
-
 });
 
 function fetchMemberList ({ apiConfig, ownerId, currentUserId, signal }) {
   return getAllMembers({ id: ownerId })
     .then(sendToApi({ apiConfig, signal }))
     .then((memberList) => {
-      return memberList.map(({ member, role, job }) => ({
-        id: member.id,
-        avatar: member.avatar,
-        name: member.name,
-        jobTitle: job,
-        role: role,
-        email: member.email,
-        mfa: member.preferredMFA === 'TOTP',
-        isCurrentUser: member.id === currentUserId,
-      }))
-        .sort((a, b) => {
-          if ((a.id === currentUserId) || (b.id === currentUserId)) {
-            return a.id === currentUserId ? -1 : 1;
-          }
+      return {
+        state: 'loaded',
+        value: memberList.map(({ member, role, job }) => ({
+          member: {
+            state: 'loaded',
+            value: {
+              id: member.id,
+              avatar: member.avatar,
+              name: member.name,
+              jobTitle: job,
+              role: role,
+              email: member.email,
+              mfa: member.preferredMFA === 'TOTP',
+              isCurrentUser: member.id === currentUserId,
+            },
+          },
+        }))
+          .sort((a, b) => {
+            if ((a.member.value.id === currentUserId) || (b.member.value.id === currentUserId)) {
+              return a.member.value.id === currentUserId ? -1 : 1;
+            }
 
-          return a.email.localeCompare(b.email, { sensitivity: 'base' });
-        });
+            return a.member.value.email.localeCompare(b.member.value.email, { sensitivity: 'base' });
+          }),
+      };
     });
 };
 
 function postNewMember ({ apiConfig, ownerId, email, role }) {
   return addMember({ id: ownerId }, { email, role, job: null })
-    .then(sendToApi({ apiConfig }));
+    /* .then(sendToApi({ apiConfig }));*/
+    .then(() => new Promise((resolve, reject) => {
+      setTimeout(() => resolve('response'), 2000);
+      /*setTimeout(() => reject(new Error('toto')), 2000);*/
+    }));
 };
 
 function deleteMember ({ apiConfig, ownerId, memberId, signal }) {

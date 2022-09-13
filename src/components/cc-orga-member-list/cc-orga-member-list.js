@@ -88,11 +88,23 @@ export class CcOrgaMemberList extends LitElement {
   }
 
   _onEmailInput ({ detail: value }) {
-    this.stateMemberInvite.email.value = value;
+    this.stateMemberInvite = {
+      ...this.stateMemberInvite,
+      email: {
+        ...this.stateMemberInvite.email,
+        value: value,
+      },
+    };
   }
 
   _onRoleInput ({ detail: value }) {
-    this.stateMemberInvite.role.value = value;
+    this.stateMemberInvite = {
+      ...this.stateMemberInvite,
+      role: {
+        ...this.stateMemberInvite.role,
+        value: value,
+      },
+    };
   }
 
   _onSubmit () {
@@ -159,6 +171,7 @@ export class CcOrgaMemberList extends LitElement {
   }
 
   render () {
+    console.log(this.stateMemberList);
     /* TODO since stateMemberList has no value when loading, these break unless we use conditional chaining */
     const containsAtLeast2Members = this.stateMemberList?.value?.length >= 2;
     const containsDisabledTfa = this.stateMemberList?.value?.some(({ member }) => !member.value.mfa);
@@ -223,7 +236,7 @@ export class CcOrgaMemberList extends LitElement {
           <div class="member-list">
             ${this.stateMemberList.state === 'loading' ? html`<cc-loader></cc-loader>` : ''}
 
-            ${this.stateMemberList.state === 'error' ? html`<cc-error>${i18n('cc-orga-member-list.error')}</cc-error>` : ''}
+            ${this.stateMemberList.state === 'error-loading' ? html`<cc-error>${i18n('cc-orga-member-list.error')}</cc-error>` : ''}
               
             ${this.stateMemberList.state === 'loaded' ? repeat(filteredMemberList, ({ member }) => member.value.id, ({ isEditing, errorMessage, member }) => html`
               <cc-orga-member-card
